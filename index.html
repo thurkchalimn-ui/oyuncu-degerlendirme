@@ -27,8 +27,8 @@
   .osp-header { background: #ffffff; padding: 16px 18px 14px; border-bottom: 3px solid #d32f2f; position: relative; }
   .osp-header-row { display: flex; align-items: center; gap: 10px; }
   .osp-back { background: #fff8e1; border: 1px solid #ffcc00; color: #d32f2f; width: 34px; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
-  .osp-title { font-size: 20px; font-weight: 700; letter-spacing: 0.3px; color: #d32f2f; margin: 0; text-transform: uppercase; }
-  .osp-subtitle { font-size: 12px; color: #a37a00; margin: 2px 0 0; font-weight: 600; }
+  .osp-title { font-size: 20px; font-weight: 700; letter-spacing: 0.3px; color: #d32f2f; margin: 0; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .osp-subtitle { font-size: 12px; color: #a37a00; margin: 2px 0 0; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
   .osp-body { padding: 14px; background: #ffffff; min-height: 200px; }
 
@@ -69,8 +69,13 @@
   .osp-field { margin-bottom: 10px; }
   .osp-field:last-child { margin-bottom: 0; }
   .osp-field label { display: block; font-size: 12px; color: #7a3b00; margin-bottom: 4px; font-weight: 600; }
-  .osp-field input, .osp-field select { width: 100%; background: #ffffff; border: 1px solid #e8d48a; color: #1a1a1a; border-radius: 8px; padding: 9px 10px; font-size: 14px; }
-  .osp-field input:focus, .osp-field select:focus { outline: none; border-color: #d32f2f; }
+  .osp-field input, .osp-field select, .osp-field textarea { width: 100%; background: #ffffff; border: 1px solid #e8d48a; color: #1a1a1a; border-radius: 8px; padding: 9px 10px; font-size: 14px; }
+  .osp-field textarea { min-height: 120px; font-family: 'Consolas', monospace; font-size: 11.5px; resize: vertical; }
+  .osp-field input:focus, .osp-field select:focus, .osp-field textarea:focus { outline: none; border-color: #d32f2f; }
+  .osp-sync-status { display: flex; align-items: center; gap: 10px; padding: 4px 2px 14px; }
+  .osp-sync-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .osp-sync-dot.on { background: #2e7d32; }
+  .osp-sync-dot.off { background: #b71c1c; }
   .osp-field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
   .osp-test-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #f6ecc7; }
@@ -136,12 +141,15 @@
           <p class="osp-subtitle" id="osp-subtitle">Sezon başı test takibi</p>
         </div>
         <button class="osp-back" id="osp-guide-btn" aria-label="Rehber"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"></rect><path d="M9 3V2a1 1 0 011-1h4a1 1 0 011 1v1"></path><path d="M8.5 11l1.8 1.8L14.5 9"></path><line x1="8.5" y1="16" x2="15.5" y2="16"></line></svg></button>
+        <button class="osp-back" id="osp-sync-btn" aria-label="Senkronizasyon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 01-15.3 6.4L3 21"></path><path d="M3 12a9 9 0 0115.3-6.4L21 3"></path><path d="M3 21v-5h5"></path><path d="M21 3v5h-5"></path></svg></button>
       </div>
     </div>
     <div class="osp-body" id="osp-body"></div>
   </div>
 </div>
 
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script>
 (function(){
 
@@ -186,6 +194,68 @@ var RAW_FIELDS = [
 
 var state = { view:'teams', teams:[], currentTeamId:null, currentPlayerId:null, tab:'bilgi', guideTab:'aciklama', prevView:'teams' };
 var expandedProtocols = {};
+var SYNC_CONFIG_KEY = 'osp-sync-config-v1';
+var db = null;
+var fsSaveTimer = null;
+var syncStatus = 'off';
+
+function parseFirebaseConfigText(text){
+  try {
+    var fn = new Function('return (' + text + ')');
+    var obj = fn();
+    if(obj && obj.apiKey && obj.projectId) return obj;
+  } catch(e){}
+  return null;
+}
+
+function connectSync(config){
+  try {
+    if(!window.firebase){ alert('Bağlantı kütüphanesi yüklenemedi. İnternet bağlantını kontrol et.'); return; }
+    if(!firebase.apps || !firebase.apps.length){ firebase.initializeApp(config); }
+    db = firebase.firestore();
+    localStorage.setItem(SYNC_CONFIG_KEY, JSON.stringify(config));
+    attachSync();
+  } catch(e){
+    alert('Bağlantı kurulamadı: ' + e.message);
+  }
+}
+
+function disconnectSync(){
+  db = null;
+  syncStatus = 'off';
+  localStorage.removeItem(SYNC_CONFIG_KEY);
+  render();
+}
+
+function attachSync(){
+  syncStatus = 'connecting';
+  db.collection('osp-sync').doc('main').onSnapshot(function(doc){
+    syncStatus = 'on';
+    if(doc.exists){
+      var remote = doc.data().teams || [];
+      var remoteStr = JSON.stringify(remote);
+      var localStr = JSON.stringify(state.teams);
+      if(remoteStr !== localStr){
+        state.teams = remote;
+        try { localStorage.setItem(STORAGE_KEY, remoteStr); } catch(e){}
+        render();
+      }
+    } else if(state.teams.length){
+      db.collection('osp-sync').doc('main').set({ teams: state.teams, updatedAt: Date.now() });
+    }
+    if(state.view==='sync') render();
+  }, function(err){
+    syncStatus = 'off';
+    if(state.view==='sync') render();
+  });
+}
+
+function tryAutoConnect(){
+  try {
+    var raw = localStorage.getItem(SYNC_CONFIG_KEY);
+    if(raw){ connectSync(JSON.parse(raw)); }
+  } catch(e){}
+}
 var STORAGE_KEY = 'osp-takimlar-v1';
 var LEGACY_KEY = 'osp-oyuncu-listesi-v1';
 
@@ -249,6 +319,12 @@ function scoreColor(score){
 function save(){
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state.teams)); }
   catch(e) { alert('Veri kaydedilemedi: tarayıcı depolama alanı dolu ya da erişilemiyor olabilir.'); }
+  if(db){
+    clearTimeout(fsSaveTimer);
+    fsSaveTimer = setTimeout(function(){
+      db.collection('osp-sync').doc('main').set({ teams: state.teams, updatedAt: Date.now() }).catch(function(e){ console.error(e); });
+    }, 500);
+  }
 }
 
 function load(){
@@ -800,11 +876,63 @@ function renderGuide(){
   body.appendChild(content);
 }
 
+function renderSync(){
+  document.getElementById('osp-back-btn').style.display = 'flex';
+  document.getElementById('osp-header-logo').style.display = 'none';
+  document.getElementById('osp-title').textContent = 'Senkronizasyon';
+  document.getElementById('osp-subtitle').textContent = 'Cihazlar arası ortak veri';
+  var body = document.getElementById('osp-body');
+  body.innerHTML = '';
+
+  if(db){
+    var statusCard = el('<div class="osp-card"></div>');
+    var dotClass = syncStatus==='on' ? 'on' : 'off';
+    var statusText = syncStatus==='on' ? 'Bağlı — değişiklikler tüm cihazlara anında yansıyor.' : 'Bağlanıyor...';
+    statusCard.innerHTML =
+      '<div class="osp-sync-status"><div class="osp-sync-dot '+dotClass+'"></div><span style="font-size:13px; font-weight:600; color:#1a1a1a;">'+statusText+'</span></div>' +
+      '<p class="osp-guide-p" style="margin:0;">Aynı bağlantıyı başka bir cihazda (bilgisayar/telefon) kurduğunda tüm takım ve oyuncu verilerin otomatik olarak eşleşir.</p>';
+    body.appendChild(statusCard);
+
+    var discBtn = el('<button class="osp-delete-btn" style="margin-top:14px;">Bağlantıyı kaldır (bu cihazda)</button>');
+    discBtn.addEventListener('click', function(){
+      if(confirm('Bulut bağlantısını kaldırmak istediğine emin misin? Veriler bu cihazda yerel olarak kalmaya devam eder.')){ disconnectSync(); }
+    });
+    body.appendChild(discBtn);
+  } else {
+    var introCard = el('<div class="osp-card"></div>');
+    introCard.innerHTML =
+      '<p class="osp-guide-p" style="margin:0 0 8px;"><b>Cihazlar arası senkronizasyon</b></p>' +
+      '<p class="osp-guide-p">Ücretsiz bir Firebase (Google) projesi oluşturup aşağıya bağlantı bilgilerini yapıştır. Kurulduktan sonra bilgisayar ve telefon aynı veriyi anlık olarak paylaşır.</p>';
+    body.appendChild(introCard);
+
+    var formCard = el('<div class="osp-card" style="margin-top:10px;"></div>');
+    var label = el('<label style="display:block; font-size:12px; color:#7a3b00; margin-bottom:4px; font-weight:600;">Firebase yapılandırma kodu</label>');
+    formCard.appendChild(label);
+    var realTa = document.createElement('textarea');
+    realTa.placeholder = '{ apiKey: "...", authDomain: "...", projectId: "...", ... }';
+    formCard.appendChild(realTa);
+    var connectBtn = document.createElement('button');
+    connectBtn.className = 'osp-btn-primary';
+    connectBtn.style.marginTop = '10px';
+    connectBtn.textContent = 'Bağlan';
+    connectBtn.addEventListener('click', function(){
+      var cfg = parseFirebaseConfigText(realTa.value);
+      if(!cfg){ alert('Yapıştırılan kod tanınamadı. Firebase konsolundaki firebaseConfig objesini olduğu gibi yapıştır.'); return; }
+      connectSync(cfg);
+    });
+    formCard.appendChild(connectBtn);
+    body.appendChild(formCard);
+  }
+}
+
 function render(){
-  document.getElementById('osp-guide-btn').style.display = (state.view==='teams') ? 'flex' : 'none';
+  var showSecondary = (state.view==='teams');
+  document.getElementById('osp-guide-btn').style.display = showSecondary ? 'flex' : 'none';
+  document.getElementById('osp-sync-btn').style.display = showSecondary ? 'flex' : 'none';
   if(state.view==='teams') renderTeams();
   else if(state.view==='squad') renderSquad();
   else if(state.view==='guide') renderGuide();
+  else if(state.view==='sync') renderSync();
   else renderDetail();
 }
 
@@ -820,15 +948,21 @@ document.getElementById('osp-guide-btn').addEventListener('click', function(){
   render();
 });
 
+document.getElementById('osp-sync-btn').addEventListener('click', function(){
+  state.prevView = state.view;
+  state.view = 'sync';
+  render();
+});
 
 document.getElementById('osp-back-btn').addEventListener('click', function(){
   if(state.view==='detail'){ state.view = 'squad'; }
-  else if(state.view==='guide'){ state.view = state.prevView || 'teams'; }
+  else if(state.view==='guide' || state.view==='sync'){ state.view = state.prevView || 'teams'; }
   else { state.view = 'teams'; }
   render();
 });
 
 load();
+tryAutoConnect();
 render();
 })();
 </script>

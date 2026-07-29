@@ -772,7 +772,9 @@ function renderGuideNormlar(container){
 
 function renderGuide(){
   document.getElementById('osp-back-btn').style.display = 'flex';
-  document.getElementById('osp-header-logo').style.display = 'none';
+  var guideHeaderLogo = document.getElementById('osp-header-logo');
+  guideHeaderLogo.src = APP_LOGO;
+  guideHeaderLogo.style.display = 'block';
   document.getElementById('osp-title').textContent = 'Rehber';
   document.getElementById('osp-subtitle').textContent = 'Açıklama · protokoller · normlar';
   var body = document.getElementById('osp-body');

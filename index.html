@@ -95,6 +95,26 @@
   .osp-tools-row .osp-btn-ghost { flex: 1; text-align: center; }
 
   .osp-sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
+
+  .osp-guide-p { font-size: 13px; line-height: 1.6; color: #333; margin: 0 0 10px; }
+  .osp-guide-list { margin: 0 0 10px; padding-left: 18px; font-size: 13px; line-height: 1.6; color: #333; }
+  .osp-guide-list li { margin-bottom: 4px; }
+  .osp-acc-item { border-bottom: 1px solid #f6ecc7; }
+  .osp-acc-item:last-child { border-bottom: none; }
+  .osp-acc-head { display: flex; align-items: center; gap: 8px; padding: 11px 0; cursor: pointer; }
+  .osp-acc-head-name { flex: 1; font-size: 13px; font-weight: 600; color: #1a1a1a; }
+  .osp-acc-head-cat { font-size: 10px; font-weight: 700; text-transform: uppercase; color: #d32f2f; background: #fdeaea; padding: 2px 7px; border-radius: 6px; }
+  .osp-acc-chevron { color: #a37a00; transition: transform 0.15s; font-size: 16px; }
+  .osp-acc-item.open .osp-acc-chevron { transform: rotate(90deg); }
+  .osp-acc-body { display: none; padding: 0 0 14px; }
+  .osp-acc-item.open .osp-acc-body { display: block; }
+  .osp-acc-row { font-size: 12.5px; line-height: 1.6; color: #333; margin-bottom: 8px; }
+  .osp-acc-row b { color: #7a3b00; font-weight: 600; }
+  .osp-acc-video { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: #d32f2f; font-weight: 600; text-decoration: none; margin-top: 2px; }
+  .osp-norm-table { width: 100%; border-collapse: collapse; font-size: 11.5px; margin-bottom: 4px; }
+  .osp-norm-table th { background: #fdeaea; color: #b71c1c; font-weight: 700; padding: 6px 5px; text-align: left; border: 1px solid #f2e2ab; }
+  .osp-norm-table td { padding: 6px 5px; border: 1px solid #f2e2ab; color: #333; }
+  .osp-norm-note { font-size: 10.5px; color: #a37a00; line-height: 1.5; margin: 6px 0 0; }
 </style>
 </head>
 <body>
@@ -106,10 +126,11 @@
       <div class="osp-header-row">
         <button class="osp-back" id="osp-back-btn" style="display:none;" aria-label="Geri"><i class="ti ti-arrow-left"></i></button>
         <img id="osp-header-logo" class="osp-header-logo" style="display:none;" alt="">
-        <div>
+        <div style="flex:1; min-width:0;">
           <p class="osp-title" id="osp-title">Takımlar</p>
           <p class="osp-subtitle" id="osp-subtitle">Sezon başı test takibi</p>
         </div>
+        <button class="osp-back" id="osp-guide-btn" aria-label="Rehber"><i class="ti ti-book-2"></i></button>
       </div>
     </div>
     <div class="osp-body" id="osp-body"></div>
@@ -156,7 +177,8 @@ var RAW_FIELDS = [
   { key:'duvarPasi', label:'Duvar Pası', unit:'adet/30sn', step:'1', cat:'tek' }
 ];
 
-var state = { view:'teams', teams:[], currentTeamId:null, currentPlayerId:null, tab:'bilgi' };
+var state = { view:'teams', teams:[], currentTeamId:null, currentPlayerId:null, tab:'bilgi', guideTab:'aciklama', prevView:'teams' };
+var expandedProtocols = {};
 var STORAGE_KEY = 'osp-takimlar-v1';
 var LEGACY_KEY = 'osp-oyuncu-listesi-v1';
 
@@ -614,14 +636,179 @@ function renderDetail(){
   body.appendChild(content);
 }
 
+var PROTOCOLS = [
+  { key:'antro', cat:'antro', name:'Boy - Kilo - VKİ (BMI)', ozellik:'Antropometrik yapı / vücut kompozisyonu', ekipman:'Boy ölçer (stadiometre), tartı', talimat:'Çocuk ayakkabısız, dik pozisyonda, topuklar birleşik olarak ölçüm duvarına yaslanarak boyu ölçülür. Aynı gün hafif kıyafetle tartıda kilosu ölçülür.', birim:'cm / kg / kg/m²', formul:'VKİ = Kilo(kg) / (Boy(m))²', video:null },
+  { key:'sprint20', cat:'fiz', name:'20m Sürat (Sprint) Testi', ozellik:'Maksimal hız / ivmelenme', ekipman:'Düz ve kaymayan 20m zemin, kronometre (tercihen fotosel), koni', talimat:'Ayakta başlangıç pozisyonundan (start hattı gerisinde) kendi komutuyla en hızlı şekilde 20m koşulur. Süre, ilk hareketten bitiş hattını geçene kadar ölçülür. 2 deneme yapılır, en iyi derece kayıt edilir.', birim:'saniye (sn)', formul:'Hız (m/sn) = 20 / Süre(sn)', video:'https://www.youtube.com/watch?v=YWKOMIz_RCE' },
+  { key:'illinois', cat:'fiz', name:'Illinois Çeviklik Testi', ozellik:'Çeviklik / yön değiştirme hızı', ekipman:'10m x 5m alan, 8 koni, kronometre', talimat:'Oyuncu yüzüstü yatar pozisyondan başlar, komutla ayağa kalkıp belirlenen slalom rotasını (koniler arası zikzak) en hızlı şekilde tamamlar. 2 deneme yapılır, en iyi derece kayıt edilir.', birim:'saniye (sn)', formul:'Doğrudan ölçülen süre kayıt edilir; norm tablosuyla karşılaştırılır.', video:'https://www.youtube.com/watch?v=N0Z8xitU2IQ' },
+  { key:'tTest', cat:'fiz', name:'T-Test', ozellik:'Çeviklik / çok yönlü hız (ileri-yanal-geri)', ekipman:'4 koni (T şeklinde: 10m ileri, 5m sağ-sol), kronometre', talimat:'Oyuncu A konisinden başlar; B konisine (10m ileri) koşup dokunur, yana kayarak C konisine (5m sol) dokunur, yana kayarak D konisine (10m sağ) dokunur, tekrar yana kayarak B konisine döner, sonra geri geri koşarak A konisine döner. Ayaklar çapraz atılmamalıdır. 2 deneme yapılır, en iyisi kayıt edilir.', birim:'saniye (sn)', formul:'Doğrudan ölçülen süre kayıt edilir; norm tablosuyla karşılaştırılır.', video:'https://www.youtube.com/watch?v=Ko1qHVN7DXo' },
+  { key:'uzunAtlama', cat:'fiz', name:'Durarak Uzun Atlama', ozellik:'Patlayıcı bacak kuvveti (horizontal)', ekipman:'Kaymayan zemin, mezura/şerit metre', talimat:'Ayaklar omuz genişliğinde, başlangıç çizgisinin gerisinde durulur. Kolların da yardımıyla iki ayakla aynı anda öne doğru sıçranır. İniş noktasındaki en yakın topuk izi ile başlangıç çizgisi arası ölçülür. 3 deneme yapılır, en iyisi kayıt edilir.', birim:'santimetre (cm)', formul:'Mesafe = İniş noktası - Başlangıç çizgisi (doğrudan ölçülür)', video:'https://www.youtube.com/watch?v=GTmrYCXfdS4' },
+  { key:'kosu6dk', cat:'fiz', name:'6 Dakika Koşu', ozellik:'Aerobik dayanıklılık', ekipman:'Ölçülü pist/saha (her tur mesafesi bilinmeli), kronometre, tur sayacı', talimat:'Oyuncu 6 dakika boyunca, temposunu kendi ayarlayarak mümkün olduğunca fazla mesafe koşmaya çalışır. Yürüyerek devam edilebilir ama durulmamalıdır. 6 dakika sonunda kat edilen toplam mesafe (tur sayısı x tur mesafesi) kayıt edilir.', birim:'metre (m)', formul:'Doğrudan ölçülen toplam mesafe kayıt edilir.', video:'https://www.youtube.com/watch?v=cg_NASdYh-8' },
+  { key:'gridKons', cat:'psi', name:'Grid Konsantrasyon Testi', ozellik:'Dikkat süresi ve odaklanma', ekipman:'Sayı/sembol tablosu (kağıt), kronometre, kalem', talimat:'Oyuncuya rastgele sayılardan oluşan bir tablo (grid) verilir (örn. 6 satır x 8 sütun). 2 dakika içinde belirlenen hedef sayıyı (örn. "5") bulup daire içine alması istenir. Sessiz bir ortamda, tek başına uygulanmalıdır.', birim:'doğru bulunan hedef sayısı', formul:'Doğrudan sayılan doğru işaretleme adedi kayıt edilir (yüksek sayı = iyi konsantrasyon).', video:null },
+  { key:'stroop', cat:'psi', name:'Stroop Testi', ozellik:'Seçici dikkat / tepki engelleme (bilişsel kontrol)', ekipman:'Stroop kartı (renk isimleri farklı mürekkep renklerinde basılı), kronometre', talimat:'Oyuncuya renk isimleri (KIRMIZI, MAVİ, YEŞİL, SARI) içerecek şekilde ama kelimenin kendisinden FARKLI bir mürekkep renginde basılmış bir kart gösterilir. Oyuncudan yazıyı OKUMAK yerine mürekkep RENGİNİ söylemesi istenir. 45 saniye içinde doğru söylenen renk sayısı kayıt edilir.', birim:'45 sn\'de doğru sayı', formul:'Doğrudan sayılan doğru renk isimlendirme adedi kayıt edilir (yüksek sayı = iyi bilişsel kontrol).', video:null },
+  { key:'penalti', cat:'psi', name:'Baskılı Penaltı Testi', ozellik:'Stres altında performans / mental dayanıklılık', ekipman:'Küçük kale veya hedef, top, sayaç', talimat:'Oyuncu önce sessiz/baskısız ortamda 5 penaltı kullanır (Baskısız İsabet). Ardından takım arkadaşları çevresinde toplanıp yüksek sesle sayarak/tezahürat yaparak baskı oluşturduğu ortamda 5 penaltı daha kullanır (Baskılı İsabet). İki isabet sayısı arasındaki fark, oyuncunun baskı altında performansını ne kadar koruyabildiğini gösterir.', birim:'isabet sayısı / 5 penaltı', formul:'Baskı Performans Farkı = Baskısız İsabet - Baskılı İsabet (düşük fark = iyi mental dayanıklılık)', video:null },
+  { key:'pas', cat:'tek', name:'Pas İsabet Testi', ozellik:'Pas tekniği - isabet / doğruluk', ekipman:'Duvar veya 1x1m\'lik 4 hedef kare (bant ile işaretli), 1.5-2m mesafe, top, sayaç', talimat:'Oyuncu belirlenen mesafeden (9-10 yaş grubu için önerilen mesafe: 6m) sırayla farklı hedef karelere iç ayak pası yapar. Toplam 10 pas denemesi yapılır, hedefe isabet eden pas sayısı kayıt edilir.', birim:'isabet sayısı / 10 pas', formul:'İsabet Yüzdesi (%) = (İsabetli Pas Sayısı / Toplam Pas Sayısı) x 100', video:'https://www.youtube.com/watch?v=Np2llYNsY8o' },
+  { key:'slalom', cat:'tek', name:'Slalom Dripling Testi', ozellik:'Top kontrolü + çeviklik (teknik-fiziksel kombinasyon)', ekipman:'6-8 koni (2m aralıklarla), top, kronometre', talimat:'Oyuncu topu ayağından ayırmadan koniler arasında slalom yaparak belirlenen mesafeyi tamamlar. Süre, ilk dokunuştan son koniyi geçene kadar ölçülür. 2 deneme yapılır, en iyisi kayıt edilir.', birim:'saniye (sn)', formul:'Doğrudan ölçülen süre kayıt edilir.', video:'https://www.youtube.com/watch?v=Y9dP9BegkRA' },
+  { key:'topSektirme', cat:'tek', name:'Top Sektirme Testi', ozellik:'Top hakimiyeti / koordinasyon', ekipman:'Top, kronometre', talimat:'Oyuncu topu yere düşürmeden ayak (istenirse uyluk/kafa dahil) ile art arda sektirir. 1 dakika süre sınırı içinde yapılan toplam dokunuş sayısı veya top yere düşene kadar geçen dokunuş sayısı kayıt edilir.', birim:'dokunuş sayısı', formul:'Doğrudan sayılan dokunuş adedi kayıt edilir.', video:'https://www.youtube.com/watch?v=Zh5whqT7NII' },
+  { key:'sut', cat:'tek', name:'Şut İsabet Testi', ozellik:'Şut tekniği - isabet / doğruluk', ekipman:'Küçük kale veya kale karelere bölünmüş hedef (bant ile 6 eşit kareye ayrılır), top, 12-14m mesafe', talimat:'Oyuncu ceza sahası dışından (yaklaşık 12-14m) belirlenen 6 kareye sırayla şut çekmeye çalışır. Toplam 10 şut denemesi yapılır, hedef kareye isabet eden şut sayısı kayıt edilir.', birim:'isabet sayısı / 10 şut', formul:'İsabet Yüzdesi (%) = (İsabetli Şut Sayısı / Toplam Şut Sayısı) x 100', video:'https://www.youtube.com/watch?v=j6-RGTHaMwo' },
+  { key:'duvarPasi', cat:'tek', name:'Duvar Pası Testi', ozellik:'Hızlı/tek dokunuşlu pas tekniği', ekipman:'Düz duvar, 2-3m mesafe işareti, top, kronometre', talimat:'Oyuncu duvardan 2-3m mesafede durur. 30 saniye boyunca topu duvara pas yapıp dönen topu (mümkünse tek dokunuşla) tekrar duvara gönderir. Top kontrolden çıkarsa veya çok uzaklaşırsa hızla toparlanıp devam edilir. 30 saniyede tamamlanan başarılı (kontrollü) duvar pası sayısı kayıt edilir.', birim:'adet / 30 sn', formul:'Doğrudan sayılan başarılı pas adedi kayıt edilir.', video:'https://www.youtube.com/watch?v=xJGHMjrHU3c' }
+];
+var PROTOCOL_CATS = [
+  { key:'antro', label:'Antropometri' },
+  { key:'fiz', label:'Fiziksel' },
+  { key:'psi', label:'Psikolojik' },
+  { key:'tek', label:'Teknik' }
+];
+
+function renderGuideAciklama(container){
+  var card = el('<div class="osp-card"></div>');
+  card.innerHTML =
+    '<p class="osp-guide-p"><b>Bu uygulama nasıl kullanılır?</b></p>' +
+    '<p class="osp-guide-p">1. <b>Test Protokolleri</b> sekmesinde her testin nasıl uygulanacağı, gerekli malzemeler ve gösterim videosu yer alır.</p>' +
+    '<p class="osp-guide-p">2. Oyuncu detayındaki <b>Test Verisi</b> sekmesinden ölçüm sonuçlarını girin, diğer tüm sonuçlar (VKİ, hız, isabet yüzdeleri vb.) otomatik hesaplanır.</p>' +
+    '<p class="osp-guide-p">3. <b>Norm Değerleri</b> sekmesinde 9-10 yaş grubu için genel referans (yaklaşık) değerlendirme aralıkları bulunur. Bu değerler yayınlanmış genç futbolcu/çocuk fiziksel uygunluk literatüründen derlenmiş genel referanslardır; kesin klinik ölçüm değildir.</p>' +
+    '<p class="osp-guide-p">4. Testleri sezon başında uygulayıp sezon ortası ve sonunda tekrarlayarak oyuncuların gelişimini karşılaştırmalı biçimde izleyebilirsiniz.</p>' +
+    '<p class="osp-guide-p" style="margin-top:14px;"><b>Genel uygulama önerileri</b></p>' +
+    '<ul class="osp-guide-list">' +
+      '<li>Testlerden önce mutlaka 10-15 dakikalık genel ısınma (hafif koşu + dinamik esneme) yaptırın.</li>' +
+      '<li>Testleri aynı gün art arda yapıyorsanız, en yorucu olanı (dayanıklılık testi) en sona bırakın.</li>' +
+      '<li>Her test öncesi çocuklara test tekniğini gösterin ve 1 deneme hakkı tanıyın.</li>' +
+      '<li>Sıcak/soğuk havada, zeminin uygunluğuna ve çocukların su ihtiyacına dikkat edin.</li>' +
+      '<li>9-10 yaş grubunda sonuçlar biyolojik olgunlaşma farklarından etkilenebilir; tek başına yetenek göstergesi olarak yorumlamayın.</li>' +
+    '</ul>';
+  container.appendChild(card);
+}
+
+function renderGuideProtokoller(container){
+  PROTOCOL_CATS.forEach(function(pc){
+    var items = PROTOCOLS.filter(function(pr){ return pr.cat===pc.key; });
+    if(!items.length) return;
+    var sec = el('<div class="osp-section"></div>');
+    sec.appendChild(el('<p class="osp-section-title">'+pc.label+'</p>'));
+    var card = el('<div class="osp-card"></div>');
+    items.forEach(function(pr){
+      var item = el('<div class="osp-acc-item"></div>');
+      var videoHtml = pr.video ? '<a class="osp-acc-video" href="'+pr.video+'" target="_blank" rel="noopener"><i class="ti ti-player-play" aria-hidden="true"></i>Video gösterimi</a>' : '';
+      item.innerHTML =
+        '<div class="osp-acc-head">' +
+          '<span class="osp-acc-head-cat">'+pc.label+'</span>' +
+          '<span class="osp-acc-head-name">'+pr.name+'</span>' +
+          '<i class="ti ti-chevron-right osp-acc-chevron" aria-hidden="true"></i>' +
+        '</div>' +
+        '<div class="osp-acc-body">' +
+          '<p class="osp-acc-row"><b>Ölçülen özellik:</b> '+pr.ozellik+'</p>' +
+          '<p class="osp-acc-row"><b>Ekipman:</b> '+pr.ekipman+'</p>' +
+          '<p class="osp-acc-row"><b>Uygulama:</b> '+pr.talimat+'</p>' +
+          '<p class="osp-acc-row"><b>Ölçüm birimi:</b> '+pr.birim+'</p>' +
+          '<p class="osp-acc-row"><b>Hesaplama:</b> '+pr.formul+'</p>' +
+          videoHtml +
+        '</div>';
+      if(expandedProtocols[pr.key]) item.classList.add('open');
+      item.querySelector('.osp-acc-head').addEventListener('click', function(){
+        expandedProtocols[pr.key] = !expandedProtocols[pr.key];
+        render();
+      });
+      card.appendChild(item);
+    });
+    sec.appendChild(card);
+    container.appendChild(sec);
+  });
+}
+
+function renderGuideNormlar(container){
+  var sec1 = el('<div class="osp-section"></div>');
+  sec1.appendChild(el('<p class="osp-section-title">Durarak Uzun Atlama (10 yaş, persentil)</p>'));
+  var card1 = el('<div class="osp-card"></div>');
+  card1.innerHTML =
+    '<table class="osp-norm-table"><tr><th>Cinsiyet</th><th>P5</th><th>P25</th><th>P50</th><th>P75</th><th>P95</th></tr>' +
+    '<tr><td>Erkek</td><td>101cm</td><td>122cm</td><td>141cm</td><td>160cm</td><td>180cm</td></tr>' +
+    '<tr><td>Kız</td><td>94cm</td><td>112cm</td><td>131cm</td><td>150cm</td><td>169cm</td></tr></table>' +
+    '<p class="osp-norm-note">Kaynak: Tomkinson GR, et al. (2023), Br J Sports Med — 1,35 milyon ölçüm, 34 Avrupa ülkesi. Değerler 10 yaş gerçek ölçüm verisidir; 9 yaş için birkaç cm altında beklenir.</p>';
+  sec1.appendChild(card1);
+  container.appendChild(sec1);
+
+  var sec2 = el('<div class="osp-section"></div>');
+  sec2.appendChild(el('<p class="osp-section-title">VKİ - klinik ağırlık kategorisi (CDC)</p>'));
+  var card2 = el('<div class="osp-card"></div>');
+  card2.innerHTML =
+    '<table class="osp-norm-table"><tr><th>Düşük kilolu</th><th>Sağlıklı sınıra yakın</th><th>Sağlıklı aralık</th><th>Fazla kilolu</th><th>Obez</th></tr>' +
+    '<tr><td>&lt;14.0</td><td>14.0-16.9</td><td>17.0-20.1</td><td>20.2-22.0</td><td>&gt;22.1</td></tr></table>' +
+    '<p class="osp-norm-note">VKİ bir performans puanı değildir, genel notlamaya dahil edilmez — sadece sağlık taraması amaçlıdır. Kaynak: CDC BMI-for-age growth charts.</p>';
+  sec2.appendChild(card2);
+  container.appendChild(sec2);
+
+  var sec3 = el('<div class="osp-section"></div>');
+  sec3.appendChild(el('<p class="osp-section-title">Diğer testler (pratik referans aralıkları)</p>'));
+  var card3 = el('<div class="osp-card"></div>');
+  var rows = [
+    ['20m Sprint (sn)','>4.5','4.2-4.5','4.0-4.2','3.7-4.0','<3.7'],
+    ['Illinois Çeviklik (sn)','>20.0','19.0-20.0','18.0-19.0','17.0-18.0','<17.0'],
+    ['T-Test (sn)','>13.5','12.5-13.5','11.5-12.5','10.5-11.5','<10.5'],
+    ['6 Dk Koşu (m)','<862','862-975','975-1088','1088-1200','>=1200'],
+    ['Grid Konsantrasyon','<15','15-22','22-28','28-35','>=35'],
+    ['Stroop (doğru/45sn)','<18','18-25','25-32','32-38','>=38'],
+    ['Baskı Performans Farkı','>3','2-3','1-2','0-1','<0'],
+    ['Pas İsabet (%)','<41','41-58','58-74','74-90','>=90'],
+    ['Slalom Dripling (sn)','>13.0','12.0-13.0','11.0-12.0','10.0-11.0','<10.0'],
+    ['Top Sektirme','<7','7-13','13-19','19-25','>=25'],
+    ['Şut İsabet (%)','<31','31-48','48-64','64-80','>=80'],
+    ['Duvar Pası','<8','8-11','11-14','14-18','>=18']
+  ];
+  var tableHtml = '<table class="osp-norm-table"><tr><th>Test</th><th>Zayıf</th><th>Ort. altı</th><th>Ortalama</th><th>Ort. üstü</th><th>İyi/Çok iyi</th></tr>';
+  rows.forEach(function(r){
+    tableHtml += '<tr><td>'+r[0]+'</td><td>'+r[1]+'</td><td>'+r[2]+'</td><td>'+r[3]+'</td><td>'+r[4]+'</td><td>'+r[5]+'</td></tr>';
+  });
+  tableHtml += '</table>';
+  card3.innerHTML = tableHtml + '<p class="osp-norm-note">Bu testler için büyük ölçekli uluslararası norm verisi bulunmadığından aralıklar yayınlanmış literatürden derlenmiş pratik başlangıç referanslarıdır; kulübünüzün kendi verisini biriktirdikçe kendi normlarınızı geliştirmeniz önerilir.</p>';
+  sec3.appendChild(card3);
+  container.appendChild(sec3);
+}
+
+function renderGuide(){
+  document.getElementById('osp-back-btn').style.display = 'flex';
+  document.getElementById('osp-header-logo').style.display = 'none';
+  document.getElementById('osp-title').textContent = 'Rehber';
+  document.getElementById('osp-subtitle').textContent = 'Açıklama · protokoller · normlar';
+  var body = document.getElementById('osp-body');
+  body.innerHTML = '';
+
+  var tabs = el(
+    '<div class="osp-tabs">' +
+      '<div class="osp-tab" data-tab="aciklama">Açıklama</div>' +
+      '<div class="osp-tab" data-tab="protokol">Test Protokolleri</div>' +
+      '<div class="osp-tab" data-tab="norm">Norm Değerleri</div>' +
+    '</div>'
+  );
+  Array.prototype.forEach.call(tabs.querySelectorAll('.osp-tab'), function(t){
+    if(t.getAttribute('data-tab')===state.guideTab) t.classList.add('active');
+    t.addEventListener('click', function(){ state.guideTab = t.getAttribute('data-tab'); render(); });
+  });
+  body.appendChild(tabs);
+
+  var content = el('<div></div>');
+  if(state.guideTab==='aciklama') renderGuideAciklama(content);
+  else if(state.guideTab==='protokol') renderGuideProtokoller(content);
+  else renderGuideNormlar(content);
+  body.appendChild(content);
+}
+
 function render(){
+  document.getElementById('osp-guide-btn').style.display = (state.view==='teams') ? 'flex' : 'none';
   if(state.view==='teams') renderTeams();
   else if(state.view==='squad') renderSquad();
+  else if(state.view==='guide') renderGuide();
   else renderDetail();
 }
 
+document.getElementById('osp-guide-btn').addEventListener('click', function(){
+  state.prevView = state.view;
+  state.view = 'guide';
+  render();
+});
+
+
 document.getElementById('osp-back-btn').addEventListener('click', function(){
   if(state.view==='detail'){ state.view = 'squad'; }
+  else if(state.view==='guide'){ state.view = state.prevView || 'teams'; }
   else { state.view = 'teams'; }
   render();
 });

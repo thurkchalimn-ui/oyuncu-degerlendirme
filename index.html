@@ -37,8 +37,16 @@
 
   .osp-team-card, .osp-player-card { background: #fffdf5; border: 1px solid #f2e2ab; border-radius: 12px; padding: 12px 14px; margin-bottom: 10px; display: flex; align-items: center; gap: 12px; cursor: pointer; }
   .osp-team-card:active, .osp-player-card:active { background: #fff5d6; }
-  .osp-jersey { width: 40px; height: 40px; border-radius: 8px; background: #d32f2f; border: 2px solid #ffcc00; display: flex; align-items: center; justify-content: center; font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 16px; color: #ffffff; flex-shrink: 0; }
-  .osp-team-badge { width: 42px; height: 42px; border-radius: 10px; background: #ffcc00; border: 2px solid #d32f2f; display: flex; align-items: center; justify-content: center; font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 18px; color: #d32f2f; flex-shrink: 0; }
+  .osp-badge-wrap { position: relative; flex-shrink: 0; }
+  .osp-jersey { width: 40px; height: 40px; border-radius: 8px; background: #d32f2f; border: 2px solid #ffcc00; display: flex; align-items: center; justify-content: center; font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 16px; color: #ffffff; flex-shrink: 0; overflow: hidden; }
+  .osp-jersey img, .osp-team-badge img { width: 100%; height: 100%; object-fit: cover; border-radius: inherit; }
+  .osp-team-badge { width: 42px; height: 42px; border-radius: 10px; background: #ffcc00; border: 2px solid #d32f2f; display: flex; align-items: center; justify-content: center; font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 18px; color: #d32f2f; flex-shrink: 0; overflow: hidden; }
+  .osp-badge-edit { position: absolute; bottom: -4px; right: -4px; width: 20px; height: 20px; border-radius: 50%; background: #d32f2f; color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 11px; border: 2px solid #ffffff; cursor: pointer; }
+  .osp-header-logo { width: 34px; height: 34px; border-radius: 8px; object-fit: cover; border: 2px solid #ffcc00; flex-shrink: 0; }
+  .osp-photo-lg-wrap { position: relative; width: 76px; height: 76px; margin: 0 auto 12px; }
+  .osp-photo-lg { width: 76px; height: 76px; border-radius: 50%; background: #ffcc00; border: 2px solid #d32f2f; display: flex; align-items: center; justify-content: center; font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 26px; color: #d32f2f; overflow: hidden; }
+  .osp-photo-lg img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+  .osp-photo-lg-edit { position: absolute; bottom: 0; right: 0; width: 26px; height: 26px; border-radius: 50%; background: #d32f2f; color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 13px; border: 2px solid #ffffff; cursor: pointer; }
   .osp-player-name, .osp-team-name { font-size: 15px; font-weight: 600; color: #1a1a1a; margin: 0; }
   .osp-player-meta, .osp-team-meta { font-size: 12px; color: #a37a00; margin: 2px 0 0; font-weight: 500; }
   .osp-score-pill { margin-left: auto; text-align: center; flex-shrink: 0; }
@@ -97,6 +105,7 @@
     <div class="osp-header">
       <div class="osp-header-row">
         <button class="osp-back" id="osp-back-btn" style="display:none;" aria-label="Geri"><i class="ti ti-arrow-left"></i></button>
+        <img id="osp-header-logo" class="osp-header-logo" style="display:none;" alt="">
         <div>
           <p class="osp-title" id="osp-title">Takımlar</p>
           <p class="osp-subtitle" id="osp-subtitle">Sezon başı test takibi</p>
@@ -230,6 +239,42 @@ function load(){
   } catch(e) { state.teams = []; }
 }
 
+function resizeImage(file, maxDim, callback){
+  var reader = new FileReader();
+  reader.onload = function(ev){
+    var img = new Image();
+    img.onload = function(){
+      var w = img.width, h = img.height;
+      if(w>h){ if(w>maxDim){ h = Math.round(h*maxDim/w); w = maxDim; } }
+      else { if(h>maxDim){ w = Math.round(w*maxDim/h); h = maxDim; } }
+      var canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      var ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+      callback(canvas.toDataURL('image/jpeg', 0.82));
+    };
+    img.onerror = function(){ alert('Görsel okunamadı.'); };
+    img.src = ev.target.result;
+  };
+  reader.onerror = function(){ alert('Dosya okunamadı.'); };
+  reader.readAsDataURL(file);
+}
+
+function pickImage(maxDim, onPicked){
+  var input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.style.display = 'none';
+  document.body.appendChild(input);
+  input.addEventListener('change', function(e){
+    if(e.target.files && e.target.files[0]){
+      resizeImage(e.target.files[0], maxDim, onPicked);
+    }
+    document.body.removeChild(input);
+  });
+  input.click();
+}
+
 function getTeam(){ return state.teams.find(function(t){ return t.id===state.currentTeamId; }); }
 function getPlayer(){ var t = getTeam(); if(!t) return null; return t.players.find(function(p){ return p.id===state.currentPlayerId; }); }
 
@@ -323,6 +368,7 @@ function fieldRow(label, key, value, opts){
 
 function renderTeams(){
   document.getElementById('osp-back-btn').style.display = 'none';
+  document.getElementById('osp-header-logo').style.display = 'none';
   document.getElementById('osp-title').textContent = 'Takımlar';
   document.getElementById('osp-subtitle').textContent = state.teams.length + ' takım';
   var body = document.getElementById('osp-body');
@@ -333,9 +379,13 @@ function renderTeams(){
   } else {
     state.teams.forEach(function(t){
       var count = t.players.length;
+      var badgeInner = t.logo ? '<img src="'+t.logo+'" alt="">' : '<i class="ti ti-shield" aria-hidden="true"></i>';
       var card = el(
         '<div class="osp-team-card">' +
-          '<div class="osp-team-badge"><i class="ti ti-shield" aria-hidden="true"></i></div>' +
+          '<div class="osp-badge-wrap">' +
+            '<div class="osp-team-badge">'+badgeInner+'</div>' +
+            '<div class="osp-badge-edit" title="Logo değiştir"><i class="ti ti-camera" aria-hidden="true"></i></div>' +
+          '</div>' +
           '<div style="min-width:0; flex:1;">' +
             '<p class="osp-team-name">'+escapeHtml(t.name)+'</p>' +
             '<p class="osp-team-meta">'+count+' oyuncu</p>' +
@@ -343,6 +393,10 @@ function renderTeams(){
           '<i class="ti ti-chevron-right osp-chevron" aria-hidden="true"></i>' +
         '</div>'
       );
+      card.querySelector('.osp-badge-edit').addEventListener('click', function(e){
+        e.stopPropagation();
+        pickImage(240, function(dataUrl){ t.logo = dataUrl; save(); render(); });
+      });
       card.addEventListener('click', function(){
         state.currentTeamId = t.id; state.view='squad'; render();
       });
@@ -374,6 +428,8 @@ function renderSquad(){
   if(!t){ state.view='teams'; render(); return; }
 
   document.getElementById('osp-back-btn').style.display = 'flex';
+  var headerLogo = document.getElementById('osp-header-logo');
+  if(t.logo){ headerLogo.src = t.logo; headerLogo.style.display = 'block'; } else { headerLogo.style.display = 'none'; }
   document.getElementById('osp-title').textContent = t.name;
   document.getElementById('osp-subtitle').textContent = t.players.length + ' oyuncu · kadro';
   var body = document.getElementById('osp-body');
@@ -385,9 +441,13 @@ function renderSquad(){
     var sorted = t.players.slice().sort(function(a,b){ return (a.no||0)-(b.no||0); });
     sorted.forEach(function(p){
       var score = overallScore(p);
+      var jerseyInner = p.photo ? '<img src="'+p.photo+'" alt="">' : (p.no!=null?p.no:'-');
       var card = el(
         '<div class="osp-player-card">' +
-          '<div class="osp-jersey">'+(p.no!=null?p.no:'-')+'</div>' +
+          '<div class="osp-badge-wrap">' +
+            '<div class="osp-jersey">'+jerseyInner+'</div>' +
+            '<div class="osp-badge-edit" title="Fotoğraf değiştir"><i class="ti ti-camera" aria-hidden="true"></i></div>' +
+          '</div>' +
           '<div style="min-width:0; flex:1;">' +
             '<p class="osp-player-name">'+(p.adSoyad ? escapeHtml(p.adSoyad) : 'İsimsiz oyuncu')+'</p>' +
             '<p class="osp-player-meta">'+(p.yas ? p.yas+' yaş' : 'Yaş girilmedi')+'</p>' +
@@ -398,6 +458,10 @@ function renderSquad(){
           '</div>' +
         '</div>'
       );
+      card.querySelector('.osp-badge-edit').addEventListener('click', function(e){
+        e.stopPropagation();
+        pickImage(240, function(dataUrl){ p.photo = dataUrl; save(); render(); });
+      });
       card.addEventListener('click', function(){
         state.currentPlayerId = p.id; state.view='detail'; state.tab='bilgi'; render();
       });
@@ -417,6 +481,16 @@ function renderSquad(){
 }
 
 function renderDetailTabInfo(container, p){
+  var photoWrap = el('<div class="osp-photo-lg-wrap"></div>');
+  var photoInner = p.photo ? '<img src="'+p.photo+'" alt="">' : '<i class="ti ti-user" aria-hidden="true"></i>';
+  photoWrap.innerHTML =
+    '<div class="osp-photo-lg">'+photoInner+'</div>' +
+    '<div class="osp-photo-lg-edit" title="Fotoğraf değiştir"><i class="ti ti-camera" aria-hidden="true"></i></div>';
+  photoWrap.querySelector('.osp-photo-lg-edit').addEventListener('click', function(){
+    pickImage(400, function(dataUrl){ p.photo = dataUrl; save(); render(); });
+  });
+  container.appendChild(photoWrap);
+
   var card = el('<div class="osp-card"></div>');
   card.appendChild(fieldRow('Ad Soyad', 'adSoyad', p.adSoyad, {type:'text', placeholder:'Oyuncu adı'}));
   var row1 = el('<div class="osp-field-row"></div>');
@@ -513,6 +587,7 @@ function renderDetail(){
   if(!p){ state.view='squad'; render(); return; }
 
   document.getElementById('osp-back-btn').style.display = 'flex';
+  document.getElementById('osp-header-logo').style.display = 'none';
   document.getElementById('osp-title').textContent = p.adSoyad || ('Oyuncu #'+p.no);
   document.getElementById('osp-subtitle').textContent = 'No '+(p.no!=null?p.no:'-')+(p.yas?' · '+p.yas+' yaş':'');
 

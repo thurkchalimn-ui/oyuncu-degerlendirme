@@ -732,10 +732,25 @@ function renderDetailTabSonuc(container, p){
   container.appendChild(overallCard);
 
   ['fiz','psi','tek'].forEach(function(cat){
+    var catTests = tests.filter(function(t){ return t.cat===cat; });
+    var catScores = [];
+    catTests.forEach(function(t){
+      var raw = t.source==='input' ? num(p[t.key]) : merged[t.source];
+      var s = scoreFor(t, raw);
+      if(s!==null) catScores.push(s);
+    });
+    var catScore = catScores.length ? round1(catScores.reduce(function(a,b){return a+b;},0)/catScores.length) : null;
+
     var sec = el('<div class="osp-section" style="margin-top:14px;"></div>');
-    sec.appendChild(el('<p class="osp-section-title">'+CAT_LABELS[cat]+'</p>'));
+    var secHead = el(
+      '<div style="display:flex; align-items:baseline; justify-content:space-between; margin:0 4px 8px;">' +
+        '<p class="osp-section-title" style="margin:0;">'+CAT_LABELS[cat]+'</p>' +
+        '<span class="osp-num" style="font-weight:700; font-size:16px; color:'+scoreColor(catScore)+';">'+(catScore!==null?catScore:'-')+' <span style="font-size:10px; color:#a37a00; font-weight:600;">/ 20</span></span>' +
+      '</div>'
+    );
+    sec.appendChild(secHead);
     var card = el('<div class="osp-card"></div>');
-    tests.filter(function(t){ return t.cat===cat; }).forEach(function(t){
+    catTests.forEach(function(t){
       var raw = t.source==='input' ? num(p[t.key]) : merged[t.source];
       var s = scoreFor(t, raw);
       var pct = s!==null ? ((s-1)/19*100) : 0;

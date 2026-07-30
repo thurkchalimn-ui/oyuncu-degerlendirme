@@ -125,7 +125,12 @@
   .osp-acc-item.open .osp-acc-body { display: block; }
   .osp-acc-row { font-size: 12.5px; line-height: 1.6; color: #333; margin-bottom: 8px; }
   .osp-acc-row b { color: #7a3b00; font-weight: 600; }
-  .osp-acc-video { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: #d32f2f; font-weight: 600; text-decoration: none; margin-top: 2px; }
+  .osp-acc-video { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: #d32f2f; font-weight: 600; text-decoration: none; margin-top: 2px; background: none; border: none; cursor: pointer; font-family: 'Inter', sans-serif; padding: 0; }
+
+  .osp-video-overlay { position: fixed; inset: 0; background: rgba(10,10,10,0.86); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 16px; }
+  .osp-video-box { width: 100%; max-width: 420px; background: #000; border-radius: 14px; overflow: hidden; position: relative; }
+  .osp-video-box iframe { width: 100%; aspect-ratio: 16 / 9; display: block; border: none; }
+  .osp-video-close { position: absolute; top: -40px; right: 0; width: 34px; height: 34px; border-radius: 50%; background: #ffffff; border: none; color: #1a1a1a; font-size: 18px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
   .osp-norm-table { width: 100%; border-collapse: collapse; font-size: 11.5px; margin-bottom: 4px; }
   .osp-norm-table th { background: #fdeaea; color: #b71c1c; font-weight: 700; padding: 6px 5px; text-align: left; border: 1px solid #f2e2ab; }
   .osp-norm-table td { padding: 6px 5px; border: 1px solid #f2e2ab; color: #333; }
@@ -321,6 +326,34 @@ function round1(n){ return Math.round(n*10)/10; }
 function clamp(n,a,b){ return Math.max(a,Math.min(b,n)); }
 function escapeHtml(s){ return String(s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
 function el(html){ var d = document.createElement('div'); d.innerHTML = html.trim(); return d.firstChild; }
+
+function extractYouTubeId(url){
+  if(!url) return null;
+  var m = url.match(/(?:shorts\/|watch\?v=|youtu\.be\/|embed\/)([A-Za-z0-9_-]{6,})/);
+  return m ? m[1] : null;
+}
+
+function openVideoModal(url){
+  var id = extractYouTubeId(url);
+  if(!id){ window.open(url, '_blank'); return; }
+  closeVideoModal();
+  var overlay = el(
+    '<div class="osp-video-overlay" id="osp-video-overlay">' +
+      '<div class="osp-video-box">' +
+        '<button class="osp-video-close" id="osp-video-close" aria-label="Kapat">&times;</button>' +
+        '<iframe src="https://www.youtube.com/embed/'+id+'?autoplay=1&rel=0" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>' +
+      '</div>' +
+    '</div>'
+  );
+  overlay.addEventListener('click', function(e){ if(e.target.id==='osp-video-overlay') closeVideoModal(); });
+  document.body.appendChild(overlay);
+  document.getElementById('osp-video-close').addEventListener('click', closeVideoModal);
+}
+
+function closeVideoModal(){
+  var existing = document.getElementById('osp-video-overlay');
+  if(existing) existing.remove();
+}
 
 function computeDerived(p){
   var out = {};
@@ -933,7 +966,7 @@ function renderGuideProtokoller(container){
     var card = el('<div class="osp-card"></div>');
     items.forEach(function(pr){
       var item = el('<div class="osp-acc-item"></div>');
-      var videoHtml = pr.video ? '<a class="osp-acc-video" href="'+pr.video+'" target="_blank" rel="noopener"><i class="ti ti-player-play" aria-hidden="true"></i>Video gösterimi</a>' : '';
+      var videoHtml = pr.video ? '<button class="osp-acc-video" data-video="'+pr.video+'"><i class="ti ti-player-play" aria-hidden="true"></i>Video gösterimi</button>' : '';
       item.innerHTML =
         '<div class="osp-acc-head">' +
           '<span class="osp-acc-head-cat">'+pc.label+'</span>' +
@@ -949,6 +982,8 @@ function renderGuideProtokoller(container){
           videoHtml +
         '</div>';
       if(expandedProtocols[pr.key]) item.classList.add('open');
+      var videoBtn = item.querySelector('.osp-acc-video');
+      if(videoBtn) videoBtn.addEventListener('click', function(){ openVideoModal(pr.video); });
       item.querySelector('.osp-acc-head').addEventListener('click', function(){
         expandedProtocols[pr.key] = !expandedProtocols[pr.key];
         render();

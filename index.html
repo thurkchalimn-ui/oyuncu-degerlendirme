@@ -141,7 +141,7 @@
           <p class="osp-subtitle" id="osp-subtitle">Sezon başı test takibi</p>
         </div>
         <button class="osp-back" id="osp-guide-btn" aria-label="Rehber"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"></rect><path d="M9 3V2a1 1 0 011-1h4a1 1 0 011 1v1"></path><path d="M8.5 11l1.8 1.8L14.5 9"></path><line x1="8.5" y1="16" x2="15.5" y2="16"></line></svg></button>
-        <button class="osp-back" id="osp-sync-btn" aria-label="Senkronizasyon" style="display:none;"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 01-15.3 6.4L3 21"></path><path d="M3 12a9 9 0 0115.3-6.4L21 3"></path><path d="M3 21v-5h5"></path><path d="M21 3v5h-5"></path></svg></button>
+        <button class="osp-back" id="osp-sync-btn" aria-label="Senkronizasyon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 01-15.3 6.4L3 21"></path><path d="M3 12a9 9 0 0115.3-6.4L21 3"></path><path d="M3 21v-5h5"></path><path d="M21 3v5h-5"></path></svg></button>
       </div>
     </div>
     <div class="osp-body" id="osp-body"></div>
@@ -676,8 +676,15 @@ function renderDetailTabSonuc(container, p){
 function renderDetail(){
   var p = getPlayer();
   if(!p){ state.view='squad'; render(); return; }
+  var t = getTeam();
 
-  document.getElementById('osp-back-btn').style.display = 'flex';
+  var backBtn = document.getElementById('osp-back-btn');
+  backBtn.style.display = 'flex';
+  if(t && t.logo){
+    backBtn.innerHTML = '<img src="'+t.logo+'" alt="" style="width:100%; height:100%; object-fit:cover; border-radius:6px;">';
+  } else {
+    backBtn.innerHTML = '<i class="ti ti-arrow-left"></i>';
+  }
   document.getElementById('osp-header-logo').style.display = 'none';
   document.getElementById('osp-title').textContent = p.adSoyad || ('Oyuncu #'+p.no);
   document.getElementById('osp-subtitle').textContent = 'No '+(p.no!=null?p.no:'-')+(p.yas?' · '+p.yas+' yaş':'');
@@ -913,6 +920,7 @@ function renderSync(){
 function render(){
   var showSecondary = (state.view==='teams');
   document.getElementById('osp-guide-btn').style.display = showSecondary ? 'flex' : 'none';
+  document.getElementById('osp-sync-btn').style.display = showSecondary ? 'flex' : 'none';
   if(state.view==='teams') renderTeams();
   else if(state.view==='squad') renderSquad();
   else if(state.view==='guide') renderGuide();

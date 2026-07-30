@@ -54,6 +54,8 @@
   .osp-player-name, .osp-team-name { font-size: 15px; font-weight: 600; color: #1a1a1a; margin: 0; }
   .osp-player-meta, .osp-team-meta { font-size: 12px; color: #a37a00; margin: 2px 0 0; font-weight: 500; }
   .osp-score-pill { margin-left: auto; text-align: center; flex-shrink: 0; }
+  .osp-card-delete { background: none; border: none; color: #c9a94a; padding: 4px; margin-left: 6px; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+  .osp-card-delete:active { color: #d32f2f; }
   .osp-score-num { font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 20px; line-height: 1; }
   .osp-score-label { font-size: 9px; color: #a37a00; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
   .osp-chevron { color: #d32f2f; font-size: 18px; flex-shrink: 0; }
@@ -628,11 +630,20 @@ function renderSquad(){
             '<div class="osp-score-num" style="color:'+scoreColor(score)+'">'+(score!==null?score:'-')+'</div>' +
             '<div class="osp-score-label">Genel Not</div>' +
           '</div>' +
+          '<button class="osp-card-delete" title="Oyuncuyu sil" aria-label="Oyuncuyu sil"><i class="ti ti-trash" aria-hidden="true"></i></button>' +
         '</div>'
       );
       card.querySelector('.osp-badge-edit').addEventListener('click', function(e){
         e.stopPropagation();
         pickImage(240, function(dataUrl){ p.photo = dataUrl; save(); render(); });
+      });
+      card.querySelector('.osp-card-delete').addEventListener('click', function(e){
+        e.stopPropagation();
+        if(confirm((p.adSoyad || 'Bu oyuncu') + ' silinsin mi?')){
+          t.players = t.players.filter(function(x){ return x.id!==p.id; });
+          save();
+          render();
+        }
       });
       card.addEventListener('click', function(){
         state.currentPlayerId = p.id; state.view='detail'; state.tab='bilgi'; render();

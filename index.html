@@ -56,6 +56,10 @@
   .osp-score-pill { margin-left: auto; text-align: center; flex-shrink: 0; }
   .osp-card-delete { background: none; border: none; color: #c9a94a; padding: 4px; margin-left: 6px; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
   .osp-card-delete:active { color: #d32f2f; }
+  .osp-check-row { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 1px solid #f6ecc7; }
+  .osp-check-row:last-child { border-bottom: none; }
+  .osp-check-row input[type="checkbox"] { width: 18px; height: 18px; accent-color: #d32f2f; flex-shrink: 0; }
+  .osp-check-row label { font-size: 13px; color: #1a1a1a; font-weight: 500; }
   .osp-score-num { font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 20px; line-height: 1; }
   .osp-score-label { font-size: 9px; color: #a37a00; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
   .osp-chevron { color: #d32f2f; font-size: 18px; flex-shrink: 0; }
@@ -210,6 +214,20 @@ var TESTS_BY_AGE = {
 function testsFor(ageGroup){ return TESTS_BY_AGE[ageGroup] || TESTS_BY_AGE['9-10']; }
 function ageOf(t){ return (t && t.ageGroup) || '9-10'; }
 
+var ALL_TEST_KEYS = TESTS_BY_AGE['9-10'].map(function(t){ return t.key; });
+function selectedTestKeys(team){ return (team && team.selectedTests) || ALL_TEST_KEYS; }
+function activeTestsFor(team){
+  var keys = selectedTestKeys(team);
+  return testsFor(ageOf(team)).filter(function(t){ return keys.indexOf(t.key)!==-1; });
+}
+
+var RAW_FIELD_TO_TEST = {
+  sprint20:'sprint20', illinois:'illinois', tTest:'tTest', uzunAtlama:'uzunAtlama', kosu6dk:'kosu6dk',
+  gridKons:'gridKons', stroop:'stroop', penaltiBaskisiz:'baskiFark', penaltiBaskili:'baskiFark',
+  pasToplam:'pasYuzde', pasIsabetli:'pasYuzde', slalom:'slalom', topSektirme:'topSektirme',
+  sutToplam:'sutYuzde', sutIsabetli:'sutYuzde', duvarPasi:'duvarPasi'
+};
+
 var CAT_LABELS = { fiz:'Fiziksel', psi:'Psikolojik', tek:'Teknik' };
 
 var RAW_FIELDS = [
@@ -325,11 +343,11 @@ function scoreFor(test, value){
   return clamp(s,1,20);
 }
 
-function overallScore(p, ageGroup){
+function overallScore(p, team){
   var d = computeDerived(p);
   var merged = Object.assign({}, p, d);
   var scores = [];
-  testsFor(ageGroup).forEach(function(t){
+  activeTestsFor(team).forEach(function(t){
     var raw = t.source==='input' ? num(p[t.key]) : merged[t.source];
     var s = scoreFor(t, raw);
     if(s!==null) scores.push(s);
@@ -422,10 +440,10 @@ function pickImage(maxDim, onPicked){
 function getTeam(){ return state.teams.find(function(t){ return t.id===state.currentTeamId; }); }
 function getPlayer(){ var t = getTeam(); if(!t) return null; return t.players.find(function(p){ return p.id===state.currentPlayerId; }); }
 
-var newTeamDraft = { name: '', ageGroup: '9-10' };
+var newTeamDraft = { name: '', ageGroup: '9-10', selectedTests: ALL_TEST_KEYS.slice() };
 
 function openNewTeam(){
-  newTeamDraft = { name: '', ageGroup: '9-10' };
+  newTeamDraft = { name: '', ageGroup: '9-10', selectedTests: ALL_TEST_KEYS.slice() };
   state.prevView = state.view;
   state.view = 'newTeam';
   render();
@@ -435,7 +453,7 @@ function renderNewTeam(){
   document.getElementById('osp-back-btn').style.display = 'flex';
   document.getElementById('osp-header-logo').style.display = 'none';
   document.getElementById('osp-title').textContent = 'Yeni Takım';
-  document.getElementById('osp-subtitle').textContent = 'Ad ve yaş kategorisi seç';
+  document.getElementById('osp-subtitle').textContent = 'Ad, yaş ve testleri seç';
   var body = document.getElementById('osp-body');
   body.innerHTML = '';
 
@@ -462,10 +480,47 @@ function renderNewTeam(){
   ageSec.appendChild(ageTabs);
   body.appendChild(ageSec);
 
-  var createBtn = el('<div class="osp-fab-row" style="margin-top:16px;"><button class="osp-btn-primary">Takımı Oluştur</button></div>');
+  var testsSec = el('<div class="osp-section" style="margin-top:14px;"></div>');
+  var testsHead = el('<div style="display:flex; align-items:center; justify-content:space-between; margin:0 4px 8px;"><p class="osp-section-title" style="margin:0;">Uygulanacak Testler</p></div>');
+  var quickRow = el('<div style="display:flex; gap:8px;"></div>');
+  var selAllBtn = el('<button class="osp-btn-ghost" style="font-size:11px; padding:5px 10px;">Tümünü seç</button>');
+  var selNoneBtn = el('<button class="osp-btn-ghost" style="font-size:11px; padding:5px 10px;">Temizle</button>');
+  selAllBtn.addEventListener('click', function(){ newTeamDraft.selectedTests = ALL_TEST_KEYS.slice(); render(); });
+  selNoneBtn.addEventListener('click', function(){ newTeamDraft.selectedTests = []; render(); });
+  quickRow.appendChild(selAllBtn);
+  quickRow.appendChild(selNoneBtn);
+  testsHead.appendChild(quickRow);
+  testsSec.appendChild(testsHead);
+
+  var refTests = TESTS_BY_AGE['9-10'];
+  ['fiz','psi','tek'].forEach(function(cat){
+    var catCard = el('<div class="osp-card" style="margin-bottom:10px;"></div>');
+    catCard.appendChild(el('<p style="font-size:11px; font-weight:700; color:#d32f2f; text-transform:uppercase; letter-spacing:0.6px; margin:0 0 6px;">'+CAT_LABELS[cat]+'</p>'));
+    refTests.filter(function(t){ return t.cat===cat; }).forEach(function(t){
+      var row = el(
+        '<div class="osp-check-row">' +
+          '<input type="checkbox" id="chk-'+t.key+'">' +
+          '<label for="chk-'+t.key+'">'+t.label+'</label>' +
+        '</div>'
+      );
+      var chk = row.querySelector('input');
+      chk.checked = newTeamDraft.selectedTests.indexOf(t.key)!==-1;
+      chk.addEventListener('change', function(){
+        var idx = newTeamDraft.selectedTests.indexOf(t.key);
+        if(chk.checked && idx===-1) newTeamDraft.selectedTests.push(t.key);
+        else if(!chk.checked && idx!==-1) newTeamDraft.selectedTests.splice(idx,1);
+      });
+      catCard.appendChild(row);
+    });
+    testsSec.appendChild(catCard);
+  });
+  body.appendChild(testsSec);
+
+  var createBtn = el('<div class="osp-fab-row" style="margin-top:6px;"><button class="osp-btn-primary">Takımı Oluştur</button></div>');
   createBtn.querySelector('button').addEventListener('click', function(){
     if(!newTeamDraft.name.trim()){ alert('Lütfen takım adı gir.'); return; }
-    var t = { id:'t'+Date.now(), name: newTeamDraft.name.trim(), ageGroup: newTeamDraft.ageGroup, players: [] };
+    if(newTeamDraft.selectedTests.length===0){ alert('En az bir test seçmelisin.'); return; }
+    var t = { id:'t'+Date.now(), name: newTeamDraft.name.trim(), ageGroup: newTeamDraft.ageGroup, selectedTests: newTeamDraft.selectedTests.slice(), players: [] };
     state.teams.push(t);
     state.currentTeamId = t.id;
     state.view = 'squad';
@@ -614,7 +669,7 @@ function renderSquad(){
   } else {
     var sorted = t.players.slice().sort(function(a,b){ return (a.no||0)-(b.no||0); });
     sorted.forEach(function(p){
-      var score = overallScore(p, ageOf(t));
+      var score = overallScore(p, t);
       var jerseyInner = p.photo ? '<img src="'+p.photo+'" alt="">' : (p.no!=null?p.no:'-');
       var card = el(
         '<div class="osp-player-card">' +
@@ -704,11 +759,15 @@ function renderDetailTabInfo(container, p){
 }
 
 function renderDetailTabVeri(container, p){
+  var team = getTeam();
+  var keys = selectedTestKeys(team);
   ['fiz','psi','tek'].forEach(function(cat){
+    var fields = RAW_FIELDS.filter(function(f){ return f.cat===cat && keys.indexOf(RAW_FIELD_TO_TEST[f.key])!==-1; });
+    if(fields.length===0) return;
     var sec = el('<div class="osp-section"></div>');
     sec.appendChild(el('<p class="osp-section-title">'+CAT_LABELS[cat]+'</p>'));
     var card = el('<div class="osp-card"></div>');
-    RAW_FIELDS.filter(function(f){ return f.cat===cat; }).forEach(function(f){
+    fields.forEach(function(f){
       card.appendChild(fieldRow(f.label, f.key, p[f.key], {unit:f.unit, step:f.step}));
     });
     sec.appendChild(card);
@@ -719,10 +778,10 @@ function renderDetailTabVeri(container, p){
 function renderDetailTabSonuc(container, p){
   var team = getTeam();
   var ageGroup = ageOf(team);
-  var tests = testsFor(ageGroup);
+  var tests = activeTestsFor(team);
   var d = computeDerived(p);
   var merged = Object.assign({}, p, d);
-  var score = overallScore(p, ageGroup);
+  var score = overallScore(p, team);
 
   var overallCard = el('<div class="osp-card osp-overall"></div>');
   overallCard.innerHTML =
@@ -733,6 +792,7 @@ function renderDetailTabSonuc(container, p){
 
   ['fiz','psi','tek'].forEach(function(cat){
     var catTests = tests.filter(function(t){ return t.cat===cat; });
+    if(catTests.length===0) return;
     var catScores = [];
     catTests.forEach(function(t){
       var raw = t.source==='input' ? num(p[t.key]) : merged[t.source];

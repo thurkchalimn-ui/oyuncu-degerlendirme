@@ -139,6 +139,23 @@
   .osp-norm-edit-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; }
   .osp-norm-edit-grid input { width: 100%; font-size: 11px; padding: 6px 3px; border: 1px solid #e8d48a; border-radius: 6px; text-align: center; background: #ffffff; color: #1a1a1a; }
   .osp-norm-edit-grid input:focus { outline: none; border-color: #d32f2f; }
+
+  .osp-karne-card { background: #ffffff; border: 2px solid #d32f2f; border-radius: 16px; padding: 20px 18px 22px; position: relative; }
+  .osp-karne-topbar { display: flex; align-items: center; gap: 9px; padding-bottom: 13px; border-bottom: 2px solid #ffcc00; margin-bottom: 16px; }
+  .osp-karne-topbar img { width: 30px; height: 30px; border-radius: 7px; object-fit: contain; flex-shrink: 0; }
+  .osp-karne-topbar span { font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 13px; color: #d32f2f; letter-spacing: 0.5px; text-transform: uppercase; }
+  .osp-karne-teamrow { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+  .osp-karne-teamrow img { width: 26px; height: 26px; border-radius: 6px; object-fit: cover; border: 1px solid #f2e2ab; flex-shrink: 0; }
+  .osp-karne-teamrow span { font-size: 12px; color: #7a3b00; font-weight: 700; }
+  .osp-karne-player { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+  .osp-karne-photo { width: 68px; height: 68px; border-radius: 50%; background: #ffcc00; border: 2px solid #d32f2f; display: flex; align-items: center; justify-content: center; overflow: hidden; font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 24px; color: #d32f2f; flex-shrink: 0; }
+  .osp-karne-photo img { width: 100%; height: 100%; object-fit: cover; }
+  .osp-karne-player-name { font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 19px; color: #1a1a1a; margin: 0; }
+  .osp-karne-player-meta { font-size: 12px; color: #a37a00; margin: 2px 0 0; font-weight: 600; }
+  .osp-karne-overall { text-align: center; background: #fff8e1; border-radius: 12px; padding: 14px; margin-bottom: 16px; }
+  .osp-karne-overall-num { font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 44px; line-height: 1; }
+  .osp-karne-overall-label { font-size: 11px; color: #a37a00; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
+  .osp-karne-footer { text-align: center; margin-top: 14px; font-size: 10px; color: #c9a94a; }
 </style>
 </head>
 <body>
@@ -165,6 +182,7 @@
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
 (function(){
 
@@ -888,6 +906,118 @@ function renderDetailTabSonuc(container, p){
   }
 }
 
+function downloadKarne(playerName){
+  var node = document.getElementById('osp-karne-capture');
+  if(!node || !window.html2canvas){ alert('Karne oluşturulamadı, sayfayı yenileyip tekrar dene.'); return; }
+  html2canvas(node, { scale: 2, backgroundColor: '#ffffff', useCORS: true }).then(function(canvas){
+    var link = document.createElement('a');
+    link.download = (playerName ? playerName.replace(/[^a-zA-Z0-9ığüşöçİĞÜŞÖÇ ]/g,'').trim().replace(/\s+/g,'-') : 'oyuncu') + '-karne.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  }).catch(function(){
+    alert('Karne indirilemedi, tekrar dener misin?');
+  });
+}
+
+function renderDetailTabKarne(container, p){
+  var team = getTeam();
+  var ageGroup = ageOf(team);
+  var tests = activeTestsFor(team);
+  var d = computeDerived(p);
+  var merged = Object.assign({}, p, d);
+  var score = overallScore(p, team);
+
+  var wrap = el('<div id="osp-karne-capture" class="osp-karne-card"></div>');
+
+  var topbar = el(
+    '<div class="osp-karne-topbar">' +
+      '<img src="'+APP_LOGO+'" alt="">' +
+      '<span>Oyuncu Değerlendirme Karnesi</span>' +
+    '</div>'
+  );
+  wrap.appendChild(topbar);
+
+  if(team){
+    var teamRow = el(
+      '<div class="osp-karne-teamrow">' +
+        (team.logo ? '<img src="'+team.logo+'" alt="">' : '') +
+        '<span>'+escapeHtml(team.name)+' · '+ageGroup+' Yaş</span>' +
+      '</div>'
+    );
+    wrap.appendChild(teamRow);
+  }
+
+  var photoInner = p.photo ? '<img src="'+p.photo+'" alt="">' : '<i class="ti ti-user" aria-hidden="true"></i>';
+  var playerRow = el(
+    '<div class="osp-karne-player">' +
+      '<div class="osp-karne-photo">'+photoInner+'</div>' +
+      '<div>' +
+        '<p class="osp-karne-player-name">'+(p.adSoyad ? escapeHtml(p.adSoyad) : 'İsimsiz Oyuncu')+'</p>' +
+        '<p class="osp-karne-player-meta">No '+(p.no!=null?p.no:'-')+(p.yas?' · '+p.yas+' yaş':'')+'</p>' +
+      '</div>' +
+    '</div>'
+  );
+  wrap.appendChild(playerRow);
+
+  var overall = el(
+    '<div class="osp-karne-overall">' +
+      '<div class="osp-karne-overall-num" style="color:'+scoreColor(score)+'">'+(score!==null?score:'-')+'</div>' +
+      '<div class="osp-karne-overall-label">/ 20 Genel Not</div>' +
+    '</div>'
+  );
+  wrap.appendChild(overall);
+
+  ['fiz','psi','tek'].forEach(function(cat){
+    var catTests = tests.filter(function(t){ return t.cat===cat; });
+    if(catTests.length===0) return;
+    var catScores = [];
+    catTests.forEach(function(t){
+      var raw = t.source==='input' ? num(p[t.key]) : merged[t.source];
+      var s = scoreFor(t, raw);
+      if(s!==null) catScores.push(s);
+    });
+    var catScore = catScores.length ? round1(catScores.reduce(function(a,b){return a+b;},0)/catScores.length) : null;
+
+    var sec = el('<div class="osp-section" style="margin-top:4px;"></div>');
+    var secHead = el(
+      '<div style="display:flex; align-items:baseline; justify-content:space-between; margin:0 4px 8px;">' +
+        '<p class="osp-section-title" style="margin:0;">'+CAT_LABELS[cat]+'</p>' +
+        '<span class="osp-num" style="font-weight:700; font-size:15px; color:'+scoreColor(catScore)+';">'+(catScore!==null?catScore:'-')+' <span style="font-size:10px; color:#a37a00; font-weight:600;">/ 20</span></span>' +
+      '</div>'
+    );
+    sec.appendChild(secHead);
+    var card = el('<div class="osp-card"></div>');
+    catTests.forEach(function(t){
+      var raw = t.source==='input' ? num(p[t.key]) : merged[t.source];
+      var s = scoreFor(t, raw);
+      var pct = s!==null ? ((s-1)/19*100) : 0;
+      var row = el(
+        '<div class="osp-test-row">' +
+          '<div class="osp-test-info">' +
+            '<p class="osp-test-name">'+t.label+'</p>' +
+            '<p class="osp-test-val">'+(raw!==null?raw+' '+t.unit:'Veri yok')+'</p>' +
+          '</div>' +
+          '<div class="osp-bar-wrap">' +
+            '<div class="osp-bar-track"><div class="osp-bar-fill" style="width:'+pct+'%; background:'+scoreColor(s)+';"></div></div>' +
+            '<div class="osp-bar-score" style="color:'+scoreColor(s)+'">'+(s!==null?round1(s):'-')+'</div>' +
+          '</div>' +
+        '</div>'
+      );
+      card.appendChild(row);
+    });
+    sec.appendChild(card);
+    wrap.appendChild(sec);
+  });
+
+  wrap.appendChild(el('<div class="osp-karne-footer">'+new Date().toLocaleDateString('tr-TR')+'</div>'));
+
+  container.appendChild(wrap);
+
+  var dlRow = el('<div class="osp-fab-row" style="margin-top:14px;"><button class="osp-btn-primary"><i class="ti ti-download" aria-hidden="true" style="margin-right:6px; vertical-align:-2px;"></i>Karneyi İndir (PNG)</button></div>');
+  dlRow.querySelector('button').addEventListener('click', function(){ downloadKarne(p.adSoyad); });
+  container.appendChild(dlRow);
+}
+
 function renderDetail(){
   var p = getPlayer();
   if(!p){ state.view='squad'; render(); return; }
@@ -912,6 +1042,7 @@ function renderDetail(){
       '<div class="osp-tab" data-tab="bilgi">Bilgi</div>' +
       '<div class="osp-tab" data-tab="veri">Test Verisi</div>' +
       '<div class="osp-tab" data-tab="sonuc">Sonuçlar</div>' +
+      '<div class="osp-tab" data-tab="karne">Karne</div>' +
     '</div>'
   );
   Array.prototype.forEach.call(tabs.querySelectorAll('.osp-tab'), function(t){
@@ -923,6 +1054,7 @@ function renderDetail(){
   var content = el('<div></div>');
   if(state.tab==='bilgi') renderDetailTabInfo(content, p);
   else if(state.tab==='veri') renderDetailTabVeri(content, p);
+  else if(state.tab==='karne') renderDetailTabKarne(content, p);
   else renderDetailTabSonuc(content, p);
   body.appendChild(content);
 }

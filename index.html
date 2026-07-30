@@ -135,6 +135,10 @@
   .osp-norm-table th { background: #fdeaea; color: #b71c1c; font-weight: 700; padding: 6px 5px; text-align: left; border: 1px solid #f2e2ab; }
   .osp-norm-table td { padding: 6px 5px; border: 1px solid #f2e2ab; color: #333; }
   .osp-norm-note { font-size: 10.5px; color: #a37a00; line-height: 1.5; margin: 6px 0 0; }
+  .osp-norm-edit-label { font-size: 12px; font-weight: 600; color: #7a3b00; margin: 0 0 5px; }
+  .osp-norm-edit-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; }
+  .osp-norm-edit-grid input { width: 100%; font-size: 11px; padding: 6px 3px; border: 1px solid #e8d48a; border-radius: 6px; text-align: center; background: #ffffff; color: #1a1a1a; }
+  .osp-norm-edit-grid input:focus { outline: none; border-color: #d32f2f; }
 </style>
 </head>
 <body>
@@ -254,7 +258,8 @@ var RAW_FIELDS = [
   { key:'duvarPasi', label:'Duvar Pası', unit:'adet/30sn', step:'1', cat:'tek' }
 ];
 
-var state = { view:'teams', teams:[], currentTeamId:null, currentPlayerId:null, tab:'bilgi', guideTab:'aciklama', guideNormAge:'9-10', prevView:'teams' };
+var state = { view:'teams', teams:[], norms:null, normsEditMode:false, currentTeamId:null, currentPlayerId:null, tab:'bilgi', guideTab:'aciklama', guideNormAge:'9-10', prevView:'teams' };
+var normsEditDraft = null;
 var expandedProtocols = {};
 var SYNC_CONFIG_KEY = 'osp-sync-config-v1';
 var db = null;
@@ -294,16 +299,18 @@ function attachSync(){
   db.collection('osp-sync').doc('main').onSnapshot(function(doc){
     syncStatus = 'on';
     if(doc.exists){
-      var remote = doc.data().teams || [];
-      var remoteStr = JSON.stringify(remote);
-      var localStr = JSON.stringify(state.teams);
+      var remoteTeams = doc.data().teams || [];
+      var remoteNorms = doc.data().norms || null;
+      var remoteStr = JSON.stringify({ teams: remoteTeams, norms: remoteNorms });
+      var localStr = JSON.stringify({ teams: state.teams, norms: state.norms });
       if(remoteStr !== localStr){
-        state.teams = remote;
+        state.teams = remoteTeams;
+        state.norms = remoteNorms;
         try { localStorage.setItem(STORAGE_KEY, remoteStr); } catch(e){}
         render();
       }
     } else if(state.teams.length){
-      db.collection('osp-sync').doc('main').set({ teams: state.teams, updatedAt: Date.now() });
+      db.collection('osp-sync').doc('main').set({ teams: state.teams, norms: state.norms, updatedAt: Date.now() });
     }
     if(state.view==='sync') render();
   }, function(err){
@@ -407,12 +414,12 @@ function scoreColor(score){
 }
 
 function save(){
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state.teams)); }
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ teams: state.teams, norms: state.norms })); }
   catch(e) { alert('Veri kaydedilemedi: tarayıcı depolama alanı dolu ya da erişilemiyor olabilir.'); }
   if(db){
     clearTimeout(fsSaveTimer);
     fsSaveTimer = setTimeout(function(){
-      db.collection('osp-sync').doc('main').set({ teams: state.teams, updatedAt: Date.now() }).catch(function(e){ console.error(e); });
+      db.collection('osp-sync').doc('main').set({ teams: state.teams, norms: state.norms, updatedAt: Date.now() }).catch(function(e){ console.error(e); });
     }, 500);
   }
 }
@@ -420,7 +427,12 @@ function save(){
 function load(){
   try {
     var raw = localStorage.getItem(STORAGE_KEY);
-    if(raw){ state.teams = JSON.parse(raw); return; }
+    if(raw){
+      var parsed = JSON.parse(raw);
+      if(Array.isArray(parsed)){ state.teams = parsed; state.norms = null; }
+      else { state.teams = parsed.teams || []; state.norms = parsed.norms || null; }
+      return;
+    }
     var legacy = localStorage.getItem(LEGACY_KEY);
     if(legacy){
       var players = JSON.parse(legacy);
@@ -1055,17 +1067,54 @@ var NORMS_BY_AGE = {
   }
 };
 
+function effectiveNorms(ageGroup){
+  if(state.norms && state.norms[ageGroup]) return state.norms[ageGroup];
+  return NORMS_BY_AGE[ageGroup] || NORMS_BY_AGE['9-10'];
+}
+
+function enterNormsEdit(){
+  normsEditDraft = JSON.parse(JSON.stringify(effectiveNorms(state.guideNormAge)));
+  state.normsEditMode = true;
+  render();
+}
+
+function cancelNormsEdit(){
+  normsEditDraft = null;
+  state.normsEditMode = false;
+  render();
+}
+
+function saveNormsEdit(){
+  if(!state.norms) state.norms = {};
+  state.norms[state.guideNormAge] = normsEditDraft;
+  normsEditDraft = null;
+  state.normsEditMode = false;
+  save();
+  render();
+}
+
+function resetNormsToDefault(){
+  if(state.norms && state.norms[state.guideNormAge]){
+    delete state.norms[state.guideNormAge];
+    save();
+  }
+  render();
+}
+
 function renderGuideNormlar(container){
   var ageTabs = el('<div class="osp-tabs" style="margin-bottom:14px;"></div>');
   AGE_GROUPS.forEach(function(ag){
     var chip = el('<div class="osp-tab">'+ag+' Yaş</div>');
     if(state.guideNormAge===ag) chip.classList.add('active');
-    chip.addEventListener('click', function(){ state.guideNormAge = ag; render(); });
+    chip.addEventListener('click', function(){ state.guideNormAge = ag; state.normsEditMode = false; render(); });
     ageTabs.appendChild(chip);
   });
   container.appendChild(ageTabs);
 
-  var norm = NORMS_BY_AGE[state.guideNormAge] || NORMS_BY_AGE['9-10'];
+  if(state.normsEditMode){ renderGuideNormlarEdit(container); return; }
+
+  var norm = effectiveNorms(state.guideNormAge);
+  var isCustom = !!(state.norms && state.norms[state.guideNormAge]);
 
   var sec1 = el('<div class="osp-section"></div>');
   sec1.appendChild(el('<p class="osp-section-title">Durarak Uzun Atlama ('+state.guideNormAge+' yaş, persentil)</p>'));
@@ -1099,6 +1148,100 @@ function renderGuideNormlar(container){
   card3.innerHTML = tableHtml + '<p class="osp-norm-note">Bu testler için büyük ölçekli uluslararası norm verisi bulunmadığından aralıklar yayınlanmış literatürden derlenmiş pratik başlangıç referanslarıdır; kulübünüzün kendi verisini biriktirdikçe kendi normlarınızı geliştirmeniz önerilir.</p>';
   sec3.appendChild(card3);
   container.appendChild(sec3);
+
+  if(isCustom){
+    var customNote = el('<p style="font-size:11px; color:#a37a00; text-align:center; margin:4px 0 10px;">Bu yaş grubu için elle düzenlenmiş değerler kullanılıyor.</p>');
+    container.appendChild(customNote);
+  }
+
+  var editRow = el('<div class="osp-fab-row"></div>');
+  var editBtn = el('<button class="osp-btn-secondary">Düzenle</button>');
+  editBtn.addEventListener('click', enterNormsEdit);
+  editRow.appendChild(editBtn);
+  container.appendChild(editRow);
+
+  if(isCustom){
+    var resetBtn = el('<button class="osp-btn-ghost" style="width:100%; margin-top:8px; text-align:center;">Varsayılan değerlere sıfırla</button>');
+    resetBtn.addEventListener('click', function(){
+      if(confirm('Bu yaş grubu için elle girdiğin değerler silinip orijinal referans değerlere dönülsün mü?')) resetNormsToDefault();
+    });
+    container.appendChild(resetBtn);
+  }
+}
+
+function renderGuideNormlarEdit(container){
+  var d = normsEditDraft;
+
+  var sec1 = el('<div class="osp-section"></div>');
+  sec1.appendChild(el('<p class="osp-section-title">Durarak Uzun Atlama — persentil değerleri (cm)</p>'));
+  var card1 = el('<div class="osp-card"></div>');
+  ['erkek','kiz'].forEach(function(gender){
+    var rowLabel = el('<p class="osp-norm-edit-label">'+(gender==='erkek'?'Erkek':'Kız')+' (P5 / P25 / P50 / P75 / P95)</p>');
+    card1.appendChild(rowLabel);
+    var grid = el('<div class="osp-norm-edit-grid" style="margin-bottom:10px;"></div>');
+    for(var i=0;i<5;i++){
+      var inp = document.createElement('input');
+      inp.type = 'number';
+      inp.inputMode = 'decimal';
+      inp.value = d.jump[gender][i];
+      (function(g,idx){ inp.addEventListener('input', function(){ d.jump[g][idx] = parseFloat(inp.value) || 0; }); })(gender,i);
+      grid.appendChild(inp);
+    }
+    card1.appendChild(grid);
+  });
+  var noteLabel = el('<p class="osp-norm-edit-label">Kaynak / açıklama notu</p>');
+  card1.appendChild(noteLabel);
+  var noteTa = document.createElement('textarea');
+  noteTa.value = d.jumpNote;
+  noteTa.addEventListener('input', function(){ d.jumpNote = noteTa.value; });
+  card1.appendChild(noteTa);
+  sec1.appendChild(card1);
+  container.appendChild(sec1);
+
+  var sec2 = el('<div class="osp-section" style="margin-top:14px;"></div>');
+  sec2.appendChild(el('<p class="osp-section-title">VKİ kategorileri</p>'));
+  var card2 = el('<div class="osp-card"></div>');
+  var bmiLabels = ['Düşük kilolu','Sağlıklı sınıra yakın','Sağlıklı aralık','Fazla kilolu','Obez'];
+  bmiLabels.forEach(function(lbl, i){
+    var wrap = el('<div class="osp-field"></div>');
+    wrap.appendChild(el('<label>'+lbl+'</label>'));
+    var inp = document.createElement('input');
+    inp.type = 'text';
+    inp.value = d.bmi[i];
+    (function(idx){ inp.addEventListener('input', function(){ d.bmi[idx] = inp.value; }); })(i);
+    wrap.appendChild(inp);
+    card2.appendChild(wrap);
+  });
+  sec2.appendChild(card2);
+  container.appendChild(sec2);
+
+  var sec3 = el('<div class="osp-section" style="margin-top:14px;"></div>');
+  sec3.appendChild(el('<p class="osp-section-title">Diğer testler (Zayıf / Ort.altı / Ortalama / Ort.üstü / İyi)</p>'));
+  var card3 = el('<div class="osp-card"></div>');
+  d.rows.forEach(function(r, ri){
+    var rowLabel = el('<p class="osp-norm-edit-label" style="margin-top:'+(ri>0?'10px':'0')+';">'+r[0]+'</p>');
+    card3.appendChild(rowLabel);
+    var grid = el('<div class="osp-norm-edit-grid"></div>');
+    for(var c=1;c<=5;c++){
+      var inp2 = document.createElement('input');
+      inp2.type = 'text';
+      inp2.value = r[c];
+      (function(rowIdx,colIdx){ inp2.addEventListener('input', function(){ d.rows[rowIdx][colIdx] = inp2.value; }); })(ri,c);
+      grid.appendChild(inp2);
+    }
+    card3.appendChild(grid);
+  });
+  sec3.appendChild(card3);
+  container.appendChild(sec3);
+
+  var btnRow = el('<div class="osp-fab-row" style="display:flex; gap:8px;"></div>');
+  var saveBtn = el('<button class="osp-btn-primary">Kaydet</button>');
+  var cancelBtn = el('<button class="osp-btn-ghost" style="flex-shrink:0; padding:12px 18px;">İptal</button>');
+  saveBtn.addEventListener('click', saveNormsEdit);
+  cancelBtn.addEventListener('click', cancelNormsEdit);
+  btnRow.appendChild(saveBtn);
+  btnRow.appendChild(cancelBtn);
+  container.appendChild(btnRow);
 }
 
 function renderGuide(){

@@ -140,22 +140,32 @@
   .osp-norm-edit-grid input { width: 100%; font-size: 11px; padding: 6px 3px; border: 1px solid #e8d48a; border-radius: 6px; text-align: center; background: #ffffff; color: #1a1a1a; }
   .osp-norm-edit-grid input:focus { outline: none; border-color: #d32f2f; }
 
-  .osp-karne-card { background: #ffffff; border: 2px solid #d32f2f; border-radius: 16px; padding: 20px 18px 22px; position: relative; }
-  .osp-karne-topbar { display: flex; align-items: center; gap: 9px; padding-bottom: 13px; border-bottom: 2px solid #ffcc00; margin-bottom: 16px; }
-  .osp-karne-topbar img { width: 30px; height: 30px; border-radius: 7px; object-fit: contain; flex-shrink: 0; }
-  .osp-karne-topbar span { font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 13px; color: #d32f2f; letter-spacing: 0.5px; text-transform: uppercase; }
-  .osp-karne-teamrow { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
-  .osp-karne-teamrow img { width: 26px; height: 26px; border-radius: 6px; object-fit: cover; border: 1px solid #f2e2ab; flex-shrink: 0; }
-  .osp-karne-teamrow span { font-size: 12px; color: #7a3b00; font-weight: 700; }
-  .osp-karne-player { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
-  .osp-karne-photo { width: 68px; height: 68px; border-radius: 50%; background: #ffcc00; border: 2px solid #d32f2f; display: flex; align-items: center; justify-content: center; overflow: hidden; font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 24px; color: #d32f2f; flex-shrink: 0; }
-  .osp-karne-photo img { width: 100%; height: 100%; object-fit: cover; }
-  .osp-karne-player-name { font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 19px; color: #1a1a1a; margin: 0; }
-  .osp-karne-player-meta { font-size: 12px; color: #a37a00; margin: 2px 0 0; font-weight: 600; }
-  .osp-karne-overall { text-align: center; background: #fff8e1; border-radius: 12px; padding: 14px; margin-bottom: 16px; }
-  .osp-karne-overall-num { font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 44px; line-height: 1; }
-  .osp-karne-overall-label { font-size: 11px; color: #a37a00; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
-  .osp-karne-footer { text-align: center; margin-top: 14px; font-size: 10px; color: #c9a94a; }
+  .osp-karne-card { background: #ffffff; border-radius: 18px; overflow: hidden; border: 1px solid #ececec; }
+  .osp-karne-hero { background: linear-gradient(135deg, #0f1c3d, #1b2e5c); padding: 20px 18px 18px; position: relative; }
+  .osp-karne-hero-top { display: flex; align-items: center; gap: 12px; }
+  .osp-karne-hero-logo { width: 42px; height: 42px; border-radius: 10px; background: #ffffff; padding: 4px; object-fit: contain; flex-shrink: 0; }
+  .osp-karne-hero-title { font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 18px; line-height: 1.15; color: #ffffff; text-transform: uppercase; letter-spacing: 0.3px; }
+  .osp-karne-hero-title span { color: #ff5252; }
+  .osp-karne-photobar { background: rgba(255,255,255,0.07); border-radius: 14px; margin-top: 16px; padding: 14px; display: flex; align-items: center; gap: 14px; position: relative; }
+  .osp-karne-photo-lg { width: 72px; height: 72px; border-radius: 50%; border: 3px solid #ff5252; overflow: hidden; background: #ffcc00; display: flex; align-items: center; justify-content: center; font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 26px; color: #d32f2f; flex-shrink: 0; }
+  .osp-karne-photo-lg img { width: 100%; height: 100%; object-fit: cover; }
+  .osp-karne-hero-name { font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 19px; color: #ffffff; margin: 0; }
+  .osp-karne-hero-meta { font-size: 11.5px; color: #c3cde4; margin: 3px 0 0; font-weight: 600; }
+  .osp-karne-team-badge { position: absolute; bottom: -14px; left: 16px; width: 34px; height: 34px; border-radius: 9px; background: #ffffff; border: 2px solid #ff5252; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+  .osp-karne-team-badge img { width: 100%; height: 100%; object-fit: cover; }
+  .osp-karne-body { padding: 26px 18px 20px; }
+  .osp-karne-overall2 { display: flex; align-items: center; justify-content: space-between; background: #fff8e1; border-radius: 12px; padding: 14px 16px; margin-bottom: 20px; }
+  .osp-karne-overall2-label { font-size: 11px; font-weight: 700; color: #7a3b00; text-transform: uppercase; letter-spacing: 0.5px; }
+  .osp-karne-overall2-num { font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 36px; line-height: 1; }
+  .osp-karne-sec-head { display: flex; align-items: center; gap: 7px; margin: 0 0 12px; color: #d32f2f; }
+  .osp-karne-sec-head span { font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 14.5px; color: #1a1a1a; text-transform: uppercase; letter-spacing: 0.3px; white-space: nowrap; }
+  .osp-karne-sec-head .line { flex: 1; height: 2px; background: linear-gradient(90deg, #d32f2f, rgba(211,47,47,0)); }
+  .osp-karne-stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 16px; margin-bottom: 22px; }
+  .osp-karne-stat-label { font-size: 11px; color: #555; font-weight: 600; display: block; margin-bottom: 5px; }
+  .osp-karne-stat-track { height: 6px; background: #ececec; border-radius: 3px; overflow: hidden; }
+  .osp-karne-stat-fill { height: 100%; border-radius: 3px; }
+  .osp-karne-stat-val { font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 13px; flex-shrink: 0; }
+  .osp-karne-footer { text-align: center; margin-top: 4px; font-size: 10px; color: #bbb; }
 </style>
 </head>
 <body>
@@ -926,90 +936,78 @@ function renderDetailTabKarne(container, p){
   var d = computeDerived(p);
   var merged = Object.assign({}, p, d);
   var score = overallScore(p, team);
+  var CAT_ICONS = {
+    fiz: '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13" cy="4" r="2"></circle><path d="M4 17l4-2 2-5 4 2 3-3 3 2"></path><path d="M9 10l-2 8 5 4"></path><path d="M13 13l3 2-1 6"></path></svg>',
+    psi: '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 2a3.5 3.5 0 00-3.5 3.5V6a3 3 0 00-2 5 3 3 0 002 5.5V17a3.5 3.5 0 003.5 3.5"></path><path d="M14.5 2a3.5 3.5 0 013.5 3.5V6a3 3 0 012 5 3 3 0 01-2 5.5V17a3.5 3.5 0 01-3.5 3.5"></path><path d="M9.5 2v19"></path><path d="M14.5 2v19"></path></svg>',
+    tek: '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7l3 2.2-1.2 3.6H10.2L9 9.2z"></path><path d="M12 3v4M12 17v4M4.5 8l3.2 1M16.3 9l3.2-1M4.5 16l3.2-1M16.3 15l3.2 1"></path></svg>'
+  };
 
   var wrap = el('<div id="osp-karne-capture" class="osp-karne-card"></div>');
 
-  var topbar = el(
-    '<div class="osp-karne-topbar">' +
-      '<img src="'+APP_LOGO+'" alt="">' +
-      '<span>Oyuncu Değerlendirme Karnesi</span>' +
-    '</div>'
-  );
-  wrap.appendChild(topbar);
-
-  if(team){
-    var teamRow = el(
-      '<div class="osp-karne-teamrow">' +
-        (team.logo ? '<img src="'+team.logo+'" alt="">' : '') +
-        '<span>'+escapeHtml(team.name)+' · '+ageGroup+' Yaş</span>' +
-      '</div>'
-    );
-    wrap.appendChild(teamRow);
-  }
+  var hero = el('<div class="osp-karne-hero"></div>');
+  hero.innerHTML =
+    '<div class="osp-karne-hero-top">' +
+      '<img class="osp-karne-hero-logo" src="'+APP_LOGO+'" alt="">' +
+      '<div class="osp-karne-hero-title">Futbolcu<br>Performans<span> Karnesi</span></div>' +
+    '</div>';
 
   var photoInner = p.photo ? '<img src="'+p.photo+'" alt="">' : '<i class="ti ti-user" aria-hidden="true"></i>';
-  var playerRow = el(
-    '<div class="osp-karne-player">' +
-      '<div class="osp-karne-photo">'+photoInner+'</div>' +
-      '<div>' +
-        '<p class="osp-karne-player-name">'+(p.adSoyad ? escapeHtml(p.adSoyad) : 'İsimsiz Oyuncu')+'</p>' +
-        '<p class="osp-karne-player-meta">No '+(p.no!=null?p.no:'-')+(p.yas?' · '+p.yas+' yaş':'')+'</p>' +
-      '</div>' +
-    '</div>'
-  );
-  wrap.appendChild(playerRow);
+  var photobar = el('<div class="osp-karne-photobar"></div>');
+  photobar.innerHTML =
+    '<div class="osp-karne-photo-lg">'+photoInner+'</div>' +
+    '<div>' +
+      '<p class="osp-karne-hero-name">'+(p.adSoyad ? escapeHtml(p.adSoyad) : 'İsimsiz Oyuncu')+'</p>' +
+      '<p class="osp-karne-hero-meta">No '+(p.no!=null?p.no:'-')+(p.yas?' · '+p.yas+' yaş':'')+(team?' · '+ageGroup+' Yaş':'')+'</p>' +
+    '</div>' +
+    (team && team.logo ? '<div class="osp-karne-team-badge"><img src="'+team.logo+'" alt=""></div>' : '');
+  hero.appendChild(photobar);
+  wrap.appendChild(hero);
+
+  var bodyEl = el('<div class="osp-karne-body"></div>');
 
   var overall = el(
-    '<div class="osp-karne-overall">' +
-      '<div class="osp-karne-overall-num" style="color:'+scoreColor(score)+'">'+(score!==null?score:'-')+'</div>' +
-      '<div class="osp-karne-overall-label">/ 20 Genel Not</div>' +
+    '<div class="osp-karne-overall2">' +
+      '<div><div class="osp-karne-overall2-label">Genel Performans Notu</div>' +
+      (team ? '<div style="font-size:11px; color:#a37a00; font-weight:600; margin-top:2px;">'+escapeHtml(team.name)+'</div>' : '') + '</div>' +
+      '<div class="osp-karne-overall2-num" style="color:'+scoreColor(score)+'">'+(score!==null?score:'-')+'<span style="font-size:14px; color:#a37a00;"> /20</span></div>' +
     '</div>'
   );
-  wrap.appendChild(overall);
+  bodyEl.appendChild(overall);
+
+  var CAT_TITLES = { fiz:'Fiziksel Göstergeler', psi:'Psikolojik Göstergeler', tek:'Teknik Göstergeler' };
 
   ['fiz','psi','tek'].forEach(function(cat){
     var catTests = tests.filter(function(t){ return t.cat===cat; });
     if(catTests.length===0) return;
-    var catScores = [];
-    catTests.forEach(function(t){
-      var raw = t.source==='input' ? num(p[t.key]) : merged[t.source];
-      var s = scoreFor(t, raw);
-      if(s!==null) catScores.push(s);
-    });
-    var catScore = catScores.length ? round1(catScores.reduce(function(a,b){return a+b;},0)/catScores.length) : null;
 
-    var sec = el('<div class="osp-section" style="margin-top:4px;"></div>');
     var secHead = el(
-      '<div style="display:flex; align-items:baseline; justify-content:space-between; margin:0 4px 8px;">' +
-        '<p class="osp-section-title" style="margin:0;">'+CAT_LABELS[cat]+'</p>' +
-        '<span class="osp-num" style="font-weight:700; font-size:15px; color:'+scoreColor(catScore)+';">'+(catScore!==null?catScore:'-')+' <span style="font-size:10px; color:#a37a00; font-weight:600;">/ 20</span></span>' +
-      '</div>'
+      '<div class="osp-karne-sec-head">'+CAT_ICONS[cat]+'<span>'+CAT_TITLES[cat]+'</span><div class="line"></div></div>'
     );
-    sec.appendChild(secHead);
-    var card = el('<div class="osp-card"></div>');
+    bodyEl.appendChild(secHead);
+
+    var grid = el('<div class="osp-karne-stat-grid"></div>');
     catTests.forEach(function(t){
       var raw = t.source==='input' ? num(p[t.key]) : merged[t.source];
       var s = scoreFor(t, raw);
       var pct = s!==null ? ((s-1)/19*100) : 0;
-      var row = el(
-        '<div class="osp-test-row">' +
-          '<div class="osp-test-info">' +
-            '<p class="osp-test-name">'+t.label+'</p>' +
-            '<p class="osp-test-val">'+(raw!==null?raw+' '+t.unit:'Veri yok')+'</p>' +
+      var valTxt = raw!==null ? (raw+' '+t.unit) : 'Veri yok';
+      var stat = el(
+        '<div class="osp-karne-stat">' +
+          '<div class="osp-karne-stat-top"><span class="osp-karne-stat-label">'+t.label+'</span></div>' +
+          '<div style="display:flex; align-items:center; gap:8px;">' +
+            '<div class="osp-karne-stat-track" style="flex:1;"><div class="osp-karne-stat-fill" style="width:'+pct+'%; background:'+scoreColor(s)+';"></div></div>' +
+            '<span class="osp-karne-stat-val" style="color:'+scoreColor(s)+'">'+(s!==null?round1(s):'-')+'</span>' +
           '</div>' +
-          '<div class="osp-bar-wrap">' +
-            '<div class="osp-bar-track"><div class="osp-bar-fill" style="width:'+pct+'%; background:'+scoreColor(s)+';"></div></div>' +
-            '<div class="osp-bar-score" style="color:'+scoreColor(s)+'">'+(s!==null?round1(s):'-')+'</div>' +
-          '</div>' +
+          '<div style="font-size:10px; color:#999; margin-top:2px;">'+valTxt+'</div>' +
         '</div>'
       );
-      card.appendChild(row);
+      grid.appendChild(stat);
     });
-    sec.appendChild(card);
-    wrap.appendChild(sec);
+    bodyEl.appendChild(grid);
   });
 
-  wrap.appendChild(el('<div class="osp-karne-footer">'+new Date().toLocaleDateString('tr-TR')+'</div>'));
+  bodyEl.appendChild(el('<div class="osp-karne-footer">'+new Date().toLocaleDateString('tr-TR')+'</div>'));
+  wrap.appendChild(bodyEl);
 
   container.appendChild(wrap);
 

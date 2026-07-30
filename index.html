@@ -607,18 +607,6 @@ function renderSquad(){
   var body = document.getElementById('osp-body');
   body.innerHTML = '';
 
-  var ageSec = el('<div class="osp-section"></div>');
-  ageSec.appendChild(el('<p class="osp-section-title">Yaş Kategorisi</p>'));
-  var ageTabs = el('<div class="osp-tabs"></div>');
-  AGE_GROUPS.forEach(function(ag){
-    var chip = el('<div class="osp-tab">'+ag+' Yaş</div>');
-    if(ageOf(t)===ag) chip.classList.add('active');
-    chip.addEventListener('click', function(){ t.ageGroup = ag; save(); render(); });
-    ageTabs.appendChild(chip);
-  });
-  ageSec.appendChild(ageTabs);
-  body.appendChild(ageSec);
-
   if(t.players.length===0){
     body.appendChild(el('<div class="osp-empty"><i class="ti ti-users" aria-hidden="true"></i><p>Bu takımda henüz oyuncu yok.<br>İlk oyuncuyu ekleyerek başla.</p></div>'));
   } else {

@@ -155,21 +155,58 @@
 
 var APP_LOGO = 'data:image/png;base64,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';
 
-var TESTS = [
-  { key:'sprint20', label:'20m Sprint', unit:'sn', cat:'fiz', dir:'low', weak:4.8, good:3.7, source:'input' },
-  { key:'illinois', label:'Illinois Çeviklik', unit:'sn', cat:'fiz', dir:'low', weak:21.0, good:17.0, source:'input' },
-  { key:'tTest', label:'T-Test', unit:'sn', cat:'fiz', dir:'low', weak:14.5, good:10.5, source:'input' },
-  { key:'uzunAtlama', label:'Durarak Uzun Atlama', unit:'cm', cat:'fiz', dir:'high', weak:95, good:175, source:'input' },
-  { key:'kosu6dk', label:'6 Dk Koşu Mesafesi', unit:'m', cat:'fiz', dir:'high', weak:750, good:1200, source:'input' },
-  { key:'gridKons', label:'Grid Konsantrasyon', unit:'doğru', cat:'psi', dir:'high', weak:8, good:35, source:'input' },
-  { key:'stroop', label:'Stroop', unit:'doğru/45sn', cat:'psi', dir:'high', weak:12, good:38, source:'input' },
-  { key:'baskiFark', label:'Baskı Performans Farkı', unit:'adet', cat:'psi', dir:'low', weak:4, good:0, source:'baskiFark' },
-  { key:'pasYuzde', label:'Pas İsabet Yüzdesi', unit:'%', cat:'tek', dir:'high', weak:25, good:90, source:'pasYuzde' },
-  { key:'slalom', label:'Slalom Dripling', unit:'sn', cat:'tek', dir:'low', weak:14, good:10, source:'input' },
-  { key:'topSektirme', label:'Top Sektirme', unit:'adet', cat:'tek', dir:'high', weak:1, good:25, source:'input' },
-  { key:'sutYuzde', label:'Şut İsabet Yüzdesi', unit:'%', cat:'tek', dir:'high', weak:15, good:80, source:'sutYuzde' },
-  { key:'duvarPasi', label:'Duvar Pası', unit:'adet/30sn', cat:'tek', dir:'high', weak:4, good:18, source:'input' }
-];
+var AGE_GROUPS = ['9-10', '11-12', '13-14'];
+
+var TESTS_BY_AGE = {
+  '9-10': [
+    { key:'sprint20', label:'20m Sprint', unit:'sn', cat:'fiz', dir:'low', weak:4.8, good:3.7, source:'input' },
+    { key:'illinois', label:'Illinois Çeviklik', unit:'sn', cat:'fiz', dir:'low', weak:21.0, good:17.0, source:'input' },
+    { key:'tTest', label:'T-Test', unit:'sn', cat:'fiz', dir:'low', weak:14.5, good:10.5, source:'input' },
+    { key:'uzunAtlama', label:'Durarak Uzun Atlama', unit:'cm', cat:'fiz', dir:'high', weak:95, good:175, source:'input' },
+    { key:'kosu6dk', label:'6 Dk Koşu Mesafesi', unit:'m', cat:'fiz', dir:'high', weak:750, good:1200, source:'input' },
+    { key:'gridKons', label:'Grid Konsantrasyon', unit:'doğru', cat:'psi', dir:'high', weak:8, good:35, source:'input' },
+    { key:'stroop', label:'Stroop', unit:'doğru/45sn', cat:'psi', dir:'high', weak:12, good:38, source:'input' },
+    { key:'baskiFark', label:'Baskı Performans Farkı', unit:'adet', cat:'psi', dir:'low', weak:4, good:0, source:'baskiFark' },
+    { key:'pasYuzde', label:'Pas İsabet Yüzdesi', unit:'%', cat:'tek', dir:'high', weak:25, good:90, source:'pasYuzde' },
+    { key:'slalom', label:'Slalom Dripling', unit:'sn', cat:'tek', dir:'low', weak:14, good:10, source:'input' },
+    { key:'topSektirme', label:'Top Sektirme', unit:'adet', cat:'tek', dir:'high', weak:1, good:25, source:'input' },
+    { key:'sutYuzde', label:'Şut İsabet Yüzdesi', unit:'%', cat:'tek', dir:'high', weak:15, good:80, source:'sutYuzde' },
+    { key:'duvarPasi', label:'Duvar Pası', unit:'adet/30sn', cat:'tek', dir:'high', weak:4, good:18, source:'input' }
+  ],
+  '11-12': [
+    { key:'sprint20', label:'20m Sprint', unit:'sn', cat:'fiz', dir:'low', weak:4.4, good:3.3, source:'input' },
+    { key:'illinois', label:'Illinois Çeviklik', unit:'sn', cat:'fiz', dir:'low', weak:19, good:15, source:'input' },
+    { key:'tTest', label:'T-Test', unit:'sn', cat:'fiz', dir:'low', weak:12.5, good:8.8, source:'input' },
+    { key:'uzunAtlama', label:'Durarak Uzun Atlama', unit:'cm', cat:'fiz', dir:'high', weak:110, good:196, source:'input' },
+    { key:'kosu6dk', label:'6 Dk Koşu Mesafesi', unit:'m', cat:'fiz', dir:'high', weak:900, good:1400, source:'input' },
+    { key:'gridKons', label:'Grid Konsantrasyon', unit:'doğru', cat:'psi', dir:'high', weak:12, good:45, source:'input' },
+    { key:'stroop', label:'Stroop', unit:'doğru/45sn', cat:'psi', dir:'high', weak:18, good:50, source:'input' },
+    { key:'baskiFark', label:'Baskı Performans Farkı', unit:'adet', cat:'psi', dir:'low', weak:3, good:0, source:'baskiFark' },
+    { key:'pasYuzde', label:'Pas İsabet Yüzdesi', unit:'%', cat:'tek', dir:'high', weak:35, good:97, source:'pasYuzde' },
+    { key:'slalom', label:'Slalom Dripling', unit:'sn', cat:'tek', dir:'low', weak:12, good:8.5, source:'input' },
+    { key:'topSektirme', label:'Top Sektirme', unit:'adet', cat:'tek', dir:'high', weak:3, good:35, source:'input' },
+    { key:'sutYuzde', label:'Şut İsabet Yüzdesi', unit:'%', cat:'tek', dir:'high', weak:25, good:88, source:'sutYuzde' },
+    { key:'duvarPasi', label:'Duvar Pası', unit:'adet/30sn', cat:'tek', dir:'high', weak:6, good:22, source:'input' }
+  ],
+  '13-14': [
+    { key:'sprint20', label:'20m Sprint', unit:'sn', cat:'fiz', dir:'low', weak:4, good:3, source:'input' },
+    { key:'illinois', label:'Illinois Çeviklik', unit:'sn', cat:'fiz', dir:'low', weak:17.5, good:14, source:'input' },
+    { key:'tTest', label:'T-Test', unit:'sn', cat:'fiz', dir:'low', weak:11, good:8, source:'input' },
+    { key:'uzunAtlama', label:'Durarak Uzun Atlama', unit:'cm', cat:'fiz', dir:'high', weak:129, good:230, source:'input' },
+    { key:'kosu6dk', label:'6 Dk Koşu Mesafesi', unit:'m', cat:'fiz', dir:'high', weak:1050, good:1600, source:'input' },
+    { key:'gridKons', label:'Grid Konsantrasyon', unit:'doğru', cat:'psi', dir:'high', weak:15, good:50, source:'input' },
+    { key:'stroop', label:'Stroop', unit:'doğru/45sn', cat:'psi', dir:'high', weak:22, good:55, source:'input' },
+    { key:'baskiFark', label:'Baskı Performans Farkı', unit:'adet', cat:'psi', dir:'low', weak:3, good:0, source:'baskiFark' },
+    { key:'pasYuzde', label:'Pas İsabet Yüzdesi', unit:'%', cat:'tek', dir:'high', weak:40, good:98, source:'pasYuzde' },
+    { key:'slalom', label:'Slalom Dripling', unit:'sn', cat:'tek', dir:'low', weak:10.5, good:7.5, source:'input' },
+    { key:'topSektirme', label:'Top Sektirme', unit:'adet', cat:'tek', dir:'high', weak:5, good:45, source:'input' },
+    { key:'sutYuzde', label:'Şut İsabet Yüzdesi', unit:'%', cat:'tek', dir:'high', weak:30, good:90, source:'sutYuzde' },
+    { key:'duvarPasi', label:'Duvar Pası', unit:'adet/30sn', cat:'tek', dir:'high', weak:8, good:26, source:'input' }
+  ]
+};
+
+function testsFor(ageGroup){ return TESTS_BY_AGE[ageGroup] || TESTS_BY_AGE['9-10']; }
+function ageOf(t){ return (t && t.ageGroup) || '9-10'; }
 
 var CAT_LABELS = { fiz:'Fiziksel', psi:'Psikolojik', tek:'Teknik' };
 
@@ -192,7 +229,7 @@ var RAW_FIELDS = [
   { key:'duvarPasi', label:'Duvar Pası', unit:'adet/30sn', step:'1', cat:'tek' }
 ];
 
-var state = { view:'teams', teams:[], currentTeamId:null, currentPlayerId:null, tab:'bilgi', guideTab:'aciklama', prevView:'teams' };
+var state = { view:'teams', teams:[], currentTeamId:null, currentPlayerId:null, tab:'bilgi', guideTab:'aciklama', guideNormAge:'9-10', prevView:'teams' };
 var expandedProtocols = {};
 var SYNC_CONFIG_KEY = 'osp-sync-config-v1';
 var db = null;
@@ -286,11 +323,11 @@ function scoreFor(test, value){
   return clamp(s,1,20);
 }
 
-function overallScore(p){
+function overallScore(p, ageGroup){
   var d = computeDerived(p);
   var merged = Object.assign({}, p, d);
   var scores = [];
-  TESTS.forEach(function(t){
+  testsFor(ageGroup).forEach(function(t){
     var raw = t.source==='input' ? num(p[t.key]) : merged[t.source];
     var s = scoreFor(t, raw);
     if(s!==null) scores.push(s);
@@ -386,7 +423,7 @@ function getPlayer(){ var t = getTeam(); if(!t) return null; return t.players.fi
 function addTeam(){
   var name = prompt('Takım adı:');
   if(!name || !name.trim()) return;
-  var t = { id:'t'+Date.now(), name: name.trim(), players: [] };
+  var t = { id:'t'+Date.now(), name: name.trim(), ageGroup: '9-10', players: [] };
   state.teams.push(t);
   save();
   render();
@@ -522,16 +559,28 @@ function renderSquad(){
   var headerLogo = document.getElementById('osp-header-logo');
   headerLogo.style.display = 'none';
   document.getElementById('osp-title').textContent = t.name;
-  document.getElementById('osp-subtitle').textContent = t.players.length + ' oyuncu · kadro';
+  document.getElementById('osp-subtitle').textContent = t.players.length + ' oyuncu · ' + ageOf(t) + ' Yaş kadrosu';
   var body = document.getElementById('osp-body');
   body.innerHTML = '';
+
+  var ageSec = el('<div class="osp-section"></div>');
+  ageSec.appendChild(el('<p class="osp-section-title">Yaş Kategorisi</p>'));
+  var ageTabs = el('<div class="osp-tabs"></div>');
+  AGE_GROUPS.forEach(function(ag){
+    var chip = el('<div class="osp-tab">'+ag+' Yaş</div>');
+    if(ageOf(t)===ag) chip.classList.add('active');
+    chip.addEventListener('click', function(){ t.ageGroup = ag; save(); render(); });
+    ageTabs.appendChild(chip);
+  });
+  ageSec.appendChild(ageTabs);
+  body.appendChild(ageSec);
 
   if(t.players.length===0){
     body.appendChild(el('<div class="osp-empty"><i class="ti ti-users" aria-hidden="true"></i><p>Bu takımda henüz oyuncu yok.<br>İlk oyuncuyu ekleyerek başla.</p></div>'));
   } else {
     var sorted = t.players.slice().sort(function(a,b){ return (a.no||0)-(b.no||0); });
     sorted.forEach(function(p){
-      var score = overallScore(p);
+      var score = overallScore(p, ageOf(t));
       var jerseyInner = p.photo ? '<img src="'+p.photo+'" alt="">' : (p.no!=null?p.no:'-');
       var card = el(
         '<div class="osp-player-card">' +
@@ -625,14 +674,17 @@ function renderDetailTabVeri(container, p){
 }
 
 function renderDetailTabSonuc(container, p){
+  var team = getTeam();
+  var ageGroup = ageOf(team);
+  var tests = testsFor(ageGroup);
   var d = computeDerived(p);
   var merged = Object.assign({}, p, d);
-  var score = overallScore(p);
+  var score = overallScore(p, ageGroup);
 
   var overallCard = el('<div class="osp-card osp-overall"></div>');
   overallCard.innerHTML =
     '<div class="osp-overall-num" style="color:'+scoreColor(score)+'">'+(score!==null?score:'-')+'</div>' +
-    '<div class="osp-overall-scale">/ 20 GENEL NOT</div>' +
+    '<div class="osp-overall-scale">/ 20 GENEL NOT · '+ageGroup+' YAŞ NORMU</div>' +
     '<div class="osp-overall-verdict">'+verdictText(score)+'</div>';
   container.appendChild(overallCard);
 
@@ -640,7 +692,7 @@ function renderDetailTabSonuc(container, p){
     var sec = el('<div class="osp-section" style="margin-top:14px;"></div>');
     sec.appendChild(el('<p class="osp-section-title">'+CAT_LABELS[cat]+'</p>'));
     var card = el('<div class="osp-card"></div>');
-    TESTS.filter(function(t){ return t.cat===cat; }).forEach(function(t){
+    tests.filter(function(t){ return t.cat===cat; }).forEach(function(t){
       var raw = t.source==='input' ? num(p[t.key]) : merged[t.source];
       var s = scoreFor(t, raw);
       var pct = s!==null ? ((s-1)/19*100) : 0;
@@ -790,15 +842,86 @@ function renderGuideProtokoller(container){
   });
 }
 
+var NORMS_BY_AGE = {
+  '9-10': {
+    jump: { erkek: [101,122,141,160,180], kiz: [94,112,131,150,169] },
+    jumpNote: 'Kaynak: Tomkinson GR, et al. (2023), Br J Sports Med — 1,35 milyon ölçüm, 34 Avrupa ülkesi. Değerler 10 yaş gerçek ölçüm verisidir; 9 yaş için birkaç cm altında beklenir.',
+    bmi: ['<14.0', '14.0-16.9', '17.0-20.1', '20.2-22.0', '>22.1'],
+    rows: [
+      ['20m Sprint (sn)','>4.5','4.2-4.5','4.0-4.2','3.7-4.0','<3.7'],
+      ['Illinois Çeviklik (sn)','>20.0','19.0-20.0','18.0-19.0','17.0-18.0','<17.0'],
+      ['T-Test (sn)','>13.5','12.5-13.5','11.5-12.5','10.5-11.5','<10.5'],
+      ['6 Dk Koşu (m)','<862','862-975','975-1088','1088-1200','>=1200'],
+      ['Grid Konsantrasyon','<15','15-22','22-28','28-35','>=35'],
+      ['Stroop (doğru/45sn)','<18','18-25','25-32','32-38','>=38'],
+      ['Baskı Performans Farkı','>3','2-3','1-2','0-1','<0'],
+      ['Pas İsabet (%)','<41','41-58','58-74','74-90','>=90'],
+      ['Slalom Dripling (sn)','>13.0','12.0-13.0','11.0-12.0','10.0-11.0','<10.0'],
+      ['Top Sektirme','<7','7-13','13-19','19-25','>=25'],
+      ['Şut İsabet (%)','<31','31-48','48-64','64-80','>=80'],
+      ['Duvar Pası','<8','8-11','11-14','14-18','>=18']
+    ]
+  },
+  '11-12': {
+    jump: { erkek: [110,132,154,175,196], kiz: [102,122,142,162,183] },
+    jumpNote: 'Kaynak: Tomkinson GR, et al. (2023), Br J Sports Med. Değerler Tomkinson (2023) ve Thomas et al. (2020, 11-12 yaş medyan trendi) referans alınarak türetilmiş tahmini değerlerdir.',
+    bmi: ['<14.5', '14.5-17.5', '17.6-21.5', '21.6-23.5', '>23.5'],
+    rows: [
+      ['20m Sprint (sn)','>4.1','3.9-4.1','3.6-3.9','3.3-3.6','<3.3'],
+      ['Illinois Çeviklik (sn)','>18.0','17.0-18.0','16.0-17.0','15.0-16.0','<15.0'],
+      ['T-Test (sn)','>11.6','10.7-11.6','9.7-10.7','8.8-9.7','<8.8'],
+      ['6 Dk Koşu (m)','<1025','1025-1150','1150-1275','1275-1400','>=1400'],
+      ['Grid Konsantrasyon','<20','20-28','28-37','37-45','>=45'],
+      ['Stroop (doğru/45sn)','<26','26-34','34-42','42-50','>=50'],
+      ['Baskı Performans Farkı','>2','2-2','1-2','0-1','<0'],
+      ['Pas İsabet (%)','<50','50-66','66-82','82-97','>=97'],
+      ['Slalom Dripling (sn)','>11.1','10.2-11.1','9.4-10.2','8.5-9.4','<8.5'],
+      ['Top Sektirme','<11','11-19','19-27','27-35','>=35'],
+      ['Şut İsabet (%)','<41','41-56','56-72','72-88','>=88'],
+      ['Duvar Pası','<10','10-14','14-18','18-22','>=22']
+    ]
+  },
+  '13-14': {
+    jump: { erkek: [129,154,180,205,230], kiz: [107,128,149,170,192] },
+    jumpNote: 'Kaynak: Tomkinson GR, et al. (2023), Br J Sports Med. Değerler Thomas et al. (2020, 13-14 yaş medyan trendi) referans alınarak türetilmiştir. Bu yaş aralığında ergenlik gelişim farklılığı (erken/geç olgunlaşma) performansı önemli ölçüde etkileyebilir.',
+    bmi: ['<15.5', '15.5-18.5', '18.6-23.0', '23.1-25.5', '>25.5'],
+    rows: [
+      ['20m Sprint (sn)','>3.8','3.5-3.8','3.2-3.5','3.0-3.2','<3.0'],
+      ['Illinois Çeviklik (sn)','>16.6','15.8-16.6','14.9-15.8','14.0-14.9','<14.0'],
+      ['T-Test (sn)','>10.2','9.5-10.2','8.8-9.5','8.0-8.8','<8.0'],
+      ['6 Dk Koşu (m)','<1188','1188-1325','1325-1462','1462-1600','>=1600'],
+      ['Grid Konsantrasyon','<24','24-32','32-41','41-50','>=50'],
+      ['Stroop (doğru/45sn)','<30','30-38','38-47','47-55','>=55'],
+      ['Baskı Performans Farkı','>2','2-2','1-2','0-1','<0'],
+      ['Pas İsabet (%)','<54','54-69','69-84','84-98','>=98'],
+      ['Slalom Dripling (sn)','>9.8','9.0-9.8','8.2-9.0','7.5-8.2','<7.5'],
+      ['Top Sektirme','<15','15-25','25-35','35-45','>=45'],
+      ['Şut İsabet (%)','<45','45-60','60-75','75-90','>=90'],
+      ['Duvar Pası','<12','12-17','17-22','22-26','>=26']
+    ]
+  }
+};
+
 function renderGuideNormlar(container){
+  var ageTabs = el('<div class="osp-tabs" style="margin-bottom:14px;"></div>');
+  AGE_GROUPS.forEach(function(ag){
+    var chip = el('<div class="osp-tab">'+ag+' Yaş</div>');
+    if(state.guideNormAge===ag) chip.classList.add('active');
+    chip.addEventListener('click', function(){ state.guideNormAge = ag; render(); });
+    ageTabs.appendChild(chip);
+  });
+  container.appendChild(ageTabs);
+
+  var norm = NORMS_BY_AGE[state.guideNormAge] || NORMS_BY_AGE['9-10'];
+
   var sec1 = el('<div class="osp-section"></div>');
-  sec1.appendChild(el('<p class="osp-section-title">Durarak Uzun Atlama (10 yaş, persentil)</p>'));
+  sec1.appendChild(el('<p class="osp-section-title">Durarak Uzun Atlama ('+state.guideNormAge+' yaş, persentil)</p>'));
   var card1 = el('<div class="osp-card"></div>');
   card1.innerHTML =
     '<table class="osp-norm-table"><tr><th>Cinsiyet</th><th>P5</th><th>P25</th><th>P50</th><th>P75</th><th>P95</th></tr>' +
-    '<tr><td>Erkek</td><td>101cm</td><td>122cm</td><td>141cm</td><td>160cm</td><td>180cm</td></tr>' +
-    '<tr><td>Kız</td><td>94cm</td><td>112cm</td><td>131cm</td><td>150cm</td><td>169cm</td></tr></table>' +
-    '<p class="osp-norm-note">Kaynak: Tomkinson GR, et al. (2023), Br J Sports Med — 1,35 milyon ölçüm, 34 Avrupa ülkesi. Değerler 10 yaş gerçek ölçüm verisidir; 9 yaş için birkaç cm altında beklenir.</p>';
+    '<tr><td>Erkek</td><td>'+norm.jump.erkek[0]+'cm</td><td>'+norm.jump.erkek[1]+'cm</td><td>'+norm.jump.erkek[2]+'cm</td><td>'+norm.jump.erkek[3]+'cm</td><td>'+norm.jump.erkek[4]+'cm</td></tr>' +
+    '<tr><td>Kız</td><td>'+norm.jump.kiz[0]+'cm</td><td>'+norm.jump.kiz[1]+'cm</td><td>'+norm.jump.kiz[2]+'cm</td><td>'+norm.jump.kiz[3]+'cm</td><td>'+norm.jump.kiz[4]+'cm</td></tr></table>' +
+    '<p class="osp-norm-note">'+norm.jumpNote+'</p>';
   sec1.appendChild(card1);
   container.appendChild(sec1);
 
@@ -807,7 +930,7 @@ function renderGuideNormlar(container){
   var card2 = el('<div class="osp-card"></div>');
   card2.innerHTML =
     '<table class="osp-norm-table"><tr><th>Düşük kilolu</th><th>Sağlıklı sınıra yakın</th><th>Sağlıklı aralık</th><th>Fazla kilolu</th><th>Obez</th></tr>' +
-    '<tr><td>&lt;14.0</td><td>14.0-16.9</td><td>17.0-20.1</td><td>20.2-22.0</td><td>&gt;22.1</td></tr></table>' +
+    '<tr><td>'+norm.bmi[0]+'</td><td>'+norm.bmi[1]+'</td><td>'+norm.bmi[2]+'</td><td>'+norm.bmi[3]+'</td><td>'+norm.bmi[4]+'</td></tr></table>' +
     '<p class="osp-norm-note">VKİ bir performans puanı değildir, genel notlamaya dahil edilmez — sadece sağlık taraması amaçlıdır. Kaynak: CDC BMI-for-age growth charts.</p>';
   sec2.appendChild(card2);
   container.appendChild(sec2);
@@ -815,22 +938,8 @@ function renderGuideNormlar(container){
   var sec3 = el('<div class="osp-section"></div>');
   sec3.appendChild(el('<p class="osp-section-title">Diğer testler (pratik referans aralıkları)</p>'));
   var card3 = el('<div class="osp-card"></div>');
-  var rows = [
-    ['20m Sprint (sn)','>4.5','4.2-4.5','4.0-4.2','3.7-4.0','<3.7'],
-    ['Illinois Çeviklik (sn)','>20.0','19.0-20.0','18.0-19.0','17.0-18.0','<17.0'],
-    ['T-Test (sn)','>13.5','12.5-13.5','11.5-12.5','10.5-11.5','<10.5'],
-    ['6 Dk Koşu (m)','<862','862-975','975-1088','1088-1200','>=1200'],
-    ['Grid Konsantrasyon','<15','15-22','22-28','28-35','>=35'],
-    ['Stroop (doğru/45sn)','<18','18-25','25-32','32-38','>=38'],
-    ['Baskı Performans Farkı','>3','2-3','1-2','0-1','<0'],
-    ['Pas İsabet (%)','<41','41-58','58-74','74-90','>=90'],
-    ['Slalom Dripling (sn)','>13.0','12.0-13.0','11.0-12.0','10.0-11.0','<10.0'],
-    ['Top Sektirme','<7','7-13','13-19','19-25','>=25'],
-    ['Şut İsabet (%)','<31','31-48','48-64','64-80','>=80'],
-    ['Duvar Pası','<8','8-11','11-14','14-18','>=18']
-  ];
   var tableHtml = '<table class="osp-norm-table"><tr><th>Test</th><th>Zayıf</th><th>Ort. altı</th><th>Ortalama</th><th>Ort. üstü</th><th>İyi/Çok iyi</th></tr>';
-  rows.forEach(function(r){
+  norm.rows.forEach(function(r){
     tableHtml += '<tr><td>'+r[0]+'</td><td>'+r[1]+'</td><td>'+r[2]+'</td><td>'+r[3]+'</td><td>'+r[4]+'</td><td>'+r[5]+'</td></tr>';
   });
   tableHtml += '</table>';

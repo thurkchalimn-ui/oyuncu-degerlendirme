@@ -391,6 +391,21 @@ function closeVideoModal(){
   if(existing) existing.remove();
 }
 
+function openImageModal(src, alt){
+  closeVideoModal();
+  var overlay = el(
+    '<div class="osp-video-overlay" id="osp-video-overlay">' +
+      '<div class="osp-video-box" style="background:#fff;">' +
+        '<button class="osp-video-close" id="osp-video-close" aria-label="Kapat">&times;</button>' +
+        '<img src="'+src+'" alt="'+(alt||'')+'" style="width:100%; display:block;">' +
+      '</div>' +
+    '</div>'
+  );
+  overlay.addEventListener('click', function(e){ if(e.target.id==='osp-video-overlay') closeVideoModal(); });
+  document.body.appendChild(overlay);
+  document.getElementById('osp-video-close').addEventListener('click', closeVideoModal);
+}
+
 function computeDerived(p){
   var out = {};
   if(p.boy && p.kilo){ var m = p.boy/100; out.vki = round1(p.kilo/(m*m)); } else { out.vki = null; }
@@ -1128,7 +1143,7 @@ function renderGuideProtokoller(container){
       var item = el('<div class="osp-acc-item"></div>');
       var videoHtml = pr.video ? '<button class="osp-acc-video" data-video="'+pr.video+'"><i class="ti ti-player-play" aria-hidden="true"></i>Video gösterimi</button>' : '';
       var imgSrc = PROTOCOL_IMAGES[pr.key];
-      var imgHtml = imgSrc ? '<img src="'+imgSrc+'" alt="'+pr.name+' uygulama görseli" class="osp-acc-img">' : '';
+      var imgHtml = imgSrc ? '<button class="osp-acc-video" data-img="'+pr.key+'" style="margin-right:16px;"><i class="ti ti-photo" aria-hidden="true"></i>Görsel</button>' : '';
       item.innerHTML =
         '<div class="osp-acc-head">' +
           '<span class="osp-acc-head-cat">'+pc.label+'</span>' +
@@ -1136,17 +1151,18 @@ function renderGuideProtokoller(container){
           '<i class="ti ti-chevron-right osp-acc-chevron" aria-hidden="true"></i>' +
         '</div>' +
         '<div class="osp-acc-body">' +
-          imgHtml +
           '<p class="osp-acc-row"><b>Ölçülen özellik:</b> '+pr.ozellik+'</p>' +
           '<p class="osp-acc-row"><b>Ekipman:</b> '+pr.ekipman+'</p>' +
           '<p class="osp-acc-row"><b>Uygulama:</b> '+pr.talimat+'</p>' +
           '<p class="osp-acc-row"><b>Ölçüm birimi:</b> '+pr.birim+'</p>' +
           '<p class="osp-acc-row"><b>Hesaplama:</b> '+pr.formul+'</p>' +
-          videoHtml +
+          '<div style="margin-top:4px;">'+imgHtml+videoHtml+'</div>' +
         '</div>';
       if(expandedProtocols[pr.key]) item.classList.add('open');
-      var videoBtn = item.querySelector('.osp-acc-video');
+      var videoBtn = item.querySelector('[data-video]');
       if(videoBtn) videoBtn.addEventListener('click', function(){ openVideoModal(pr.video); });
+      var imgBtn = item.querySelector('[data-img]');
+      if(imgBtn) imgBtn.addEventListener('click', function(){ openImageModal(imgSrc, pr.name); });
       item.querySelector('.osp-acc-head').addEventListener('click', function(){
         expandedProtocols[pr.key] = !expandedProtocols[pr.key];
         render();

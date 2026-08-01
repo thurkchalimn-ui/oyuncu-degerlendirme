@@ -216,10 +216,10 @@ var TESTS_BY_AGE = {
     { key:'topSektirme', label:'Top Sektirme', unit:'adet', cat:'tek', dir:'high', weak:1, good:25, source:'input' },
     { key:'sutYuzde', label:'Şut İsabet Yüzdesi', unit:'%', cat:'tek', dir:'high', weak:15, good:80, source:'sutYuzde' },
     { key:'duvarPasi', label:'Duvar Pası', unit:'adet/30sn', cat:'tek', dir:'high', weak:4, good:18, source:'input' },
-    { key:'agility505', label:'505 Çeviklik Testi', unit:'sn', cat:'fiz', dir:'low', weak:3, good:2.2, source:'input' },
-    { key:'ballSprint', label:'Topla Sürat Testi', unit:'sn', cat:'tek', dir:'low', weak:4.4, good:3.3, source:'input' },
-    { key:'reaction', label:'Reaksiyon Zamanı Testi', unit:'ms', cat:'psi', dir:'low', weak:290, good:180, source:'input' },
-    { key:'firstTouch', label:'İlk Dokunuş Kontrol Testi', unit:'başarılı/10', cat:'tek', dir:'high', weak:3, good:10, source:'input' }
+    { key:'agility505', label:'505 Çeviklik Testi', unit:'sn', cat:'fiz', dir:'low', weak:4.0, good:2.9, source:'input' },
+    { key:'ballSprint', label:'Topla Sürat Testi', unit:'sn', cat:'tek', dir:'low', weak:5.2, good:4.0, source:'input' },
+    { key:'reaction', label:'Reaksiyon Zamanı Testi', unit:'ms', cat:'psi', dir:'low', weak:350, good:220, source:'input' },
+    { key:'firstTouch', label:'İlk Dokunuş Kontrol Testi', unit:'başarılı/10', cat:'tek', dir:'high', weak:1, good:7, source:'input' }
   ],
   '11-12': [
     { key:'sprint20', label:'20m Sprint', unit:'sn', cat:'fiz', dir:'low', weak:4.4, good:3.3, source:'input' },
@@ -235,10 +235,10 @@ var TESTS_BY_AGE = {
     { key:'topSektirme', label:'Top Sektirme', unit:'adet', cat:'tek', dir:'high', weak:3, good:35, source:'input' },
     { key:'sutYuzde', label:'Şut İsabet Yüzdesi', unit:'%', cat:'tek', dir:'high', weak:25, good:88, source:'sutYuzde' },
     { key:'duvarPasi', label:'Duvar Pası', unit:'adet/30sn', cat:'tek', dir:'high', weak:6, good:22, source:'input' },
-    { key:'agility505', label:'505 Çeviklik Testi', unit:'sn', cat:'fiz', dir:'low', weak:3, good:2.2, source:'input' },
-    { key:'ballSprint', label:'Topla Sürat Testi', unit:'sn', cat:'tek', dir:'low', weak:4.4, good:3.3, source:'input' },
-    { key:'reaction', label:'Reaksiyon Zamanı Testi', unit:'ms', cat:'psi', dir:'low', weak:290, good:180, source:'input' },
-    { key:'firstTouch', label:'İlk Dokunuş Kontrol Testi', unit:'başarılı/10', cat:'tek', dir:'high', weak:3, good:10, source:'input' }
+    { key:'agility505', label:'505 Çeviklik Testi', unit:'sn', cat:'fiz', dir:'low', weak:3.4, good:2.4, source:'input' },
+    { key:'ballSprint', label:'Topla Sürat Testi', unit:'sn', cat:'tek', dir:'low', weak:4.8, good:3.6, source:'input' },
+    { key:'reaction', label:'Reaksiyon Zamanı Testi', unit:'ms', cat:'psi', dir:'low', weak:320, good:200, source:'input' },
+    { key:'firstTouch', label:'İlk Dokunuş Kontrol Testi', unit:'başarılı/10', cat:'tek', dir:'high', weak:2, good:9, source:'input' }
   ],
   '13-14': [
     { key:'sprint20', label:'20m Sprint', unit:'sn', cat:'fiz', dir:'low', weak:4, good:3, source:'input' },
@@ -1216,7 +1216,11 @@ var NORMS_BY_AGE = {
       ['Slalom Dripling (sn)','>13.0','12.0-13.0','11.0-12.0','10.0-11.0','<10.0'],
       ['Top Sektirme','<7','7-13','13-19','19-25','>=25'],
       ['Şut İsabet (%)','<31','31-48','48-64','64-80','>=80'],
-      ['Duvar Pası','<8','8-11','11-14','14-18','>=18']
+      ['Duvar Pası','<8','8-11','11-14','14-18','>=18'],
+      ['505 Çeviklik Testi (sn)','>3.7','3.5-3.7','3.2-3.5','2.9-3.2','<2.9'],
+      ['Topla Sürat Testi (sn)','>4.9','4.6-4.9','4.3-4.6','4.0-4.3','<4.0'],
+      ['Reaksiyon Zamanı Testi (ms)','>320','285-320','250-285','220-250','<220'],
+      ['İlk Dokunuş Kontrol (başarılı/10)','<2','2-3','4','5','6-7']
     ]
   },
   '11-12': {
@@ -1235,7 +1239,11 @@ var NORMS_BY_AGE = {
       ['Slalom Dripling (sn)','>11.1','10.2-11.1','9.4-10.2','8.5-9.4','<8.5'],
       ['Top Sektirme','<11','11-19','19-27','27-35','>=35'],
       ['Şut İsabet (%)','<41','41-56','56-72','72-88','>=88'],
-      ['Duvar Pası','<10','10-14','14-18','18-22','>=22']
+      ['Duvar Pası','<10','10-14','14-18','18-22','>=22'],
+      ['505 Çeviklik Testi (sn)','>3.2','2.9-3.2','2.7-2.9','2.4-2.7','<2.4'],
+      ['Topla Sürat Testi (sn)','>4.5','4.2-4.5','3.9-4.2','3.6-3.9','<3.6'],
+      ['Reaksiyon Zamanı Testi (ms)','>290','260-290','230-260','200-230','<200'],
+      ['İlk Dokunuş Kontrol (başarılı/10)','<3','3-4','5-6','7-8','9-10']
     ]
   },
   '13-14': {

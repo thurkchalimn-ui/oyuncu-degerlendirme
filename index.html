@@ -326,6 +326,8 @@ var RAW_FIELD_TO_TEST = {
 };
 
 var CAT_LABELS = { fiz:'Fiziksel', psi:'Psikolojik', tek:'Teknik' };
+var CAT_ICON_CLASS = { fiz:'ti-run', psi:'ti-brain', tek:'ti-ball-football' };
+function catIconHtml(cat){ return '<i class="ti '+CAT_ICON_CLASS[cat]+'" aria-hidden="true" style="margin-right:5px; vertical-align:-2px;"></i>'; }
 
 var RAW_FIELDS = [
   { key:'sprint20', label:'20m Sprint', unit:'sn', step:'0.01', cat:'fiz' },
@@ -664,7 +666,7 @@ function renderNewTeam(){
   var refTests = TESTS_BY_AGE['9-10'];
   ['fiz','psi','tek'].forEach(function(cat){
     var catCard = el('<div class="osp-card" style="margin-bottom:10px;"></div>');
-    catCard.appendChild(el('<p style="font-size:11px; font-weight:700; color:#d32f2f; text-transform:uppercase; letter-spacing:0.6px; margin:0 0 6px;">'+CAT_LABELS[cat]+'</p>'));
+    catCard.appendChild(el('<p style="font-size:11px; font-weight:700; color:#d32f2f; text-transform:uppercase; letter-spacing:0.6px; margin:0 0 6px;">'+catIconHtml(cat)+CAT_LABELS[cat]+'</p>'));
     refTests.filter(function(t){ return t.cat===cat; }).forEach(function(t){
       var row = el(
         '<div class="osp-check-row">' +
@@ -1016,7 +1018,7 @@ function renderDetailTabVeri(container, p){
     var fields = RAW_FIELDS.filter(function(f){ return f.cat===cat && keys.indexOf(RAW_FIELD_TO_TEST[f.key])!==-1; });
     if(fields.length===0) return;
     var sec = el('<div class="osp-section"></div>');
-    sec.appendChild(el('<p class="osp-section-title">'+CAT_LABELS[cat]+'</p>'));
+    sec.appendChild(el('<p class="osp-section-title">'+catIconHtml(cat)+CAT_LABELS[cat]+'</p>'));
     var card = el('<div class="osp-card"></div>');
     fields.forEach(function(f){
       card.appendChild(fieldRow(f.label, f.key, p[f.key], {unit:f.unit, step:f.step}));
@@ -1055,7 +1057,7 @@ function renderDetailTabSonuc(container, p){
     var sec = el('<div class="osp-section" style="margin-top:14px;"></div>');
     var secHead = el(
       '<div style="display:flex; align-items:baseline; justify-content:space-between; margin:0 4px 8px;">' +
-        '<p class="osp-section-title" style="margin:0;">'+CAT_LABELS[cat]+'</p>' +
+        '<p class="osp-section-title" style="margin:0;">'+catIconHtml(cat)+CAT_LABELS[cat]+'</p>' +
         '<span class="osp-num" style="font-weight:700; font-size:16px; color:'+scoreColor(catScore)+';">'+(catScore!==null?catScore:'-')+' <span style="font-size:10px; color:#a37a00; font-weight:600;">/ 20</span></span>' +
       '</div>'
     );
@@ -1215,10 +1217,10 @@ function renderDetail(){
 
   var tabs = el(
     '<div class="osp-tabs">' +
-      '<div class="osp-tab" data-tab="bilgi">Bilgi</div>' +
-      '<div class="osp-tab" data-tab="veri">Test Verisi</div>' +
-      '<div class="osp-tab" data-tab="sonuc">Sonuçlar</div>' +
-      '<div class="osp-tab" data-tab="karne">Karne</div>' +
+      '<div class="osp-tab" data-tab="bilgi"><i class="ti ti-info-circle" aria-hidden="true" style="margin-right:4px; vertical-align:-2px;"></i>Bilgi</div>' +
+      '<div class="osp-tab" data-tab="veri"><i class="ti ti-edit" aria-hidden="true" style="margin-right:4px; vertical-align:-2px;"></i>Test Verisi</div>' +
+      '<div class="osp-tab" data-tab="sonuc"><i class="ti ti-chart-bar" aria-hidden="true" style="margin-right:4px; vertical-align:-2px;"></i>Sonuçlar</div>' +
+      '<div class="osp-tab" data-tab="karne"><i class="ti ti-award" aria-hidden="true" style="margin-right:4px; vertical-align:-2px;"></i>Karne</div>' +
     '</div>'
   );
   Array.prototype.forEach.call(tabs.querySelectorAll('.osp-tab'), function(t){
@@ -1546,7 +1548,7 @@ function renderGuideNormlar(container){
     var catRows = norm.rows.filter(function(r){ return ROW_CAT[r[0]]===cat; });
     if(catRows.length===0) return;
     var catSec = el('<div class="osp-section" style="margin-top:10px;"></div>');
-    catSec.appendChild(el('<p style="font-size:11px; font-weight:700; color:#d32f2f; text-transform:uppercase; letter-spacing:0.6px; margin:0 0 6px 4px;">'+NORM_CAT_LABELS[cat]+'</p>'));
+    catSec.appendChild(el('<p style="font-size:11px; font-weight:700; color:#d32f2f; text-transform:uppercase; letter-spacing:0.6px; margin:0 0 6px 4px;">'+catIconHtml(cat)+NORM_CAT_LABELS[cat]+'</p>'));
     var catCard = el('<div class="osp-card"></div>');
     var tableHtml = '<table class="osp-norm-table"><tr><th>Test</th><th>Zayıf</th><th>Ort. altı</th><th>Ortalama</th><th>Ort. üstü</th><th>İyi/Çok iyi</th></tr>';
     catRows.forEach(function(r){
@@ -1636,7 +1638,7 @@ function renderGuideNormlarEdit(container){
     d.rows.forEach(function(r, ri){ if(ROW_CAT[r[0]]===cat) indices.push(ri); });
     if(indices.length===0) return;
     var catSec = el('<div class="osp-section" style="margin-top:10px;"></div>');
-    catSec.appendChild(el('<p style="font-size:11px; font-weight:700; color:#d32f2f; text-transform:uppercase; letter-spacing:0.6px; margin:0 0 6px 4px;">'+NORM_CAT_LABELS_EDIT[cat]+'</p>'));
+    catSec.appendChild(el('<p style="font-size:11px; font-weight:700; color:#d32f2f; text-transform:uppercase; letter-spacing:0.6px; margin:0 0 6px 4px;">'+catIconHtml(cat)+NORM_CAT_LABELS_EDIT[cat]+'</p>'));
     var catCard = el('<div class="osp-card"></div>');
     indices.forEach(function(ri, i){
       var r = d.rows[ri];
@@ -1677,9 +1679,9 @@ function renderGuide(){
 
   var tabs = el(
     '<div class="osp-tabs">' +
-      '<div class="osp-tab" data-tab="aciklama">Açıklama</div>' +
-      '<div class="osp-tab" data-tab="protokol">Test Protokolleri</div>' +
-      '<div class="osp-tab" data-tab="norm">Norm Değerleri</div>' +
+      '<div class="osp-tab" data-tab="aciklama"><i class="ti ti-info-circle" aria-hidden="true" style="margin-right:4px; vertical-align:-2px;"></i>Açıklama</div>' +
+      '<div class="osp-tab" data-tab="protokol"><i class="ti ti-clipboard-list" aria-hidden="true" style="margin-right:4px; vertical-align:-2px;"></i>Test Protokolleri</div>' +
+      '<div class="osp-tab" data-tab="norm"><i class="ti ti-ruler-2" aria-hidden="true" style="margin-right:4px; vertical-align:-2px;"></i>Norm Değerleri</div>' +
     '</div>'
   );
   Array.prototype.forEach.call(tabs.querySelectorAll('.osp-tab'), function(t){

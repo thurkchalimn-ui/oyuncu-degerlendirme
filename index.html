@@ -1391,6 +1391,17 @@ function resetNormsToDefault(){
   render();
 }
 
+var ROW_CAT = {
+  '20m Sprint (sn)':'fiz', 'Illinois Çeviklik (sn)':'fiz', 'T-Test (sn)':'fiz', '6 Dk Koşu (m)':'fiz',
+  '505 Çeviklik Testi (sn)':'fiz', 'Dikey Sıçrama - CMJ (cm)':'fiz', '10m Sürat (sn)':'fiz',
+  'Otur-Uzan Esneklik (cm)':'fiz', 'Y Denge (cm)':'fiz',
+  'Grid Konsantrasyon':'psi', 'Stroop (doğru/45sn)':'psi', 'Baskı Performans Farkı':'psi',
+  'Reaksiyon Zamanı Testi (ms)':'psi', 'Karar Verme Testi (doğru/10)':'psi',
+  'Pas İsabet (%)':'tek', 'Slalom Dripling (sn)':'tek', 'Top Sektirme':'tek', 'Şut İsabet (%)':'tek',
+  'Duvar Pası':'tek', 'Topla Sürat Testi (sn)':'tek', 'İlk Dokunuş Kontrol (başarılı/10)':'tek',
+  'Uzun Pas İsabet (%)':'tek', 'Kafa Vuruşu İsabet (%)':'tek', 'Zayıf Ayak Pas İsabet (%)':'tek'
+};
+
 function renderGuideNormlar(container){
   var ageTabs = el('<div class="osp-tabs" style="margin-bottom:14px;"></div>');
   AGE_GROUPS.forEach(function(ag){
@@ -1429,15 +1440,26 @@ function renderGuideNormlar(container){
 
   var sec3 = el('<div class="osp-section"></div>');
   sec3.appendChild(el('<p class="osp-section-title">Diğer testler (pratik referans aralıkları)</p>'));
-  var card3 = el('<div class="osp-card"></div>');
-  var tableHtml = '<table class="osp-norm-table"><tr><th>Test</th><th>Zayıf</th><th>Ort. altı</th><th>Ortalama</th><th>Ort. üstü</th><th>İyi/Çok iyi</th></tr>';
-  norm.rows.forEach(function(r){
-    tableHtml += '<tr><td>'+r[0]+'</td><td>'+r[1]+'</td><td>'+r[2]+'</td><td>'+r[3]+'</td><td>'+r[4]+'</td><td>'+r[5]+'</td></tr>';
-  });
-  tableHtml += '</table>';
-  card3.innerHTML = tableHtml + '<p class="osp-norm-note">Bu testler için büyük ölçekli uluslararası norm verisi bulunmadığından aralıklar yayınlanmış literatürden derlenmiş pratik başlangıç referanslarıdır; kulübünüzün kendi verisini biriktirdikçe kendi normlarınızı geliştirmeniz önerilir.</p>';
-  sec3.appendChild(card3);
   container.appendChild(sec3);
+
+  var NORM_CAT_LABELS = { fiz:'Fiziksel', psi:'Psikolojik', tek:'Teknik' };
+  ['fiz','psi','tek'].forEach(function(cat){
+    var catRows = norm.rows.filter(function(r){ return ROW_CAT[r[0]]===cat; });
+    if(catRows.length===0) return;
+    var catSec = el('<div class="osp-section" style="margin-top:10px;"></div>');
+    catSec.appendChild(el('<p style="font-size:11px; font-weight:700; color:#d32f2f; text-transform:uppercase; letter-spacing:0.6px; margin:0 0 6px 4px;">'+NORM_CAT_LABELS[cat]+'</p>'));
+    var catCard = el('<div class="osp-card"></div>');
+    var tableHtml = '<table class="osp-norm-table"><tr><th>Test</th><th>Zayıf</th><th>Ort. altı</th><th>Ortalama</th><th>Ort. üstü</th><th>İyi/Çok iyi</th></tr>';
+    catRows.forEach(function(r){
+      tableHtml += '<tr><td>'+r[0]+'</td><td>'+r[1]+'</td><td>'+r[2]+'</td><td>'+r[3]+'</td><td>'+r[4]+'</td><td>'+r[5]+'</td></tr>';
+    });
+    tableHtml += '</table>';
+    catCard.innerHTML = tableHtml;
+    catSec.appendChild(catCard);
+    container.appendChild(catSec);
+  });
+  var normFootnote = el('<p class="osp-norm-note" style="margin:8px 4px 0;">Bu testler için büyük ölçekli uluslararası norm verisi bulunmadığından aralıklar yayınlanmış literatürden derlenmiş pratik başlangıç referanslarıdır; kulübünüzün kendi verisini biriktirdikçe kendi normlarınızı geliştirmeniz önerilir.</p>');
+  container.appendChild(normFootnote);
 
   if(isCustom){
     var customNote = el('<p style="font-size:11px; color:#a37a00; text-align:center; margin:4px 0 10px;">Bu yaş grubu için elle düzenlenmiş değerler kullanılıyor.</p>');
@@ -1507,22 +1529,33 @@ function renderGuideNormlarEdit(container){
 
   var sec3 = el('<div class="osp-section" style="margin-top:14px;"></div>');
   sec3.appendChild(el('<p class="osp-section-title">Diğer testler (Zayıf / Ort.altı / Ortalama / Ort.üstü / İyi)</p>'));
-  var card3 = el('<div class="osp-card"></div>');
-  d.rows.forEach(function(r, ri){
-    var rowLabel = el('<p class="osp-norm-edit-label" style="margin-top:'+(ri>0?'10px':'0')+';">'+r[0]+'</p>');
-    card3.appendChild(rowLabel);
-    var grid = el('<div class="osp-norm-edit-grid"></div>');
-    for(var c=1;c<=5;c++){
-      var inp2 = document.createElement('input');
-      inp2.type = 'text';
-      inp2.value = r[c];
-      (function(rowIdx,colIdx){ inp2.addEventListener('input', function(){ d.rows[rowIdx][colIdx] = inp2.value; }); })(ri,c);
-      grid.appendChild(inp2);
-    }
-    card3.appendChild(grid);
-  });
-  sec3.appendChild(card3);
   container.appendChild(sec3);
+
+  var NORM_CAT_LABELS_EDIT = { fiz:'Fiziksel', psi:'Psikolojik', tek:'Teknik' };
+  ['fiz','psi','tek'].forEach(function(cat){
+    var indices = [];
+    d.rows.forEach(function(r, ri){ if(ROW_CAT[r[0]]===cat) indices.push(ri); });
+    if(indices.length===0) return;
+    var catSec = el('<div class="osp-section" style="margin-top:10px;"></div>');
+    catSec.appendChild(el('<p style="font-size:11px; font-weight:700; color:#d32f2f; text-transform:uppercase; letter-spacing:0.6px; margin:0 0 6px 4px;">'+NORM_CAT_LABELS_EDIT[cat]+'</p>'));
+    var catCard = el('<div class="osp-card"></div>');
+    indices.forEach(function(ri, i){
+      var r = d.rows[ri];
+      var rowLabel = el('<p class="osp-norm-edit-label" style="margin-top:'+(i>0?'10px':'0')+';">'+r[0]+'</p>');
+      catCard.appendChild(rowLabel);
+      var grid = el('<div class="osp-norm-edit-grid"></div>');
+      for(var c=1;c<=5;c++){
+        var inp2 = document.createElement('input');
+        inp2.type = 'text';
+        inp2.value = r[c];
+        (function(rowIdx,colIdx){ inp2.addEventListener('input', function(){ d.rows[rowIdx][colIdx] = inp2.value; }); })(ri,c);
+        grid.appendChild(inp2);
+      }
+      catCard.appendChild(grid);
+    });
+    catSec.appendChild(catCard);
+    container.appendChild(catSec);
+  });
 
   var btnRow = el('<div class="osp-fab-row" style="display:flex; gap:8px;"></div>');
   var saveBtn = el('<button class="osp-btn-primary">Kaydet</button>');

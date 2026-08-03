@@ -66,6 +66,7 @@
   .osp-player-name, .osp-team-name { font-size: 15px; font-weight: 600; color: #1a1a1a; margin: 0; }
   .osp-player-meta, .osp-team-meta { font-size: 12px; color: #a37a00; margin: 2px 0 0; font-weight: 500; }
   .osp-score-pill { margin-left: auto; text-align: center; flex-shrink: 0; }
+  .osp-score-badge { margin-left: auto; flex-shrink: 0; font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 13px; padding: 5px 10px; border-radius: 20px; }
   .osp-card-delete { background: none; border: none; color: #c9a94a; padding: 4px; margin-left: 6px; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
   .osp-card-delete:active { color: #d32f2f; }
   .osp-check-row { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 1px solid #f6ecc7; }
@@ -452,6 +453,17 @@ function num(v){ if(v===undefined||v===null||v===''){return null;} var n=parseFl
 function round1(n){ return Math.round(n*10)/10; }
 function clamp(n,a,b){ return Math.max(a,Math.min(b,n)); }
 function escapeHtml(s){ return String(s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+
+function calcAge(dateStr){
+  if(!dateStr) return null;
+  var b = new Date(dateStr);
+  if(isNaN(b.getTime())) return null;
+  var today = new Date();
+  var age = today.getFullYear() - b.getFullYear();
+  var m = today.getMonth() - b.getMonth();
+  if(m < 0 || (m===0 && today.getDate() < b.getDate())) age--;
+  return age;
+}
 function el(html){ var d = document.createElement('div'); d.innerHTML = html.trim(); return d.firstChild; }
 
 function extractYouTubeId(url){
@@ -548,10 +560,133 @@ function verdictText(score){
 
 function scoreColor(score){
   if(score===null) return '#c9c9c9';
-  if(score>=16) return '#2e7d32';
-  if(score>=13) return '#d32f2f';
+  if(score>=16) return '#1b7a3d';
+  if(score>=13) return '#66bb6a';
   if(score>=10) return '#f0b429';
-  return '#b71c1c';
+  return '#d32f2f';
+}
+
+function donutRing(score, size){
+  size = size || 120;
+  var pct = score!==null ? Math.round(score/20*100) : 0;
+  var color = scoreColor(score);
+  var stroke = Math.round(size*0.1);
+  var r = (size-stroke)/2;
+  var c = 2*Math.PI*r;
+  var offset = c*(1-pct/100);
+  var fontBig = Math.round(size*0.24);
+  var fontSmall = Math.round(size*0.09);
+  return '<div style="position:relative; width:'+size+'px; height:'+size+'px; flex-shrink:0;">' +
+    '<svg width="'+size+'" height="'+size+'" viewBox="0 0 '+size+' '+size+'">' +
+      '<circle cx="'+size/2+'" cy="'+size/2+'" r="'+r+'" fill="none" stroke="#f0e6c8" stroke-width="'+stroke+'"></circle>' +
+      '<circle cx="'+size/2+'" cy="'+size/2+'" r="'+r+'" fill="none" stroke="'+color+'" stroke-width="'+stroke+'" stroke-linecap="round" stroke-dasharray="'+c+'" stroke-dashoffset="'+offset+'" transform="rotate(-90 '+size/2+' '+size/2+')"></circle>' +
+    '</svg>' +
+    '<div style="position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;">' +
+      '<span style="font-family:\'Rajdhani\',sans-serif; font-weight:700; font-size:'+fontBig+'px; color:'+color+'; line-height:1;">'+(score!==null?score:'-')+'</span>' +
+      '<span style="font-family:\'Inter\',sans-serif; font-weight:600; font-size:'+fontSmall+'px; color:#a37a00; margin-top:2px;">'+(score!==null?'/ 20':'Veri yok')+'</span>' +
+    '</div>' +
+  '</div>';
+}
+
+var CAT_MINI_ICON = {
+  fiz: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13" cy="4" r="1.7"></circle><path d="M4 17l4-2 2-5 4 2 3-3 3 2"></path><path d="M9 10l-2 8 5 4"></path><path d="M13 13l3 2-1 6"></path></svg>',
+  psi: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 2a3.5 3.5 0 00-3.5 3.5V6a3 3 0 00-2 5 3 3 0 002 5.5V17a3.5 3.5 0 003.5 3.5"></path><path d="M14.5 2a3.5 3.5 0 013.5 3.5V6a3 3 0 012 5 3 3 0 01-2 5.5V17a3.5 3.5 0 01-3.5 3.5"></path><path d="M9.5 2v19"></path><path d="M14.5 2v19"></path></svg>',
+  tek: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7l3 2.2-1.2 3.6H10.2L9 9.2z"></path><path d="M12 3v4M12 17v4M4.5 8l3.2 1M16.3 9l3.2-1M4.5 16l3.2-1M16.3 15l3.2 1"></path></svg>'
+};
+
+function catScoreCardsHtml(catScores){
+  var order = ['fiz','psi','tek'];
+  var html = '<div style="display:grid; grid-template-columns:repeat(3,1fr); gap:8px;">';
+  order.forEach(function(cat){
+    if(!(cat in catScores)) return;
+    var s = catScores[cat];
+    var color = scoreColor(s);
+    html += '<div style="background:#fffdf5; border:1px solid #f2e2ab; border-radius:12px; padding:12px 6px; text-align:center;">' +
+      '<div style="color:'+color+'; display:flex; justify-content:center; margin-bottom:5px;">'+CAT_MINI_ICON[cat]+'</div>' +
+      '<div style="font-family:\'Rajdhani\',sans-serif; font-weight:700; font-size:19px; color:'+color+';">'+(s!==null?s:'-')+'<span style="font-size:10px; color:#a37a00;">/20</span></div>' +
+      '<div style="font-size:10px; color:#a37a00; font-weight:600; margin-top:2px;">'+CAT_LABELS[cat]+'</div>' +
+    '</div>';
+  });
+  html += '</div>';
+  return html;
+}
+
+function hexToRgba(hex, alpha){
+  var h = hex.replace('#','');
+  var r = parseInt(h.substring(0,2),16), g = parseInt(h.substring(2,4),16), b = parseInt(h.substring(4,6),16);
+  return 'rgba('+r+','+g+','+b+','+alpha+')';
+}
+
+function radarChartHtml(items, color){
+  var N = items.length;
+  if(N < 3) return '';
+  var size = 240;
+  var labelPad = 52;
+  var cx = size/2, cy = size/2;
+  var maxR = size/2 - labelPad;
+  var svg = '<svg width="'+size+'" height="'+size+'" viewBox="0 0 '+size+' '+size+'" style="overflow:visible;">';
+  for(var ring=1; ring<=4; ring++){
+    var rr = maxR*ring/4;
+    var pts = [];
+    for(var i=0;i<N;i++){
+      var ang = -Math.PI/2 + i*(2*Math.PI/N);
+      pts.push((cx+rr*Math.cos(ang)).toFixed(1)+','+(cy+rr*Math.sin(ang)).toFixed(1));
+    }
+    svg += '<polygon points="'+pts.join(' ')+'" fill="none" stroke="#eee0c8" stroke-width="1"></polygon>';
+  }
+  for(i=0;i<N;i++){
+    var ang2 = -Math.PI/2 + i*(2*Math.PI/N);
+    var x2 = cx+maxR*Math.cos(ang2), y2 = cy+maxR*Math.sin(ang2);
+    svg += '<line x1="'+cx+'" y1="'+cy+'" x2="'+x2.toFixed(1)+'" y2="'+y2.toFixed(1)+'" stroke="#eee0c8" stroke-width="1"></line>';
+  }
+  var dataPts = [];
+  items.forEach(function(it,i){
+    var ang = -Math.PI/2 + i*(2*Math.PI/N);
+    var r = maxR * clamp(it.value,0,1);
+    dataPts.push((cx+r*Math.cos(ang)).toFixed(1)+','+(cy+r*Math.sin(ang)).toFixed(1));
+  });
+  svg += '<polygon points="'+dataPts.join(' ')+'" fill="'+hexToRgba(color,0.22)+'" stroke="'+color+'" stroke-width="2" stroke-linejoin="round"></polygon>';
+  items.forEach(function(it,i){
+    var ang = -Math.PI/2 + i*(2*Math.PI/N);
+    var r = maxR*clamp(it.value,0,1);
+    var x=cx+r*Math.cos(ang), y=cy+r*Math.sin(ang);
+    svg += '<circle cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="3" fill="'+color+'"></circle>';
+  });
+  svg += '</svg>';
+
+  var labelsHtml = '';
+  items.forEach(function(it,i){
+    var ang = -Math.PI/2 + i*(2*Math.PI/N);
+    var lx = cx+(maxR+labelPad-8)*Math.cos(ang);
+    var ly = cy+(maxR+labelPad-8)*Math.sin(ang);
+    var cosv = Math.cos(ang);
+    var align = cosv>0.25 ? 'left' : (cosv<-0.25 ? 'right' : 'center');
+    var translateX = align==='left' ? '0%' : (align==='right' ? '-100%' : '-50%');
+    labelsHtml += '<div style="position:absolute; left:'+lx.toFixed(1)+'px; top:'+ly.toFixed(1)+'px; transform:translate('+translateX+',-50%); width:64px; text-align:'+align+'; font-size:9px; font-weight:600; color:#7a3b00; line-height:1.2;">'+it.label+'</div>';
+  });
+
+  return '<div style="position:relative; width:'+size+'px; height:'+size+'px; margin:0 auto;">'+svg+labelsHtml+'</div>';
+}
+
+function testGaugeHtml(test, score, valTxt){
+  var pct = score!==null ? clamp((score-1)/19*100,0,100) : 0;
+  var color = scoreColor(score);
+  var trackInner = score!==null
+    ? '<div style="position:absolute; top:0; left:0; height:100%; width:'+pct+'%; border-radius:4px; background:'+color+';"></div>' +
+      '<div style="position:absolute; top:50%; left:'+pct+'%; width:14px; height:14px; border-radius:50%; background:#ffffff; border:3px solid '+color+'; transform:translate(-50%,-50%); box-shadow:0 1px 3px rgba(0,0,0,0.25);"></div>'
+    : '';
+  return '<div style="margin-bottom:14px;">' +
+    '<div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:5px;">' +
+      '<span style="font-size:12.5px; font-weight:600; color:#1a1a1a;">'+test.label+'</span>' +
+      '<span style="font-family:\'Rajdhani\',sans-serif; font-weight:700; font-size:14px; color:'+color+';">'+valTxt+'</span>' +
+    '</div>' +
+    '<div style="position:relative; height:8px; border-radius:4px; background:#eee0c8; margin-bottom:4px;">' +
+      trackInner +
+    '</div>' +
+    '<div style="display:flex; justify-content:space-between; font-size:9px; color:#a37a00; font-weight:600; text-transform:uppercase;">' +
+      '<span>Zayıf</span><span>Orta</span><span>İyi</span><span>Mükemmel</span>' +
+    '</div>' +
+  '</div>';
 }
 
 function save(){
@@ -790,6 +925,7 @@ function fieldRow(label, key, value, opts){
   input.addEventListener('input', function(){
     var v = opts.type==='text' || opts.type==='date' ? input.value : num(input.value);
     updateField(key, v);
+    if(opts.onChange) opts.onChange(v);
   });
   wrap.appendChild(input);
   return wrap;
@@ -904,10 +1040,7 @@ function renderPlayers(){
               '<p class="osp-player-name">'+(p.adSoyad ? escapeHtml(p.adSoyad) : 'İsimsiz oyuncu')+'</p>' +
               '<p class="osp-player-meta">'+escapeHtml(t.name)+(p.yas?' · '+p.yas+' yaş':'')+'</p>' +
             '</div>' +
-            '<div class="osp-score-pill">' +
-              '<div class="osp-score-num" style="color:'+scoreColor(score)+'">'+(score!==null?score:'-')+'</div>' +
-              '<div class="osp-score-label">Genel Not</div>' +
-            '</div>' +
+            '<span class="osp-score-badge" style="background:'+(score!==null?scoreColor(score)+'22':'#eee')+'; color:'+scoreColor(score)+';">'+(score!==null?score+'/20':'-')+'</span>' +
           '</div>'
         );
         card.addEventListener('click', function(){
@@ -949,10 +1082,7 @@ function renderSquad(){
             '<p class="osp-player-name">'+(p.adSoyad ? escapeHtml(p.adSoyad) : 'İsimsiz oyuncu')+'</p>' +
             '<p class="osp-player-meta">'+(p.yas ? p.yas+' yaş' : 'Yaş girilmedi')+'</p>' +
           '</div>' +
-          '<div class="osp-score-pill">' +
-            '<div class="osp-score-num" style="color:'+scoreColor(score)+'">'+(score!==null?score:'-')+'</div>' +
-            '<div class="osp-score-label">Genel Not</div>' +
-          '</div>' +
+          '<span class="osp-score-badge" style="background:'+(score!==null?scoreColor(score)+'22':'#eee')+'; color:'+scoreColor(score)+';">'+(score!==null?score+'/20':'-')+'</span>' +
           '<button class="osp-card-delete" title="Oyuncuyu sil" aria-label="Oyuncuyu sil"><i class="ti ti-trash" aria-hidden="true"></i></button>' +
         '</div>'
       );
@@ -999,14 +1129,21 @@ function renderDetailTabInfo(container, p){
 
   var card = el('<div class="osp-card"></div>');
   card.appendChild(fieldRow('Ad Soyad', 'adSoyad', p.adSoyad, {type:'text', placeholder:'Oyuncu adı'}));
+  card.appendChild(fieldRow('Mevkii', 'mevkii', p.mevkii, {type:'text', placeholder:'Örn. Forvet, Orta Saha, Kaleci'}));
   var row1 = el('<div class="osp-field-row"></div>');
   row1.appendChild(fieldRow('Forma No', 'no', p.no, {step:'1'}));
-  row1.appendChild(fieldRow('Yaş', 'yas', p.yas, {step:'1'}));
+  var yasWrap = el('<div class="osp-field"></div>');
+  yasWrap.appendChild(el('<label>Yaş</label>'));
+  yasWrap.appendChild(el('<input type="text" disabled style="background:#f3ead0; color:#7a3b00; font-weight:600;" value="'+(p.yas!=null?p.yas+' (doğum tarihinden)':'Doğum tarihi gir')+'">'));
+  row1.appendChild(yasWrap);
   card.appendChild(row1);
-  card.appendChild(fieldRow('Doğum Tarihi', 'dogumTarihi', p.dogumTarihi, {type:'date'}));
+  card.appendChild(fieldRow('Doğum Tarihi', 'dogumTarihi', p.dogumTarihi, {type:'date', onChange:function(v){
+    var age = calcAge(v);
+    if(age!==null){ p.yas = age; updateField('yas', age); render(); }
+  }}));
   var row2 = el('<div class="osp-field-row"></div>');
-  row2.appendChild(fieldRow('Boy', 'boy', p.boy, {unit:'cm', step:'1'}));
-  row2.appendChild(fieldRow('Kilo', 'kilo', p.kilo, {unit:'kg', step:'0.1'}));
+  row2.appendChild(fieldRow('Boy', 'boy', p.boy, {unit:'cm', step:'1', onChange:function(){ updateVkiDisplay(); }}));
+  row2.appendChild(fieldRow('Kilo', 'kilo', p.kilo, {unit:'kg', step:'0.1', onChange:function(){ updateVkiDisplay(); }}));
   card.appendChild(row2);
   container.appendChild(card);
 
@@ -1014,10 +1151,16 @@ function renderDetailTabInfo(container, p){
   var vkiCard = el(
     '<div class="osp-card" style="margin-top:10px; display:flex; justify-content:space-between; align-items:center;">' +
       '<span style="font-size:12.5px; color:#7a3b00; font-weight:600;">VKİ (BMI)</span>' +
-      '<span class="osp-num" style="font-weight:700; font-size:16px; color:#d32f2f;">'+(d.vki!==null?d.vki:'-')+'</span>' +
+      '<span class="osp-num" id="osp-vki-value" style="font-weight:700; font-size:16px; color:#d32f2f;">'+(d.vki!==null?d.vki:'-')+'</span>' +
     '</div>'
   );
   container.appendChild(vkiCard);
+
+  function updateVkiDisplay(){
+    var dd = computeDerived(p);
+    var el2 = document.getElementById('osp-vki-value');
+    if(el2) el2.textContent = dd.vki!==null ? dd.vki : '-';
+  }
 
   var delBtn = el('<button class="osp-delete-btn"><i class="ti ti-trash" aria-hidden="true" style="margin-right:5px; vertical-align:-2px;"></i>Oyuncuyu sil</button>');
   delBtn.addEventListener('click', function(){
@@ -1051,50 +1194,53 @@ function renderDetailTabSonuc(container, p){
   var merged = Object.assign({}, p, d);
   var score = overallScore(p, team);
 
-  var overallCard = el('<div class="osp-card osp-overall"></div>');
+  var overallCard = el('<div class="osp-card" style="text-align:center; padding:20px 14px;"></div>');
   overallCard.innerHTML =
-    '<div class="osp-overall-num" style="color:'+scoreColor(score)+'">'+(score!==null?score:'-')+'</div>' +
-    '<div class="osp-overall-scale">/ 20 GENEL NOT · '+ageGroup+' YAŞ NORMU</div>' +
-    '<div class="osp-overall-verdict">'+verdictText(score)+'</div>';
+    '<div style="display:flex; justify-content:center; margin-bottom:10px;">'+donutRing(score,130)+'</div>' +
+    '<div style="font-size:11px; color:#a37a00; font-weight:700; text-transform:uppercase; letter-spacing:0.4px;">Genel Performans · '+ageGroup+' Yaş Normu</div>' +
+    '<div class="osp-overall-verdict" style="margin-top:6px;">'+verdictText(score)+'</div>';
   container.appendChild(overallCard);
+
+  var catScores = {};
+  ['fiz','psi','tek'].forEach(function(cat){
+    var catTests = tests.filter(function(t){ return t.cat===cat; });
+    if(catTests.length===0) return;
+    var scores = [];
+    catTests.forEach(function(t){
+      var raw = t.source==='input' ? num(p[t.key]) : merged[t.source];
+      var s = scoreFor(t, raw);
+      if(s!==null) scores.push(s);
+    });
+    catScores[cat] = scores.length ? round1(scores.reduce(function(a,b){return a+b;},0)/scores.length) : null;
+  });
+  var catCardsWrap = el('<div style="margin-top:12px;"></div>');
+  catCardsWrap.innerHTML = catScoreCardsHtml(catScores);
+  container.appendChild(catCardsWrap);
 
   ['fiz','psi','tek'].forEach(function(cat){
     var catTests = tests.filter(function(t){ return t.cat===cat; });
     if(catTests.length===0) return;
-    var catScores = [];
-    catTests.forEach(function(t){
-      var raw = t.source==='input' ? num(p[t.key]) : merged[t.source];
-      var s = scoreFor(t, raw);
-      if(s!==null) catScores.push(s);
-    });
-    var catScore = catScores.length ? round1(catScores.reduce(function(a,b){return a+b;},0)/catScores.length) : null;
 
-    var sec = el('<div class="osp-section" style="margin-top:14px;"></div>');
-    var secHead = el(
-      '<div style="display:flex; align-items:baseline; justify-content:space-between; margin:0 4px 8px;">' +
-        '<p class="osp-section-title" style="margin:0;">'+catIconHtml(cat)+CAT_LABELS[cat]+'</p>' +
-        '<span class="osp-num" style="font-weight:700; font-size:16px; color:'+scoreColor(catScore)+';">'+(catScore!==null?catScore:'-')+' <span style="font-size:10px; color:#a37a00; font-weight:600;">/ 20</span></span>' +
-      '</div>'
-    );
-    sec.appendChild(secHead);
+    var sec = el('<div class="osp-section" style="margin-top:16px;"></div>');
+    sec.appendChild(el('<p class="osp-section-title">'+catIconHtml(cat)+CAT_LABELS[cat]+'</p>'));
+
+    if(catTests.length>=3){
+      var radarItems = catTests.map(function(t){
+        var raw = t.source==='input' ? num(p[t.key]) : merged[t.source];
+        var s = scoreFor(t, raw);
+        return { label:t.label, value: s!==null ? (s-1)/19 : 0 };
+      });
+      var radarCard = el('<div class="osp-card" style="padding-top:26px; padding-bottom:14px; margin-bottom:10px;"></div>');
+      radarCard.innerHTML = radarChartHtml(radarItems, scoreColor(catScores[cat]));
+      sec.appendChild(radarCard);
+    }
+
     var card = el('<div class="osp-card"></div>');
     catTests.forEach(function(t){
       var raw = t.source==='input' ? num(p[t.key]) : merged[t.source];
       var s = scoreFor(t, raw);
-      var pct = s!==null ? ((s-1)/19*100) : 0;
-      var row = el(
-        '<div class="osp-test-row">' +
-          '<div class="osp-test-info">' +
-            '<p class="osp-test-name">'+t.label+'</p>' +
-            '<p class="osp-test-val">'+(raw!==null?raw+' '+t.unit:'Veri yok')+'</p>' +
-          '</div>' +
-          '<div class="osp-bar-wrap">' +
-            '<div class="osp-bar-track"><div class="osp-bar-fill" style="width:'+pct+'%; background:'+scoreColor(s)+';"></div></div>' +
-            '<div class="osp-bar-score" style="color:'+scoreColor(s)+'">'+(s!==null?round1(s):'-')+'</div>' +
-          '</div>' +
-        '</div>'
-      );
-      card.appendChild(row);
+      var valTxt = raw!==null ? (raw+' '+t.unit) : 'Veri yok';
+      card.innerHTML += testGaugeHtml(t, s, valTxt);
     });
     sec.appendChild(card);
     container.appendChild(sec);
@@ -1160,14 +1306,28 @@ function renderDetailTabKarne(container, p){
 
   var bodyEl = el('<div class="osp-karne-body"></div>');
 
-  var overall = el(
-    '<div class="osp-karne-overall2">' +
-      '<div><div class="osp-karne-overall2-label">Genel Performans Notu</div>' +
-      (team ? '<div style="font-size:11px; color:#a37a00; font-weight:600; margin-top:2px;">'+escapeHtml(team.name)+'</div>' : '') + '</div>' +
-      '<div class="osp-karne-overall2-num" style="color:'+scoreColor(score)+'">'+(score!==null?score:'-')+'<span style="font-size:14px; color:#a37a00;"> /20</span></div>' +
-    '</div>'
-  );
+  var overall = el('<div class="osp-karne-overall2" style="flex-direction:column; align-items:center; gap:10px;"></div>');
+  overall.innerHTML =
+    donutRing(score,110) +
+    '<div style="text-align:center;"><div class="osp-karne-overall2-label">Genel Performans Notu</div>' +
+    (team ? '<div style="font-size:11px; color:#a37a00; font-weight:600; margin-top:2px;">'+escapeHtml(team.name)+'</div>' : '') + '</div>';
   bodyEl.appendChild(overall);
+
+  var catScoresKarne = {};
+  ['fiz','psi','tek'].forEach(function(cat){
+    var catTests = tests.filter(function(t){ return t.cat===cat; });
+    if(catTests.length===0) return;
+    var scores = [];
+    catTests.forEach(function(t){
+      var raw = t.source==='input' ? num(p[t.key]) : merged[t.source];
+      var s = scoreFor(t, raw);
+      if(s!==null) scores.push(s);
+    });
+    catScoresKarne[cat] = scores.length ? round1(scores.reduce(function(a,b){return a+b;},0)/scores.length) : null;
+  });
+  var catCardsKarne = el('<div style="margin:14px 0 4px;"></div>');
+  catCardsKarne.innerHTML = catScoreCardsHtml(catScoresKarne);
+  bodyEl.appendChild(catCardsKarne);
 
   var CAT_TITLES = { fiz:'Fiziksel Göstergeler', psi:'Psikolojik Göstergeler', tek:'Teknik Göstergeler' };
 
@@ -1180,23 +1340,12 @@ function renderDetailTabKarne(container, p){
     );
     bodyEl.appendChild(secHead);
 
-    var grid = el('<div class="osp-karne-stat-grid"></div>');
+    var grid = el('<div></div>');
     catTests.forEach(function(t){
       var raw = t.source==='input' ? num(p[t.key]) : merged[t.source];
       var s = scoreFor(t, raw);
-      var pct = s!==null ? ((s-1)/19*100) : 0;
       var valTxt = raw!==null ? (raw+' '+t.unit) : 'Veri yok';
-      var stat = el(
-        '<div class="osp-karne-stat">' +
-          '<div class="osp-karne-stat-top"><span class="osp-karne-stat-label">'+t.label+'</span></div>' +
-          '<div style="display:flex; align-items:center; gap:8px;">' +
-            '<div class="osp-karne-stat-track" style="flex:1;"><div class="osp-karne-stat-fill" style="width:'+pct+'%; background:'+scoreColor(s)+';"></div></div>' +
-            '<span class="osp-karne-stat-val" style="color:'+scoreColor(s)+'">'+(s!==null?round1(s):'-')+'</span>' +
-          '</div>' +
-          '<div style="font-size:10px; color:#999; margin-top:2px;">'+valTxt+'</div>' +
-        '</div>'
-      );
-      grid.appendChild(stat);
+      grid.innerHTML += testGaugeHtml(t, s, valTxt);
     });
     bodyEl.appendChild(grid);
   });

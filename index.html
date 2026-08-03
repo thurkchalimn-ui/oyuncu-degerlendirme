@@ -1308,47 +1308,55 @@ function renderDetailTabBio(container, p){
     {value:'', label:'Seçiniz'},
     {value:'Erkek', label:'Erkek'},
     {value:'Kiz', label:'Kız'}
-  ], onChange:function(){ render(); }}));
+  ], onChange:function(){ updateBioDisplay(); }}));
   var row = el('<div class="osp-field-row"></div>');
-  row.appendChild(fieldRow("Baba Boyu", 'babaBoy', p.babaBoy, {unit:'cm', step:'1', onChange:function(){ render(); }}));
-  row.appendChild(fieldRow("Anne Boyu", 'anneBoy', p.anneBoy, {unit:'cm', step:'1', onChange:function(){ render(); }}));
+  row.appendChild(fieldRow("Baba Boyu", 'babaBoy', p.babaBoy, {unit:'cm', step:'1', onChange:function(){ updateBioDisplay(); }}));
+  row.appendChild(fieldRow("Anne Boyu", 'anneBoy', p.anneBoy, {unit:'cm', step:'1', onChange:function(){ updateBioDisplay(); }}));
   card.appendChild(row);
   container.appendChild(card);
 
-  var result = computeBioBanding(p);
+  var resultWrap = el('<div id="osp-bio-result"></div>');
+  container.appendChild(resultWrap);
 
-  if(!result.ok){
-    var msg = result.error==='aralikDisi'
-      ? 'Bu hesaplama yöntemi 4 - 17.5 yaş aralığındaki oyuncular için geçerlidir.'
-      : 'Hesaplama için Bilgi sekmesinde Boy, Kilo, Doğum Tarihi ve yukarıdaki Cinsiyet, Baba Boyu, Anne Boyu alanlarının tamamının doldurulması gerekir.';
-    container.appendChild(el('<div class="osp-empty" style="margin-top:14px;"><span style="display:inline-block; color:#ffcc00;">'+SVG_ICONS.ruler+'</span><p>'+msg+'</p></div>'));
-    return;
+  function updateBioDisplay(){
+    resultWrap.innerHTML = '';
+    var result = computeBioBanding(p);
+
+    if(!result.ok){
+      var msg = result.error==='aralikDisi'
+        ? 'Bu hesaplama yöntemi 4 - 17.5 yaş aralığındaki oyuncular için geçerlidir.'
+        : 'Hesaplama için Bilgi sekmesinde Boy, Kilo, Doğum Tarihi ve yukarıdaki Cinsiyet, Baba Boyu, Anne Boyu alanlarının tamamının doldurulması gerekir.';
+      resultWrap.appendChild(el('<div class="osp-empty" style="margin-top:14px;"><span style="display:inline-block; color:#ffcc00;">'+SVG_ICONS.ruler+'</span><p>'+msg+'</p></div>'));
+      return;
+    }
+
+    var maturityLabels = {'Pre-Pubertal':'Puberte Öncesi','Early Pubertal':'Erken Pubertal','Mid-Pubertal':'Orta Pubertal','Late Pubertal':'Geç Pubertal'};
+    var maturityColors = {'Pre-Pubertal':'#66bb6a','Early Pubertal':'#f0b429','Mid-Pubertal':'#fb8c00','Late Pubertal':'#d32f2f'};
+    var mColor = maturityColors[result.maturity] || '#a37a00';
+    var mLabel = maturityLabels[result.maturity] || '-';
+
+    var summary = el(
+      '<div class="osp-card" style="margin-top:10px; text-align:center;">' +
+        '<div style="font-size:11px; color:#a37a00; font-weight:700; text-transform:uppercase; letter-spacing:0.5px;">Tahmini Yetişkin Boyu (PAH)</div>' +
+        '<div style="font-family:\'Rajdhani\',sans-serif; font-weight:700; font-size:34px; color:#d32f2f; margin:4px 0;">'+result.pahCm+' <span style="font-size:16px;">cm</span></div>' +
+        '<div style="display:inline-block; background:'+mColor+'22; color:'+mColor+'; font-weight:700; font-size:12px; padding:4px 12px; border-radius:20px;">'+mLabel+'</div>' +
+      '</div>'
+    );
+    resultWrap.appendChild(summary);
+
+    var grid = el(
+      '<div class="osp-card" style="margin-top:10px;">' +
+        '<div style="display:flex; justify-content:space-between; padding:7px 0; border-bottom:1px solid #f6ecc7;"><span style="font-size:12.5px; color:#7a3b00; font-weight:600;">% Yetişkin Boyuna Ulaşma</span><span class="osp-num" style="font-weight:700;">'+result.pctPah+'%</span></div>' +
+        '<div style="display:flex; justify-content:space-between; padding:7px 0; border-bottom:1px solid #f6ecc7;"><span style="font-size:12.5px; color:#7a3b00; font-weight:600;">Kalan Büyüme</span><span class="osp-num" style="font-weight:700;">'+result.remaining+' cm</span></div>' +
+        '<div style="display:flex; justify-content:space-between; padding:7px 0;"><span style="font-size:12.5px; color:#7a3b00; font-weight:600;">Biyolojik Yaş (0.5 yakın)</span><span class="osp-num" style="font-weight:700;">'+result.roundedAge+'</span></div>' +
+      '</div>'
+    );
+    resultWrap.appendChild(grid);
+
+    resultWrap.appendChild(el('<p class="osp-norm-note" style="margin-top:10px;">Khamis-Roche yöntemine dayalı tahmini bir hesaplamadır (Kaynak: Khamis &amp; Roche, 1994; Cumming ve ark., 2017 - Bio-banding in Sport). Kesin tıbbi/klinik bir ölçüm değildir; büyüme ve olgunlaşma takibinde genel bir gösterge olarak kullanılmalıdır.</p>'));
   }
 
-  var maturityLabels = {'Pre-Pubertal':'Puberte Öncesi','Early Pubertal':'Erken Pubertal','Mid-Pubertal':'Orta Pubertal','Late Pubertal':'Geç Pubertal'};
-  var maturityColors = {'Pre-Pubertal':'#66bb6a','Early Pubertal':'#f0b429','Mid-Pubertal':'#fb8c00','Late Pubertal':'#d32f2f'};
-  var mColor = maturityColors[result.maturity] || '#a37a00';
-  var mLabel = maturityLabels[result.maturity] || '-';
-
-  var summary = el(
-    '<div class="osp-card" style="margin-top:10px; text-align:center;">' +
-      '<div style="font-size:11px; color:#a37a00; font-weight:700; text-transform:uppercase; letter-spacing:0.5px;">Tahmini Yetişkin Boyu (PAH)</div>' +
-      '<div style="font-family:\'Rajdhani\',sans-serif; font-weight:700; font-size:34px; color:#d32f2f; margin:4px 0;">'+result.pahCm+' <span style="font-size:16px;">cm</span></div>' +
-      '<div style="display:inline-block; background:'+mColor+'22; color:'+mColor+'; font-weight:700; font-size:12px; padding:4px 12px; border-radius:20px;">'+mLabel+'</div>' +
-    '</div>'
-  );
-  container.appendChild(summary);
-
-  var grid = el(
-    '<div class="osp-card" style="margin-top:10px;">' +
-      '<div style="display:flex; justify-content:space-between; padding:7px 0; border-bottom:1px solid #f6ecc7;"><span style="font-size:12.5px; color:#7a3b00; font-weight:600;">% Yetişkin Boyuna Ulaşma</span><span class="osp-num" style="font-weight:700;">'+result.pctPah+'%</span></div>' +
-      '<div style="display:flex; justify-content:space-between; padding:7px 0; border-bottom:1px solid #f6ecc7;"><span style="font-size:12.5px; color:#7a3b00; font-weight:600;">Kalan Büyüme</span><span class="osp-num" style="font-weight:700;">'+result.remaining+' cm</span></div>' +
-      '<div style="display:flex; justify-content:space-between; padding:7px 0;"><span style="font-size:12.5px; color:#7a3b00; font-weight:600;">Biyolojik Yaş (0.5 yakın)</span><span class="osp-num" style="font-weight:700;">'+result.roundedAge+'</span></div>' +
-    '</div>'
-  );
-  container.appendChild(grid);
-
-  container.appendChild(el('<p class="osp-norm-note" style="margin-top:10px;">Khamis-Roche yöntemine dayalı tahmini bir hesaplamadır (Kaynak: Khamis &amp; Roche, 1994; Cumming ve ark., 2017 - Bio-banding in Sport). Kesin tıbbi/klinik bir ölçüm değildir; büyüme ve olgunlaşma takibinde genel bir gösterge olarak kullanılmalıdır.</p>'));
+  updateBioDisplay();
 }
 
 function renderDetailTabVeri(container, p){

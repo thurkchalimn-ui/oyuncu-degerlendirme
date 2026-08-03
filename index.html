@@ -112,8 +112,9 @@
   .osp-overall-scale { font-size: 13px; color: #a37a00; margin-top: 2px; font-weight: 600; }
   .osp-overall-verdict { font-size: 13px; color: #d32f2f; margin-top: 8px; font-weight: 600; }
 
-  .osp-tabs { display: flex; gap: 6px; margin-bottom: 14px; }
-  .osp-tab { flex: 1; text-align: center; padding: 9px 4px; border-radius: 9px; background: #fffdf5; border: 1px solid #f2e2ab; font-size: 12px; color: #a37a00; font-weight: 600; cursor: pointer; }
+  .osp-tabs { display: flex; gap: 6px; margin-bottom: 14px; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+  .osp-tabs::-webkit-scrollbar { display: none; }
+  .osp-tab { flex: 1 0 auto; text-align: center; padding: 9px 10px; border-radius: 9px; background: #fffdf5; border: 1px solid #f2e2ab; font-size: 12px; color: #a37a00; font-weight: 600; cursor: pointer; white-space: nowrap; }
   .osp-tab.active { background: #d32f2f; color: #ffffff; border-color: #d32f2f; }
 
   .osp-fab-row { margin-top: 4px; }
@@ -528,6 +529,127 @@ function computeDerived(p){
   return out;
 }
 
+var BIOBAND_COEF = {
+  Erkek: [
+    [4, -10.2567, 1.23812, -0.0087235, 0.50286],
+    [4.5, -10.719, 1.15964, -0.0074454, 0.52887],
+    [5, -11.0213, 1.10674, 0.0064778, 0.53919],
+    [5.5, -11.1556, 1.0748, -0.005776, 0.53691],
+    [6, -11.1138, 1.05923, -0.0052947, 0.52513],
+    [6.5, -11.0221, 1.05542, -0.0049892, 0.50692],
+    [7, -10.9984, 1.05877, -0.0048144, 0.48538],
+    [7.5, -11.0214, 1.06467, -0.047256, 0.46361],
+    [8, -11.0696, 1.06853, -0.0046778, 0.44469],
+    [8.5, -11.122, 1.06572, -0.0046261, 0.43171],
+    [9, -11.1571, 1.05166, -0.045254, 0.42776],
+    [9.5, -11.1405, 1.02174, -0.0043311, 0.43593],
+    [10, -11.038, 0.97135, -0.0039981, 0.45932],
+    [10.5, -10.8286, 0.89589, -0.0034814, 0.50101],
+    [11, -10.4917, 0.81239, -0.002905, 0.54781],
+    [11.5, -10.0065, 0.74134, -0.0024167, 0.58409],
+    [12, -9.3522, 0.68325, -0.0020076, 0.60927],
+    [12.5, -8.6055, 0.63869, -0.0016681, 0.62279],
+    [13, -7.8632, 0.60818, -0.0013895, 0.62407],
+    [13.5, -7.1348, 0.59228, -0.0011624, 0.61253],
+    [14, -6.4299, 0.59151, -0.0009776, 0.58762],
+    [14.5, -5.7578, 0.60643, -0.0008261, 0.54875],
+    [15, -5.1282, 0.63757, -0.0006988, 0.49536],
+    [15.5, -4.5092, 0.68548, -0.0005863, 0.42687],
+    [16, -3.9292, 0.75069, -0.0004795, 0.34271],
+    [16.5, -3.4873, 0.83375, -0.0003695, 0.24231],
+    [17, -3.283, 0.9352, -0.000247, 0.1251],
+    [17.5, -3.4156, 1.05558, -0.0001027, -0.0095]
+  ],
+  Kiz: [
+    [4, -8.1325, 1.24768, -0.019435, 0.44774],
+    [4.5, -6.47656, 1.22177, -0.018519, 0.41381],
+    [5, -5.13582, 1.19932, -0.01753, 0.38467],
+    [5.5, -4.13791, 1.1788, -0.016484, 0.36039],
+    [6, -3.51039, 1.15866, -0.0154, 0.34105],
+    [6.5, -3.14322, 1.13737, -0.014294, 0.32672],
+    [7, -2.87645, 1.11342, -0.013184, 0.31748],
+    [7.5, -2.66291, 1.08525, -0.012086, 0.3134],
+    [8, -2.45559, 1.05135, -0.011019, 0.31457],
+    [8.5, -2.20728, 1.01018, -0.009999, 0.32105],
+    [9, -1.87098, 0.9602, -0.009044, 0.33291],
+    [9.5, -1.0633, 0.89989, -0.008171, 0.35025],
+    [10, 0.33468, 0.82771, -0.007397, 0.37312],
+    [10.5, 1.97366, 0.74213, -0.006739, 0.40161],
+    [11, 3.50436, 0.67173, -0.006136, 0.42042],
+    [11.5, 4.57747, 0.6415, -0.005518, 0.41686],
+    [12, 4.84365, 0.64452, -0.004894, 0.3949],
+    [12.5, 4.27869, 0.67386, -0.004272, 0.3585],
+    [13, 3.21417, 0.7226, -0.003661, 0.31163],
+    [13.5, 1.83456, 0.78383, -0.003067, 0.25826],
+    [14, 0.32425, 0.85062, -0.0025, 0.20235],
+    [14.5, -1.13224, 0.91605, -0.001967, 0.14787],
+    [15, -2.35055, 0.97319, -0.001477, 0.0988],
+    [15.5, -3.10326, 1.01514, -0.001037, 0.05909],
+    [16, -3.17885, 1.03496, -0.000655, 0.03272],
+    [16.5, -2.41657, 1.02573, -0.00034, 0.02364],
+    [17, -0.65579, 0.98054, -0.0001, 0.03584],
+    [17.5, 2.26429, 0.89246, 0.000057, 0.07327]
+  ]
+};
+
+function mround(value, multiple){
+  if(!multiple) return value;
+  return Math.round(value/multiple)*multiple;
+}
+
+function ageDecimal(dateStr, refDate){
+  if(!dateStr) return null;
+  var b = new Date(dateStr);
+  if(isNaN(b.getTime())) return null;
+  var ref = refDate || new Date();
+  var diffDays = (ref.getTime() - b.getTime())/86400000;
+  if(diffDays < 0) return null;
+  return diffDays/365.25;
+}
+
+function computeBioBanding(p){
+  var out = { ok:false, error:null };
+  var boy = num(p.boy), kilo = num(p.kilo);
+  var baba = num(p.babaBoy), anne = num(p.anneBoy);
+  var cinsiyet = p.cinsiyet;
+  if(!boy || !kilo || !baba || !anne || !cinsiyet || !p.dogumTarihi){
+    out.error = 'eksikVeri';
+    return out;
+  }
+  var age = ageDecimal(p.dogumTarihi);
+  if(age===null){ out.error = 'eksikVeri'; return out; }
+  var rounded = clamp(mround(age, 0.5), 4, 17.5);
+  var table = cinsiyet==='Erkek' ? BIOBAND_COEF.Erkek : BIOBAND_COEF.Kiz;
+  var row = null;
+  for(var i=0;i<table.length;i++){ if(Math.abs(table[i][0]-rounded)<0.001){ row = table[i]; break; } }
+  if(!row){ out.error = 'aralikDisi'; return out; }
+
+  var heightIn = boy/2.54;
+  var weightLb = kilo*2.20462262185;
+  var midparentCm = (baba+anne)/2;
+  var midparentIn = midparentCm/2.54;
+  var pahIn = row[1] + row[2]*heightIn + row[3]*weightLb + row[4]*midparentIn;
+  var pahCm = pahIn*2.54;
+  var pctPah = pahCm>0 ? boy/pahCm : null;
+  var remaining = pahCm - boy;
+  var maturity = null;
+  if(pctPah!==null){
+    if(pctPah>=0.95) maturity = 'Late Pubertal';
+    else if(pctPah>=0.9) maturity = 'Mid-Pubertal';
+    else if(pctPah>=0.85) maturity = 'Early Pubertal';
+    else if(pctPah>0) maturity = 'Pre-Pubertal';
+  }
+
+  out.ok = true;
+  out.age = round1(age);
+  out.roundedAge = rounded;
+  out.pahCm = round1(pahCm);
+  out.pctPah = pctPah!==null ? Math.round(pctPah*1000)/10 : null;
+  out.remaining = round1(remaining);
+  out.maturity = maturity;
+  return out;
+}
+
 function scoreFor(test, value){
   if(value===null||value===undefined||isNaN(value)) return null;
   var s;
@@ -861,7 +983,7 @@ function deleteTeam(id){
 function addPlayer(){
   var t = getTeam(); if(!t) return;
   var maxNo = t.players.reduce(function(m,p){ return Math.max(m, p.no||0); }, 0);
-  var p = { id: 'p'+Date.now(), no: maxNo+1, adSoyad:'', dogumTarihi:'', yas:null, boy:null, kilo:null };
+  var p = { id: 'p'+Date.now(), no: maxNo+1, adSoyad:'', dogumTarihi:'', yas:null, boy:null, kilo:null, cinsiyet:'', babaBoy:null, anneBoy:null };
   t.players.push(p);
   state.currentPlayerId = p.id;
   state.view = 'detail';
@@ -920,10 +1042,14 @@ function fieldRow(label, key, value, opts){
   var input;
   if(opts.type==='date'){ input = el('<input type="date" />'); }
   else if(opts.type==='text'){ input = el('<input type="text" placeholder="'+(opts.placeholder||'')+'" />'); }
+  else if(opts.type==='select'){
+    var optsHtml = (opts.options||[]).map(function(o){ return '<option value="'+o.value+'">'+escapeHtml(o.label)+'</option>'; }).join('');
+    input = el('<select>'+optsHtml+'</select>');
+  }
   else { input = el('<input type="number" inputmode="decimal" step="'+(opts.step||'1')+'" placeholder="-" />'); }
   if(value!==null && value!==undefined) input.value = value;
-  input.addEventListener('input', function(){
-    var v = opts.type==='text' || opts.type==='date' ? input.value : num(input.value);
+  input.addEventListener(opts.type==='select' ? 'change' : 'input', function(){
+    var v = (opts.type==='text' || opts.type==='date' || opts.type==='select') ? input.value : num(input.value);
     updateField(key, v);
     if(opts.onChange) opts.onChange(v);
   });
@@ -1167,6 +1293,62 @@ function renderDetailTabInfo(container, p){
     if(confirm('Bu oyuncuyu silmek istediğine emin misin?')){ deletePlayer(p.id); }
   });
   container.appendChild(delBtn);
+}
+
+function renderDetailTabBio(container, p){
+  var infoCard = el(
+    '<div class="osp-card" style="margin-bottom:10px; background:#fff8e1; border-color:#ffcc00;">' +
+      '<p style="font-size:12px; color:#7a3b00; margin:0; line-height:1.5;">Bio-Banding, oyuncunun <b>Bilgi</b> sekmesindeki Boy, Kilo ve Doğum Tarihi bilgilerini kullanır. Aşağıya cinsiyet ve anne-baba boylarını da girerek Tahmini Yetişkin Boyu (PAH) ve biyolojik olgunluk seviyesini hesaplayabilirsin.</p>' +
+    '</div>'
+  );
+  container.appendChild(infoCard);
+
+  var card = el('<div class="osp-card"></div>');
+  card.appendChild(fieldRow('Cinsiyet', 'cinsiyet', p.cinsiyet, {type:'select', options:[
+    {value:'', label:'Seçiniz'},
+    {value:'Erkek', label:'Erkek'},
+    {value:'Kiz', label:'Kız'}
+  ], onChange:function(){ render(); }}));
+  var row = el('<div class="osp-field-row"></div>');
+  row.appendChild(fieldRow("Baba Boyu", 'babaBoy', p.babaBoy, {unit:'cm', step:'1', onChange:function(){ render(); }}));
+  row.appendChild(fieldRow("Anne Boyu", 'anneBoy', p.anneBoy, {unit:'cm', step:'1', onChange:function(){ render(); }}));
+  card.appendChild(row);
+  container.appendChild(card);
+
+  var result = computeBioBanding(p);
+
+  if(!result.ok){
+    var msg = result.error==='aralikDisi'
+      ? 'Bu hesaplama yöntemi 4 - 17.5 yaş aralığındaki oyuncular için geçerlidir.'
+      : 'Hesaplama için Bilgi sekmesinde Boy, Kilo, Doğum Tarihi ve yukarıdaki Cinsiyet, Baba Boyu, Anne Boyu alanlarının tamamının doldurulması gerekir.';
+    container.appendChild(el('<div class="osp-empty" style="margin-top:14px;"><span style="display:inline-block; color:#ffcc00;">'+SVG_ICONS.ruler+'</span><p>'+msg+'</p></div>'));
+    return;
+  }
+
+  var maturityLabels = {'Pre-Pubertal':'Puberte Öncesi','Early Pubertal':'Erken Pubertal','Mid-Pubertal':'Orta Pubertal','Late Pubertal':'Geç Pubertal'};
+  var maturityColors = {'Pre-Pubertal':'#66bb6a','Early Pubertal':'#f0b429','Mid-Pubertal':'#fb8c00','Late Pubertal':'#d32f2f'};
+  var mColor = maturityColors[result.maturity] || '#a37a00';
+  var mLabel = maturityLabels[result.maturity] || '-';
+
+  var summary = el(
+    '<div class="osp-card" style="margin-top:10px; text-align:center;">' +
+      '<div style="font-size:11px; color:#a37a00; font-weight:700; text-transform:uppercase; letter-spacing:0.5px;">Tahmini Yetişkin Boyu (PAH)</div>' +
+      '<div style="font-family:\'Rajdhani\',sans-serif; font-weight:700; font-size:34px; color:#d32f2f; margin:4px 0;">'+result.pahCm+' <span style="font-size:16px;">cm</span></div>' +
+      '<div style="display:inline-block; background:'+mColor+'22; color:'+mColor+'; font-weight:700; font-size:12px; padding:4px 12px; border-radius:20px;">'+mLabel+'</div>' +
+    '</div>'
+  );
+  container.appendChild(summary);
+
+  var grid = el(
+    '<div class="osp-card" style="margin-top:10px;">' +
+      '<div style="display:flex; justify-content:space-between; padding:7px 0; border-bottom:1px solid #f6ecc7;"><span style="font-size:12.5px; color:#7a3b00; font-weight:600;">% Yetişkin Boyuna Ulaşma</span><span class="osp-num" style="font-weight:700;">'+result.pctPah+'%</span></div>' +
+      '<div style="display:flex; justify-content:space-between; padding:7px 0; border-bottom:1px solid #f6ecc7;"><span style="font-size:12.5px; color:#7a3b00; font-weight:600;">Kalan Büyüme</span><span class="osp-num" style="font-weight:700;">'+result.remaining+' cm</span></div>' +
+      '<div style="display:flex; justify-content:space-between; padding:7px 0;"><span style="font-size:12.5px; color:#7a3b00; font-weight:600;">Biyolojik Yaş (0.5 yakın)</span><span class="osp-num" style="font-weight:700;">'+result.roundedAge+'</span></div>' +
+    '</div>'
+  );
+  container.appendChild(grid);
+
+  container.appendChild(el('<p class="osp-norm-note" style="margin-top:10px;">Khamis-Roche yöntemine dayalı tahmini bir hesaplamadır (Kaynak: Khamis &amp; Roche, 1994; Cumming ve ark., 2017 - Bio-banding in Sport). Kesin tıbbi/klinik bir ölçüm değildir; büyüme ve olgunlaşma takibinde genel bir gösterge olarak kullanılmalıdır.</p>'));
 }
 
 function renderDetailTabVeri(container, p){
@@ -1418,6 +1600,7 @@ function renderDetail(){
   var tabs = el(
     '<div class="osp-tabs">' +
       '<div class="osp-tab" data-tab="bilgi"><span style="margin-right:4px; vertical-align:-2px; display:inline-block;">'+SVG_ICONS.info+'</span>Bilgi</div>' +
+      '<div class="osp-tab" data-tab="bio"><span style="margin-right:4px; vertical-align:-2px; display:inline-block;">'+SVG_ICONS.ruler+'</span>Bio-Banding</div>' +
       '<div class="osp-tab" data-tab="veri"><span style="margin-right:4px; vertical-align:-2px; display:inline-block;">'+SVG_ICONS.edit+'</span>Test Verisi</div>' +
       '<div class="osp-tab" data-tab="sonuc"><span style="margin-right:4px; vertical-align:-2px; display:inline-block;">'+SVG_ICONS.chart+'</span>Sonuçlar</div>' +
       '<div class="osp-tab" data-tab="karne"><span style="margin-right:4px; vertical-align:-2px; display:inline-block;">'+SVG_ICONS.award+'</span>Karne</div>' +
@@ -1431,6 +1614,7 @@ function renderDetail(){
 
   var content = el('<div></div>');
   if(state.tab==='bilgi') renderDetailTabInfo(content, p);
+  else if(state.tab==='bio') renderDetailTabBio(content, p);
   else if(state.tab==='veri') renderDetailTabVeri(content, p);
   else if(state.tab==='karne') renderDetailTabKarne(content, p);
   else renderDetailTabSonuc(content, p);

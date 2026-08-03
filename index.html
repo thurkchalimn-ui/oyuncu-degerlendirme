@@ -52,6 +52,9 @@
   .osp-team-card, .osp-player-card { background: #fffdf5; border: 1px solid #f2e2ab; border-radius: 12px; padding: 12px 14px; margin-bottom: 10px; display: flex; align-items: center; gap: 12px; cursor: pointer; }
   .osp-team-card:active, .osp-player-card:active { background: #fff5d6; }
   .osp-badge-wrap { position: relative; flex-shrink: 0; }
+  .osp-team-card2 { background: #fffdf5; border: 1px solid #f2e2ab; border-radius: 14px; padding: 14px; margin-bottom: 12px; cursor: pointer; }
+  .osp-team-card2:active { background: #fff5d6; }
+  .osp-status-pill { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 10px; text-transform: uppercase; letter-spacing: 0.3px; cursor: pointer; flex-shrink: 0; }
   .osp-jersey { width: 40px; height: 40px; border-radius: 8px; background: #d32f2f; border: 2px solid #ffcc00; display: flex; align-items: center; justify-content: center; font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 16px; color: #ffffff; flex-shrink: 0; overflow: hidden; }
   .osp-jersey img, .osp-team-badge img { width: 100%; height: 100%; object-fit: cover; border-radius: inherit; }
   .osp-team-badge { width: 42px; height: 42px; border-radius: 10px; background: #ffcc00; border: 2px solid #d32f2f; display: flex; align-items: center; justify-content: center; font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 18px; color: #d32f2f; flex-shrink: 0; overflow: hidden; }
@@ -112,9 +115,8 @@
   .osp-overall-scale { font-size: 13px; color: #a37a00; margin-top: 2px; font-weight: 600; }
   .osp-overall-verdict { font-size: 13px; color: #d32f2f; margin-top: 8px; font-weight: 600; }
 
-  .osp-tabs { display: flex; gap: 6px; margin-bottom: 14px; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
-  .osp-tabs::-webkit-scrollbar { display: none; }
-  .osp-tab { flex: 1 0 auto; text-align: center; padding: 9px 10px; border-radius: 9px; background: #fffdf5; border: 1px solid #f2e2ab; font-size: 12px; color: #a37a00; font-weight: 600; cursor: pointer; white-space: nowrap; }
+  .osp-tabs { display: flex; gap: 6px; margin-bottom: 14px; }
+  .osp-tab { flex: 1; text-align: center; padding: 9px 4px; border-radius: 9px; background: #fffdf5; border: 1px solid #f2e2ab; font-size: 12px; color: #a37a00; font-weight: 600; cursor: pointer; }
   .osp-tab.active { background: #d32f2f; color: #ffffff; border-color: #d32f2f; }
 
   .osp-fab-row { margin-top: 4px; }
@@ -181,58 +183,6 @@
   .osp-karne-stat-fill { height: 100%; border-radius: 3px; }
   .osp-karne-stat-val { font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 13px; flex-shrink: 0; }
   .osp-karne-footer { text-align: center; margin-top: 4px; font-size: 10px; color: #bbb; }
-
-  .osp-home-hero { margin: -14px -14px 16px -14px; padding: 20px 16px 20px; background: linear-gradient(135deg, #0a0e1f 0%, #141b3d 55%, #0a0e1f 100%); border-radius: 0 0 26px 26px; color: #fff; position: relative; }
-  .osp-home-hero-top { display: flex; align-items: center; gap: 12px; }
-  .osp-home-logo { width: 52px; height: 52px; border-radius: 14px; background: #fff; padding: 5px; object-fit: contain; flex-shrink: 0; cursor: pointer; }
-  .osp-home-title-block { flex: 1; min-width: 0; }
-  .osp-home-title-1, .osp-home-title-2 { font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 21px; letter-spacing: 0.4px; line-height: 1.08; }
-  .osp-home-title-1 { color: #ffffff; }
-  .osp-home-title-2 { color: #ff5252; }
-  .osp-home-subtitle { font-size: 11px; color: #aab4d1; font-weight: 600; margin-top: 3px; }
-  .osp-home-actions { display: flex; gap: 8px; flex-shrink: 0; }
-  .osp-home-icon-btn { position: relative; width: 38px; height: 38px; border-radius: 10px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.16); color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-  .osp-home-icon-badge { position: absolute; top: -5px; right: -5px; background: #d32f2f; color: #fff; font-size: 9.5px; font-weight: 700; min-width: 16px; height: 16px; padding: 0 3px; border-radius: 8px; display: flex; align-items: center; justify-content: center; border: 2px solid #141b3d; }
-  .osp-home-stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; margin-top: 18px; }
-  .osp-home-stat-card { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; padding: 10px 4px 9px; text-align: center; }
-  .osp-home-stat-num { font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 19px; color: #fff; line-height: 1; }
-  .osp-home-stat-label { font-size: 8px; color: #aab4d1; font-weight: 700; text-transform: uppercase; letter-spacing: 0.2px; margin-top: 4px; }
-  .osp-home-stat-bar { height: 2px; border-radius: 2px; margin: 6px auto 0; width: 68%; }
-
-  .osp-home-search-row { display: flex; gap: 8px; margin-bottom: 14px; }
-  .osp-home-search-row .osp-search-wrap { flex: 1; margin-bottom: 0; }
-  .osp-home-filter-btn { width: 44px; flex-shrink: 0; border-radius: 10px; background: #fffdf5; border: 1px solid #f2e2ab; display: flex; align-items: center; justify-content: center; color: #a37a00; cursor: pointer; }
-  .osp-home-filter-btn.active { background: #d32f2f; border-color: #d32f2f; color: #fff; }
-
-  .osp-home-team-card { position: relative; background: #fffdf5; border: 1px solid #f2e2ab; border-radius: 14px; padding: 14px 14px 14px 18px; margin-bottom: 12px; cursor: pointer; overflow: hidden; }
-  .osp-home-team-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; }
-  .osp-home-team-card:active { background: #fff5d6; }
-  .osp-home-team-top { display: flex; align-items: center; gap: 12px; }
-  .osp-home-team-logo-wrap { position: relative; flex-shrink: 0; }
-  .osp-home-team-logo { width: 46px; height: 46px; border-radius: 11px; border: 2px solid #f2e2ab; object-fit: cover; background: #fff; display: flex; align-items: center; justify-content: center; color: #d32f2f; }
-  .osp-home-team-logo img { width: 100%; height: 100%; object-fit: cover; border-radius: inherit; }
-  .osp-home-team-dot { position: absolute; bottom: -3px; right: -3px; width: 14px; height: 14px; border-radius: 50%; border: 2px solid #fff; }
-  .osp-home-team-name { font-size: 15px; font-weight: 700; color: #1a1a1a; margin: 0; }
-  .osp-home-team-meta { display: flex; align-items: center; gap: 5px; font-size: 12px; color: #a37a00; font-weight: 600; margin-top: 3px; }
-  .osp-home-team-chevron { color: #d32f2f; flex-shrink: 0; }
-  .osp-home-team-bottom { display: flex; align-items: center; justify-content: space-between; margin-top: 12px; gap: 10px; }
-  .osp-home-perf-label { font-size: 10px; color: #a37a00; font-weight: 600; }
-  .osp-home-perf-row { display: flex; align-items: baseline; gap: 4px; }
-  .osp-home-perf-num { font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 20px; }
-  .osp-home-perf-max { font-size: 11px; color: #a37a00; font-weight: 600; }
-  .osp-home-perf-track { height: 5px; background: #f0e6c8; border-radius: 3px; margin-top: 4px; width: 110px; max-width: 38vw; overflow: hidden; }
-  .osp-home-perf-fill { height: 100%; border-radius: 3px; }
-  .osp-home-date-block { text-align: right; flex-shrink: 0; }
-  .osp-home-date-label { display: flex; align-items: center; justify-content: flex-end; gap: 4px; font-size: 10px; color: #a37a00; font-weight: 600; }
-  .osp-home-date-val { font-size: 11.5px; color: #1a1a1a; font-weight: 700; margin-top: 2px; }
-
-  .osp-home-infobar { display: flex; background: #fffdf5; border: 1px solid #f2e2ab; border-radius: 14px; padding: 14px 4px; margin-top: 4px; }
-  .osp-home-infobar-item { flex: 1; text-align: center; border-right: 1px solid #f2e2ab; padding: 0 4px; }
-  .osp-home-infobar-item:last-child { border-right: none; }
-  .osp-home-infobar-icon { margin-bottom: 6px; color: #d32f2f; }
-  .osp-home-infobar-num { font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 18px; color: #1a1a1a; }
-  .osp-home-infobar-label { font-size: 9.5px; color: #a37a00; font-weight: 600; margin-top: 2px; }
-  .osp-home-infobar-sub { font-size: 9px; color: #c9a94a; font-weight: 600; }
 </style>
 </head>
 <body>
@@ -240,7 +190,7 @@
 <div id="osp-app">
   <h2 class="osp-sr-only">Performans Pusulası — takım ve oyuncu değerlendirme uygulaması: takım listesi, her takım için kadro, oyuncu bilgisi ve fiziksel, psikolojik, teknik test verisi girişi ile otomatik 1-20 puanlama.</h2>
   <div class="osp-shell">
-    <div class="osp-header" id="osp-header">
+    <div class="osp-header">
       <div class="osp-header-row">
         <img id="osp-app-logo" class="osp-app-logo" src="" alt="Performans Pusulası - Ana sayfa" role="button" tabindex="0">
         <button class="osp-back" id="osp-back-btn" style="display:none;" aria-label="Geri"><i class="ti ti-arrow-left"></i></button>
@@ -255,7 +205,7 @@
     </div>
     <div class="osp-body" id="osp-body"></div>
     <div class="osp-bottom-nav" id="osp-bottom-nav">
-      <button class="osp-nav-item" data-target="home"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11l8-7 8 7"></path><path d="M6 10v9a1 1 0 001 1h10a1 1 0 001-1v-9"></path><path d="M10 20v-6h4v6"></path></svg><span>Ana Sayfa</span></button>
+      <button class="osp-nav-item" data-target="teams"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11l8-7 8 7"></path><path d="M6 10v9a1 1 0 001 1h10a1 1 0 001-1v-9"></path><path d="M10 20v-6h4v6"></path></svg><span>Ana Sayfa</span></button>
       <button class="osp-nav-item" data-target="teams"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"></path></svg><span>Takımlar</span></button>
       <button class="osp-nav-item" data-target="players"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.2"></circle><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"></path><path d="M16 5.3a3 3 0 010 5.8"></path><path d="M20 20c0-2.8-1.9-5.1-4.5-5.8"></path></svg><span>Oyuncular</span></button>
       <button class="osp-nav-item" data-target="guide"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"></rect><path d="M9 3V2a1 1 0 011-1h4a1 1 0 011 1v1"></path><line x1="8" y1="11" x2="16" y2="11"></line><line x1="8" y1="15" x2="16" y2="15"></line></svg><span>Rehber</span></button>
@@ -367,6 +317,49 @@ function activeTestsFor(team){
   return testsFor(ageOf(team)).filter(function(t){ return keys.indexOf(t.key)!==-1; });
 }
 
+function isActiveTeam(t){ return t.active !== false; }
+
+function teamAvgScore100(t){
+  var scores = [];
+  t.players.forEach(function(p){
+    var s = overallScore(p, t);
+    if(s!==null) scores.push(s);
+  });
+  if(scores.length===0) return null;
+  var avg20 = scores.reduce(function(a,b){return a+b;},0)/scores.length;
+  return Math.round(avg20/20*100);
+}
+
+function teamCompletedTestCount(t){
+  var tests = activeTestsFor(t);
+  var count = 0;
+  t.players.forEach(function(p){
+    var d = computeDerived(p);
+    var merged = Object.assign({}, p, d);
+    tests.forEach(function(test){
+      var raw = test.source==='input' ? num(p[test.key]) : merged[test.source];
+      if(scoreFor(test, raw)!==null) count++;
+    });
+  });
+  return count;
+}
+
+function daysSinceLabel(ts){
+  if(!ts) return 'Henüz veri yok';
+  var diffMs = Date.now() - ts;
+  var days = Math.floor(diffMs / 86400000);
+  if(days<=0) return 'Bugün';
+  if(days===1) return '1 gün önce';
+  return days+' gün önce';
+}
+
+function formatDate(ts){
+  if(!ts) return '-';
+  var d = new Date(ts);
+  var months = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+  return d.getDate()+' '+months[d.getMonth()]+' '+d.getFullYear();
+}
+
 var RAW_FIELD_TO_TEST = {
   sprint20:'sprint20', illinois:'illinois', tTest:'tTest', uzunAtlama:'uzunAtlama', kosu6dk:'kosu6dk',
   gridKons:'gridKons', stroop:'stroop', penaltiBaskisiz:'baskiFark', penaltiBaskili:'baskiFark',
@@ -393,13 +386,7 @@ var SVG_ICONS = {
   run: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13" cy="4" r="1.7"></circle><path d="M4 17l4-2 2-5 4 2 3-3 3 2"></path><path d="M9 10l-2 8 5 4"></path><path d="M13 13l3 2-1 6"></path></svg>',
   brain: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 2a3.5 3.5 0 00-3.5 3.5V6a3 3 0 00-2 5 3 3 0 002 5.5V17a3.5 3.5 0 003.5 3.5"></path><path d="M14.5 2a3.5 3.5 0 013.5 3.5V6a3 3 0 012 5 3 3 0 01-2 5.5V17a3.5 3.5 0 01-3.5 3.5"></path><path d="M9.5 2v19"></path><path d="M14.5 2v19"></path></svg>',
   ball: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7l3 2.2-1.2 3.6H10.2L9 9.2z"></path><path d="M12 3v4M12 17v4M4.5 8l3.2 1M16.3 9l3.2-1M4.5 16l3.2-1M16.3 15l3.2 1"></path></svg>',
-  search: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.5" y2="16.5"></line></svg>',
-  bell: '<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 01-3.46 0"></path></svg>',
-  sliders: '<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="18" x2="20" y2="18"></line><circle cx="9" cy="6" r="2" fill="currentColor" stroke="none"></circle><circle cx="16" cy="12" r="2" fill="currentColor" stroke="none"></circle><circle cx="9" cy="18" r="2" fill="currentColor" stroke="none"></circle></svg>',
-  calendar: '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"></rect><line x1="16" y1="3" x2="16" y2="7"></line><line x1="8" y1="3" x2="8" y2="7"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>',
-  clock: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 3"></path></svg>',
-  trendUp: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"></path><path d="M15 7h6v6"></path></svg>',
-  clipboard: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"></rect><path d="M9 3V2a1 1 0 011-1h4a1 1 0 011 1v1"></path><path d="M8.5 12l1.8 1.8L14.5 10"></path></svg>'
+  search: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.5" y2="16.5"></line></svg>'
 };
 var CAT_ICON_KEY = { fiz:'run', psi:'brain', tek:'ball' };
 function catIconHtml(cat){ return '<span style="margin-right:5px; vertical-align:-2px; display:inline-block;">'+SVG_ICONS[CAT_ICON_KEY[cat]]+'</span>'; }
@@ -438,7 +425,7 @@ var RAW_FIELDS = [
   { key:'decision', label:'Karar Verme Testi', unit:'doğru/10', step:'1', cat:'psi' }
 ];
 
-var state = { view:'home', teams:[], norms:null, normsEditMode:false, currentTeamId:null, currentPlayerId:null, tab:'bilgi', guideTab:'aciklama', guideNormAge:'9-10', prevView:'home', teamSearchQuery:'', playerSearchQuery:'', homeSearchQuery:'', homeSortMode:'name' };
+var state = { view:'teams', teams:[], norms:null, normsEditMode:false, currentTeamId:null, currentPlayerId:null, tab:'bilgi', guideTab:'aciklama', guideNormAge:'9-10', prevView:'teams', teamSearchQuery:'', playerSearchQuery:'', teamStatusFilter:'all' };
 var normsEditDraft = null;
 var expandedProtocols = {};
 var SYNC_CONFIG_KEY = 'osp-sync-config-v1';
@@ -587,127 +574,6 @@ function computeDerived(p){
   return out;
 }
 
-var BIOBAND_COEF = {
-  Erkek: [
-    [4, -10.2567, 1.23812, -0.0087235, 0.50286],
-    [4.5, -10.719, 1.15964, -0.0074454, 0.52887],
-    [5, -11.0213, 1.10674, 0.0064778, 0.53919],
-    [5.5, -11.1556, 1.0748, -0.005776, 0.53691],
-    [6, -11.1138, 1.05923, -0.0052947, 0.52513],
-    [6.5, -11.0221, 1.05542, -0.0049892, 0.50692],
-    [7, -10.9984, 1.05877, -0.0048144, 0.48538],
-    [7.5, -11.0214, 1.06467, -0.047256, 0.46361],
-    [8, -11.0696, 1.06853, -0.0046778, 0.44469],
-    [8.5, -11.122, 1.06572, -0.0046261, 0.43171],
-    [9, -11.1571, 1.05166, -0.045254, 0.42776],
-    [9.5, -11.1405, 1.02174, -0.0043311, 0.43593],
-    [10, -11.038, 0.97135, -0.0039981, 0.45932],
-    [10.5, -10.8286, 0.89589, -0.0034814, 0.50101],
-    [11, -10.4917, 0.81239, -0.002905, 0.54781],
-    [11.5, -10.0065, 0.74134, -0.0024167, 0.58409],
-    [12, -9.3522, 0.68325, -0.0020076, 0.60927],
-    [12.5, -8.6055, 0.63869, -0.0016681, 0.62279],
-    [13, -7.8632, 0.60818, -0.0013895, 0.62407],
-    [13.5, -7.1348, 0.59228, -0.0011624, 0.61253],
-    [14, -6.4299, 0.59151, -0.0009776, 0.58762],
-    [14.5, -5.7578, 0.60643, -0.0008261, 0.54875],
-    [15, -5.1282, 0.63757, -0.0006988, 0.49536],
-    [15.5, -4.5092, 0.68548, -0.0005863, 0.42687],
-    [16, -3.9292, 0.75069, -0.0004795, 0.34271],
-    [16.5, -3.4873, 0.83375, -0.0003695, 0.24231],
-    [17, -3.283, 0.9352, -0.000247, 0.1251],
-    [17.5, -3.4156, 1.05558, -0.0001027, -0.0095]
-  ],
-  Kiz: [
-    [4, -8.1325, 1.24768, -0.019435, 0.44774],
-    [4.5, -6.47656, 1.22177, -0.018519, 0.41381],
-    [5, -5.13582, 1.19932, -0.01753, 0.38467],
-    [5.5, -4.13791, 1.1788, -0.016484, 0.36039],
-    [6, -3.51039, 1.15866, -0.0154, 0.34105],
-    [6.5, -3.14322, 1.13737, -0.014294, 0.32672],
-    [7, -2.87645, 1.11342, -0.013184, 0.31748],
-    [7.5, -2.66291, 1.08525, -0.012086, 0.3134],
-    [8, -2.45559, 1.05135, -0.011019, 0.31457],
-    [8.5, -2.20728, 1.01018, -0.009999, 0.32105],
-    [9, -1.87098, 0.9602, -0.009044, 0.33291],
-    [9.5, -1.0633, 0.89989, -0.008171, 0.35025],
-    [10, 0.33468, 0.82771, -0.007397, 0.37312],
-    [10.5, 1.97366, 0.74213, -0.006739, 0.40161],
-    [11, 3.50436, 0.67173, -0.006136, 0.42042],
-    [11.5, 4.57747, 0.6415, -0.005518, 0.41686],
-    [12, 4.84365, 0.64452, -0.004894, 0.3949],
-    [12.5, 4.27869, 0.67386, -0.004272, 0.3585],
-    [13, 3.21417, 0.7226, -0.003661, 0.31163],
-    [13.5, 1.83456, 0.78383, -0.003067, 0.25826],
-    [14, 0.32425, 0.85062, -0.0025, 0.20235],
-    [14.5, -1.13224, 0.91605, -0.001967, 0.14787],
-    [15, -2.35055, 0.97319, -0.001477, 0.0988],
-    [15.5, -3.10326, 1.01514, -0.001037, 0.05909],
-    [16, -3.17885, 1.03496, -0.000655, 0.03272],
-    [16.5, -2.41657, 1.02573, -0.00034, 0.02364],
-    [17, -0.65579, 0.98054, -0.0001, 0.03584],
-    [17.5, 2.26429, 0.89246, 0.000057, 0.07327]
-  ]
-};
-
-function mround(value, multiple){
-  if(!multiple) return value;
-  return Math.round(value/multiple)*multiple;
-}
-
-function ageDecimal(dateStr, refDate){
-  if(!dateStr) return null;
-  var b = new Date(dateStr);
-  if(isNaN(b.getTime())) return null;
-  var ref = refDate || new Date();
-  var diffDays = (ref.getTime() - b.getTime())/86400000;
-  if(diffDays < 0) return null;
-  return diffDays/365.25;
-}
-
-function computeBioBanding(p){
-  var out = { ok:false, error:null };
-  var boy = num(p.boy), kilo = num(p.kilo);
-  var baba = num(p.babaBoy), anne = num(p.anneBoy);
-  var cinsiyet = p.cinsiyet;
-  if(!boy || !kilo || !baba || !anne || !cinsiyet || !p.dogumTarihi){
-    out.error = 'eksikVeri';
-    return out;
-  }
-  var age = ageDecimal(p.dogumTarihi);
-  if(age===null){ out.error = 'eksikVeri'; return out; }
-  var rounded = clamp(mround(age, 0.5), 4, 17.5);
-  var table = cinsiyet==='Erkek' ? BIOBAND_COEF.Erkek : BIOBAND_COEF.Kiz;
-  var row = null;
-  for(var i=0;i<table.length;i++){ if(Math.abs(table[i][0]-rounded)<0.001){ row = table[i]; break; } }
-  if(!row){ out.error = 'aralikDisi'; return out; }
-
-  var heightIn = boy/2.54;
-  var weightLb = kilo*2.20462262185;
-  var midparentCm = (baba+anne)/2;
-  var midparentIn = midparentCm/2.54;
-  var pahIn = row[1] + row[2]*heightIn + row[3]*weightLb + row[4]*midparentIn;
-  var pahCm = pahIn*2.54;
-  var pctPah = pahCm>0 ? boy/pahCm : null;
-  var remaining = pahCm - boy;
-  var maturity = null;
-  if(pctPah!==null){
-    if(pctPah>=0.95) maturity = 'Late Pubertal';
-    else if(pctPah>=0.9) maturity = 'Mid-Pubertal';
-    else if(pctPah>=0.85) maturity = 'Early Pubertal';
-    else if(pctPah>0) maturity = 'Pre-Pubertal';
-  }
-
-  out.ok = true;
-  out.age = round1(age);
-  out.roundedAge = rounded;
-  out.pahCm = round1(pahCm);
-  out.pctPah = pctPah!==null ? Math.round(pctPah*1000)/10 : null;
-  out.remaining = round1(remaining);
-  out.maturity = maturity;
-  return out;
-}
-
 function scoreFor(test, value){
   if(value===null||value===undefined||isNaN(value)) return null;
   var s;
@@ -728,63 +594,6 @@ function overallScore(p, team){
   if(scores.length===0) return null;
   var avg = scores.reduce(function(a,b){return a+b;},0)/scores.length;
   return round1(avg);
-}
-
-function teamAvgScore100(t){
-  var scores = [];
-  t.players.forEach(function(p){ var s = overallScore(p,t); if(s!==null) scores.push(s); });
-  if(!scores.length) return null;
-  var avg = scores.reduce(function(a,b){return a+b;},0)/scores.length;
-  return Math.round(avg*5);
-}
-
-function teamPendingCount(t){
-  return t.players.filter(function(p){ return overallScore(p,t)===null; }).length;
-}
-
-function globalAvgScore100(){
-  var scores = [];
-  state.teams.forEach(function(t){ t.players.forEach(function(p){ var s = overallScore(p,t); if(s!==null) scores.push(s); }); });
-  if(!scores.length) return null;
-  var avg = scores.reduce(function(a,b){return a+b;},0)/scores.length;
-  return Math.round(avg*5);
-}
-
-function globalPendingCount(){
-  var n = 0;
-  state.teams.forEach(function(t){ t.players.forEach(function(p){ if(overallScore(p,t)===null) n++; }); });
-  return n;
-}
-
-function updatedTodayCount(){
-  var today = new Date().toDateString();
-  var n = 0;
-  state.teams.forEach(function(t){
-    t.players.forEach(function(p){
-      if(t.updatedAt && new Date(t.updatedAt).toDateString()===today && overallScore(p,t)!==null) n++;
-    });
-  });
-  return n;
-}
-
-function mostRecentTeamUpdate(){
-  var latest = null;
-  state.teams.forEach(function(t){
-    if(t.updatedAt){ var d = new Date(t.updatedAt); if(!latest || d>latest) latest = d; }
-  });
-  return latest;
-}
-
-function formatTrDate(d){
-  if(!d) return null;
-  try { return d.toLocaleDateString('tr-TR', {day:'numeric', month:'long', year:'numeric'}); }
-  catch(e){ return d.toISOString().slice(0,10); }
-}
-
-function formatTrTime(d){
-  if(!d) return null;
-  var hh = ('0'+d.getHours()).slice(-2), mm = ('0'+d.getMinutes()).slice(-2);
-  return hh+':'+mm;
 }
 
 function verdictText(score){
@@ -1078,7 +887,7 @@ function renderNewTeam(){
   createBtn.querySelector('button').addEventListener('click', function(){
     if(!newTeamDraft.name.trim()){ alert('Lütfen takım adı gir.'); return; }
     if(newTeamDraft.selectedTests.length===0){ alert('En az bir test seçmelisin.'); return; }
-    var t = { id:'t'+Date.now(), name: newTeamDraft.name.trim(), ageGroup: newTeamDraft.ageGroup, selectedTests: newTeamDraft.selectedTests.slice(), players: [] };
+    var t = { id:'t'+Date.now(), name: newTeamDraft.name.trim(), ageGroup: newTeamDraft.ageGroup, selectedTests: newTeamDraft.selectedTests.slice(), active:true, lastUpdated:Date.now(), players: [] };
     state.teams.push(t);
     state.currentTeamId = t.id;
     state.view = 'squad';
@@ -1098,7 +907,7 @@ function deleteTeam(id){
 function addPlayer(){
   var t = getTeam(); if(!t) return;
   var maxNo = t.players.reduce(function(m,p){ return Math.max(m, p.no||0); }, 0);
-  var p = { id: 'p'+Date.now(), no: maxNo+1, adSoyad:'', dogumTarihi:'', yas:null, boy:null, kilo:null, cinsiyet:'', babaBoy:null, anneBoy:null };
+  var p = { id: 'p'+Date.now(), no: maxNo+1, adSoyad:'', dogumTarihi:'', yas:null, boy:null, kilo:null };
   t.players.push(p);
   state.currentPlayerId = p.id;
   state.view = 'detail';
@@ -1119,7 +928,7 @@ function updateField(key, val){
   var p = getPlayer(); if(!p) return;
   p[key] = val;
   var t = getTeam();
-  if(t){ t.updatedAt = new Date().toISOString(); }
+  if(t) t.lastUpdated = Date.now();
   save();
 }
 
@@ -1159,14 +968,10 @@ function fieldRow(label, key, value, opts){
   var input;
   if(opts.type==='date'){ input = el('<input type="date" />'); }
   else if(opts.type==='text'){ input = el('<input type="text" placeholder="'+(opts.placeholder||'')+'" />'); }
-  else if(opts.type==='select'){
-    var optsHtml = (opts.options||[]).map(function(o){ return '<option value="'+o.value+'">'+escapeHtml(o.label)+'</option>'; }).join('');
-    input = el('<select>'+optsHtml+'</select>');
-  }
   else { input = el('<input type="number" inputmode="decimal" step="'+(opts.step||'1')+'" placeholder="-" />'); }
   if(value!==null && value!==undefined) input.value = value;
-  input.addEventListener(opts.type==='select' ? 'change' : 'input', function(){
-    var v = (opts.type==='text' || opts.type==='date' || opts.type==='select') ? input.value : num(input.value);
+  input.addEventListener('input', function(){
+    var v = opts.type==='text' || opts.type==='date' ? input.value : num(input.value);
     updateField(key, v);
     if(opts.onChange) opts.onChange(v);
   });
@@ -1174,145 +979,8 @@ function fieldRow(label, key, value, opts){
   return wrap;
 }
 
-var TEAM_ACCENTS = ['#d32f2f', '#1e88e5', '#2e7d32', '#f57c00'];
-
-function renderHome(){
-  var body = document.getElementById('osp-body');
-  body.innerHTML = '';
-
-  var allPlayers = [];
-  state.teams.forEach(function(t){ t.players.forEach(function(p){ allPlayers.push(p); }); });
-  var avg100 = globalAvgScore100();
-  var pending = globalPendingCount();
-  var doneToday = updatedTodayCount();
-  var lastUpdate = mostRecentTeamUpdate();
-
-  var hero = el('<div class="osp-home-hero"></div>');
-  hero.innerHTML =
-    '<div class="osp-home-hero-top">' +
-      '<img class="osp-home-logo" id="osp-home-logo" src="'+APP_LOGO+'" alt="Performans Pusulası">' +
-      '<div class="osp-home-title-block">' +
-        '<div class="osp-home-title-1">PERFORMANS</div>' +
-        '<div class="osp-home-title-2">PUSULASI</div>' +
-        '<div class="osp-home-subtitle">Futbolcu Analiz Sistemi</div>' +
-      '</div>' +
-      '<div class="osp-home-actions">' +
-        '<button class="osp-home-icon-btn" id="osp-home-sync-btn2" aria-label="Senkronizasyon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 01-15.3 6.4L3 21"></path><path d="M3 12a9 9 0 0115.3-6.4L21 3"></path><path d="M3 21v-5h5"></path><path d="M21 3v5h-5"></path></svg></button>' +
-      '</div>' +
-    '</div>' +
-    '<div class="osp-home-stats">' +
-      '<div class="osp-home-stat-card"><div class="osp-home-stat-num">'+state.teams.length+'</div><div class="osp-home-stat-label">Takım</div><div class="osp-home-stat-bar" style="background:#d32f2f;"></div></div>' +
-      '<div class="osp-home-stat-card"><div class="osp-home-stat-num">'+allPlayers.length+'</div><div class="osp-home-stat-label">Oyuncu</div><div class="osp-home-stat-bar" style="background:#ffcc00;"></div></div>' +
-      '<div class="osp-home-stat-card"><div class="osp-home-stat-num">'+ALL_TEST_KEYS.length+'</div><div class="osp-home-stat-label">Test</div><div class="osp-home-stat-bar" style="background:#ffffff;"></div></div>' +
-      '<div class="osp-home-stat-card"><div class="osp-home-stat-num">'+(avg100!==null?avg100:'-')+'</div><div class="osp-home-stat-label">Ort. Performans</div><div class="osp-home-stat-bar" style="background:#66bb6a;"></div></div>' +
-    '</div>';
-  body.appendChild(hero);
-
-  var searchRow = el('<div class="osp-home-search-row"></div>');
-  var searchWrap = el('<div class="osp-search-wrap">'+SVG_ICONS.search+'<input type="text" placeholder="Takım veya oyuncu ara...">' + '</div>');
-  var searchInput = searchWrap.querySelector('input');
-  searchInput.value = state.homeSearchQuery;
-  searchRow.appendChild(searchWrap);
-  var filterBtn = el('<button class="osp-home-filter-btn" aria-label="Performansa göre sırala">'+SVG_ICONS.sliders+'</button>');
-  searchRow.appendChild(filterBtn);
-  body.appendChild(searchRow);
-
-  var listWrap = el('<div id="osp-home-list"></div>');
-  body.appendChild(listWrap);
-
-  function renderList(){
-    filterBtn.classList.toggle('active', state.homeSortMode==='performans');
-    listWrap.innerHTML = '';
-    var q = state.homeSearchQuery.trim().toLocaleLowerCase('tr');
-    var filtered = state.teams.filter(function(t){ return !q || t.name.toLocaleLowerCase('tr').indexOf(q)!==-1; });
-
-    if(state.teams.length===0){
-      listWrap.appendChild(el('<div class="osp-empty"><i class="ti ti-shield" aria-hidden="true"></i><p>Henüz takım eklenmedi.<br>İlk takımını ekleyerek başla.</p></div>'));
-    } else if(filtered.length===0){
-      listWrap.appendChild(el('<div class="osp-empty">'+SVG_ICONS.search+'<p>"'+escapeHtml(state.homeSearchQuery)+'" ile eşleşen takım yok.</p></div>'));
-    } else {
-      var withScores = filtered.map(function(t, idx){ return { t:t, idx:state.teams.indexOf(t), score: teamAvgScore100(t) }; });
-      if(state.homeSortMode==='performans'){
-        withScores.sort(function(a,b){ return (b.score||0)-(a.score||0); });
-      }
-      withScores.forEach(function(entry){
-        var t = entry.t;
-        var accent = TEAM_ACCENTS[entry.idx % TEAM_ACCENTS.length];
-        var score = entry.score;
-        var pendingCount = teamPendingCount(t);
-        var logoInner = t.logo ? '<img src="'+t.logo+'" alt="">' : SVG_ICONS.shield;
-        var dateVal = t.updatedAt ? formatTrDate(new Date(t.updatedAt)) : 'Henüz test yok';
-        var card = el(
-          '<div class="osp-home-team-card">' +
-            '<div class="osp-home-team-top">' +
-              '<div class="osp-home-team-logo-wrap">' +
-                '<div class="osp-home-team-logo">'+logoInner+'</div>' +
-                '<div class="osp-home-team-dot" style="background:'+(pendingCount>0?'#d32f2f':'#2e7d32')+';"></div>' +
-              '</div>' +
-              '<div style="min-width:0; flex:1;">' +
-                '<p class="osp-home-team-name">'+escapeHtml(t.name)+'</p>' +
-                '<p class="osp-home-team-meta">'+SVG_ICONS.users+' '+t.players.length+' oyuncu</p>' +
-              '</div>' +
-              '<span class="osp-home-team-chevron"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></span>' +
-            '</div>' +
-            '<div class="osp-home-team-bottom">' +
-              '<div>' +
-                '<div class="osp-home-perf-label">Ortalama Performans</div>' +
-                '<div class="osp-home-perf-row"><span class="osp-home-perf-num" style="color:'+accent+';">'+(score!==null?score:'-')+'</span><span class="osp-home-perf-max">/100</span></div>' +
-                '<div class="osp-home-perf-track"><div class="osp-home-perf-fill" style="width:'+(score!==null?score:0)+'%; background:'+accent+';"></div></div>' +
-              '</div>' +
-              '<div class="osp-home-date-block">' +
-                '<div class="osp-home-date-label">'+SVG_ICONS.calendar+' Son Test</div>' +
-                '<div class="osp-home-date-val">'+dateVal+'</div>' +
-              '</div>' +
-            '</div>' +
-          '</div>'
-        );
-        card.style.boxShadow = 'inset 4px 0 0 '+accent;
-        card.addEventListener('click', function(){ state.currentTeamId = t.id; state.view='squad'; render(); });
-        listWrap.appendChild(card);
-      });
-    }
-  }
-  renderList();
-
-  searchInput.addEventListener('input', function(){ state.homeSearchQuery = searchInput.value; renderList(); });
-  filterBtn.addEventListener('click', function(){
-    state.homeSortMode = state.homeSortMode==='performans' ? 'name' : 'performans';
-    renderList();
-  });
-
-  var addBtn = el('<div class="osp-fab-row"><button class="osp-btn-primary"><i class="ti ti-plus" aria-hidden="true" style="margin-right:6px; vertical-align:-2px;"></i>Takım Ekle</button></div>');
-  addBtn.querySelector('button').addEventListener('click', openNewTeam);
-  body.appendChild(addBtn);
-
-  var infobar = el('<div class="osp-home-infobar"></div>');
-  infobar.innerHTML =
-    '<div class="osp-home-infobar-item">' +
-      '<div class="osp-home-infobar-icon">'+SVG_ICONS.clipboard+'</div>' +
-      '<div class="osp-home-infobar-num">'+doneToday+'</div>' +
-      '<div class="osp-home-infobar-label">Bugünkü Test</div>' +
-      '<div class="osp-home-infobar-sub">test girildi</div>' +
-    '</div>' +
-    '<div class="osp-home-infobar-item">' +
-      '<div class="osp-home-infobar-icon">'+SVG_ICONS.clock+'</div>' +
-      '<div class="osp-home-infobar-num">'+pending+'</div>' +
-      '<div class="osp-home-infobar-label">Bekleyen Test</div>' +
-      '<div class="osp-home-infobar-sub">test bekliyor</div>' +
-    '</div>' +
-    '<div class="osp-home-infobar-item">' +
-      '<div class="osp-home-infobar-icon">'+SVG_ICONS.calendar+'</div>' +
-      '<div class="osp-home-infobar-num" style="font-size:14px;">'+(lastUpdate ? (lastUpdate.toDateString()===new Date().toDateString() ? 'Bugün' : formatTrDate(lastUpdate)) : '-')+'</div>' +
-      '<div class="osp-home-infobar-label">Son Güncelleme</div>' +
-      '<div class="osp-home-infobar-sub">'+(lastUpdate ? formatTrTime(lastUpdate) : '')+'</div>' +
-    '</div>';
-  body.appendChild(infobar);
-
-  document.getElementById('osp-home-logo').addEventListener('click', function(){ /* already home */ });
-  document.getElementById('osp-home-sync-btn2').addEventListener('click', function(){
-    state.prevView = state.view; state.view = 'sync'; render();
-  });
-}
+var ACCENT_PALETTE = ['#d32f2f','#1e88e5','#2e7d32','#f0b429','#7b1fa2','#00897b'];
+function teamAccentColor(t, idx){ return ACCENT_PALETTE[idx % ACCENT_PALETTE.length]; }
 
 function renderTeams(){
   document.getElementById('osp-back-btn').style.display = 'none';
@@ -1328,44 +996,109 @@ function renderTeams(){
   searchInput.addEventListener('input', function(){ state.teamSearchQuery = searchInput.value; renderTeamsList(); });
   body.appendChild(searchWrap);
 
+  var filterTabs = el(
+    '<div class="osp-tabs" style="margin-bottom:14px;">' +
+      '<div class="osp-tab" data-filter="all">Tüm Takımlar</div>' +
+      '<div class="osp-tab" data-filter="active">Aktif</div>' +
+      '<div class="osp-tab" data-filter="passive">Pasif</div>' +
+    '</div>'
+  );
+  Array.prototype.forEach.call(filterTabs.querySelectorAll('.osp-tab'), function(tab){
+    if(tab.getAttribute('data-filter')===(state.teamStatusFilter||'all')) tab.classList.add('active');
+    tab.addEventListener('click', function(){ state.teamStatusFilter = tab.getAttribute('data-filter'); renderTeamsList(); Array.prototype.forEach.call(filterTabs.querySelectorAll('.osp-tab'), function(x){ x.classList.toggle('active', x===tab); }); });
+  });
+  body.appendChild(filterTabs);
+
   var listWrap = el('<div id="osp-teams-list"></div>');
   body.appendChild(listWrap);
 
   function renderTeamsList(){
     listWrap.innerHTML = '';
     var q = state.teamSearchQuery.trim().toLocaleLowerCase('tr');
-    var filtered = state.teams.filter(function(t){ return !q || t.name.toLocaleLowerCase('tr').indexOf(q)!==-1; });
+    var statusFilter = state.teamStatusFilter || 'all';
+    var filtered = state.teams.filter(function(t){
+      var matchesQ = !q || t.name.toLocaleLowerCase('tr').indexOf(q)!==-1;
+      var matchesStatus = statusFilter==='all' || (statusFilter==='active' ? isActiveTeam(t) : !isActiveTeam(t));
+      return matchesQ && matchesStatus;
+    });
 
     if(state.teams.length===0){
       listWrap.appendChild(el('<div class="osp-empty"><i class="ti ti-shield" aria-hidden="true"></i><p>Henüz takım eklenmedi.<br>İlk takımını ekleyerek başla.</p></div>'));
     } else if(filtered.length===0){
-      listWrap.appendChild(el('<div class="osp-empty">'+SVG_ICONS.search+'<p>"'+escapeHtml(state.teamSearchQuery)+'" ile eşleşen takım yok.</p></div>'));
+      listWrap.appendChild(el('<div class="osp-empty">'+SVG_ICONS.search+'<p>Eşleşen takım yok.</p></div>'));
     } else {
-      filtered.forEach(function(t){
+      filtered.forEach(function(t, idx){
+        var accent = teamAccentColor(t, state.teams.indexOf(t));
         var count = t.players.length;
         var badgeInner = t.logo ? '<img src="'+t.logo+'" alt="">' : '<i class="ti ti-shield" aria-hidden="true"></i>';
+        var avg = teamAvgScore100(t);
+        var testCount = teamCompletedTestCount(t);
+        var active = isActiveTeam(t);
         var card = el(
-          '<div class="osp-team-card">' +
-            '<div class="osp-badge-wrap">' +
-              '<div class="osp-team-badge">'+badgeInner+'</div>' +
-              '<div class="osp-badge-edit" title="Logo değiştir"><i class="ti ti-camera" aria-hidden="true"></i></div>' +
+          '<div class="osp-team-card2" style="border-left:4px solid '+accent+';">' +
+            '<div style="display:flex; align-items:center; gap:12px;">' +
+              '<div class="osp-badge-wrap">' +
+                '<div class="osp-team-badge" style="border-color:'+accent+';">'+badgeInner+'</div>' +
+                '<div class="osp-badge-edit" title="Logo değiştir"><i class="ti ti-camera" aria-hidden="true"></i></div>' +
+                '<div style="position:absolute; bottom:-2px; right:14px; width:12px; height:12px; border-radius:50%; background:'+accent+'; border:2px solid #fff;"></div>' +
+              '</div>' +
+              '<div style="min-width:0; flex:1;">' +
+                '<div style="display:flex; align-items:center; gap:8px;"><p class="osp-team-name" style="margin:0;">'+escapeHtml(t.name)+'</p>' +
+                  '<span class="osp-status-pill" data-toggle-active style="background:'+(active?'#e8f5e9':'#f2f2f2')+'; color:'+(active?'#2e7d32':'#888')+';">'+(active?'AKTİF':'PASİF')+'</span>' +
+                '</div>' +
+                '<p class="osp-team-meta" style="margin-top:3px;"><i class="ti ti-users" aria-hidden="true" style="font-size:12px; vertical-align:-1px; margin-right:3px;"></i>'+count+' oyuncu</p>' +
+              '</div>' +
+              '<i class="ti ti-chevron-right osp-chevron" aria-hidden="true"></i>' +
             '</div>' +
-            '<div style="min-width:0; flex:1;">' +
-              '<p class="osp-team-name">'+escapeHtml(t.name)+'</p>' +
-              '<p class="osp-team-meta">'+count+' oyuncu</p>' +
+            '<div style="margin-top:12px;">' +
+              '<div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:4px;">' +
+                '<span style="font-size:11px; color:#a37a00; font-weight:600;">Ortalama Performans</span>' +
+                '<span style="font-family:\'Rajdhani\',sans-serif; font-weight:700; font-size:16px; color:'+accent+';">'+(avg!==null?avg:'-')+'<span style="font-size:10px; color:#a37a00;">/100</span></span>' +
+              '</div>' +
+              '<div style="height:6px; border-radius:3px; background:#f0e6c8;"><div style="height:100%; width:'+(avg!==null?avg:0)+'%; border-radius:3px; background:'+accent+';"></div></div>' +
             '</div>' +
-            '<i class="ti ti-chevron-right osp-chevron" aria-hidden="true"></i>' +
+            '<div style="display:flex; margin-top:12px; gap:6px;">' +
+              '<div style="flex:1; background:#fffdf5; border-radius:8px; padding:7px 8px;">' +
+                '<div style="font-size:9px; color:#a37a00; font-weight:600; text-transform:uppercase;">Son Test</div>' +
+                '<div style="font-size:11.5px; font-weight:600; color:#1a1a1a; margin-top:2px;">'+daysSinceLabel(t.lastUpdated)+'</div>' +
+              '</div>' +
+              '<div style="flex:1; background:#fffdf5; border-radius:8px; padding:7px 8px;">' +
+                '<div style="font-size:9px; color:#a37a00; font-weight:600; text-transform:uppercase;">Test Sayısı</div>' +
+                '<div style="font-size:11.5px; font-weight:600; color:#1a1a1a; margin-top:2px;">'+testCount+' tamamlandı</div>' +
+              '</div>' +
+            '</div>' +
           '</div>'
         );
         card.querySelector('.osp-badge-edit').addEventListener('click', function(e){
           e.stopPropagation();
           pickImage(240, function(dataUrl){ t.logo = dataUrl; save(); render(); });
         });
+        card.querySelector('[data-toggle-active]').addEventListener('click', function(e){
+          e.stopPropagation();
+          t.active = !isActiveTeam(t);
+          save(); renderTeamsList();
+        });
         card.addEventListener('click', function(){
           state.currentTeamId = t.id; state.view='squad'; render();
         });
         listWrap.appendChild(card);
       });
+
+      if(state.teams.length>=2){
+        var chartTeams = state.teams.map(function(t){ return { name:t.name, avg: teamAvgScore100(t) || 0, color: teamAccentColor(t, state.teams.indexOf(t)) }; })
+          .sort(function(a,b){ return b.avg-a.avg; });
+        var maxAvg = 100;
+        var chartCard = el('<div class="osp-card" style="margin-top:6px;"></div>');
+        var chartHtml = '<div style="display:flex; align-items:center; gap:6px; margin-bottom:14px;">'+SVG_ICONS.chart+'<span style="font-family:\'Rajdhani\',sans-serif; font-weight:700; font-size:13px; color:#1a1a1a; text-transform:uppercase; letter-spacing:0.3px;">Takım Performans Karşılaştırması</span></div>';
+        chartTeams.forEach(function(ct){
+          chartHtml += '<div style="margin-bottom:12px;">' +
+            '<div style="display:flex; justify-content:space-between; font-size:11.5px; font-weight:600; color:#1a1a1a; margin-bottom:4px;"><span>'+escapeHtml(ct.name)+'</span><span style="color:'+ct.color+'; font-family:\'Rajdhani\',sans-serif; font-weight:700;">'+ct.avg+'</span></div>' +
+            '<div style="height:8px; border-radius:4px; background:#f0e6c8;"><div style="height:100%; width:'+(ct.avg/maxAvg*100)+'%; border-radius:4px; background:'+ct.color+';"></div></div>' +
+          '</div>';
+        });
+        chartCard.innerHTML = chartHtml;
+        listWrap.appendChild(chartCard);
+      }
     }
   }
   renderTeamsList();
@@ -1552,70 +1285,6 @@ function renderDetailTabInfo(container, p){
   container.appendChild(delBtn);
 }
 
-function renderDetailTabBio(container, p){
-  var infoCard = el(
-    '<div class="osp-card" style="margin-bottom:10px; background:#fff8e1; border-color:#ffcc00;">' +
-      '<p style="font-size:12px; color:#7a3b00; margin:0; line-height:1.5;">Bio-Banding, oyuncunun <b>Bilgi</b> sekmesindeki Boy, Kilo ve Doğum Tarihi bilgilerini kullanır. Aşağıya cinsiyet ve anne-baba boylarını da girerek Tahmini Yetişkin Boyu (PAH) ve biyolojik olgunluk seviyesini hesaplayabilirsin.</p>' +
-    '</div>'
-  );
-  container.appendChild(infoCard);
-
-  var card = el('<div class="osp-card"></div>');
-  card.appendChild(fieldRow('Cinsiyet', 'cinsiyet', p.cinsiyet, {type:'select', options:[
-    {value:'', label:'Seçiniz'},
-    {value:'Erkek', label:'Erkek'},
-    {value:'Kiz', label:'Kız'}
-  ], onChange:function(){ updateBioDisplay(); }}));
-  var row = el('<div class="osp-field-row"></div>');
-  row.appendChild(fieldRow("Baba Boyu", 'babaBoy', p.babaBoy, {unit:'cm', step:'1', onChange:function(){ updateBioDisplay(); }}));
-  row.appendChild(fieldRow("Anne Boyu", 'anneBoy', p.anneBoy, {unit:'cm', step:'1', onChange:function(){ updateBioDisplay(); }}));
-  card.appendChild(row);
-  container.appendChild(card);
-
-  var resultWrap = el('<div id="osp-bio-result"></div>');
-  container.appendChild(resultWrap);
-
-  function updateBioDisplay(){
-    resultWrap.innerHTML = '';
-    var result = computeBioBanding(p);
-
-    if(!result.ok){
-      var msg = result.error==='aralikDisi'
-        ? 'Bu hesaplama yöntemi 4 - 17.5 yaş aralığındaki oyuncular için geçerlidir.'
-        : 'Hesaplama için Bilgi sekmesinde Boy, Kilo, Doğum Tarihi ve yukarıdaki Cinsiyet, Baba Boyu, Anne Boyu alanlarının tamamının doldurulması gerekir.';
-      resultWrap.appendChild(el('<div class="osp-empty" style="margin-top:14px;"><span style="display:inline-block; color:#ffcc00;">'+SVG_ICONS.ruler+'</span><p>'+msg+'</p></div>'));
-      return;
-    }
-
-    var maturityLabels = {'Pre-Pubertal':'Puberte Öncesi','Early Pubertal':'Erken Pubertal','Mid-Pubertal':'Orta Pubertal','Late Pubertal':'Geç Pubertal'};
-    var maturityColors = {'Pre-Pubertal':'#66bb6a','Early Pubertal':'#f0b429','Mid-Pubertal':'#fb8c00','Late Pubertal':'#d32f2f'};
-    var mColor = maturityColors[result.maturity] || '#a37a00';
-    var mLabel = maturityLabels[result.maturity] || '-';
-
-    var summary = el(
-      '<div class="osp-card" style="margin-top:10px; text-align:center;">' +
-        '<div style="font-size:11px; color:#a37a00; font-weight:700; text-transform:uppercase; letter-spacing:0.5px;">Tahmini Yetişkin Boyu (PAH)</div>' +
-        '<div style="font-family:\'Rajdhani\',sans-serif; font-weight:700; font-size:34px; color:#d32f2f; margin:4px 0;">'+result.pahCm+' <span style="font-size:16px;">cm</span></div>' +
-        '<div style="display:inline-block; background:'+mColor+'22; color:'+mColor+'; font-weight:700; font-size:12px; padding:4px 12px; border-radius:20px;">'+mLabel+'</div>' +
-      '</div>'
-    );
-    resultWrap.appendChild(summary);
-
-    var grid = el(
-      '<div class="osp-card" style="margin-top:10px;">' +
-        '<div style="display:flex; justify-content:space-between; padding:7px 0; border-bottom:1px solid #f6ecc7;"><span style="font-size:12.5px; color:#7a3b00; font-weight:600;">% Yetişkin Boyuna Ulaşma</span><span class="osp-num" style="font-weight:700;">'+result.pctPah+'%</span></div>' +
-        '<div style="display:flex; justify-content:space-between; padding:7px 0; border-bottom:1px solid #f6ecc7;"><span style="font-size:12.5px; color:#7a3b00; font-weight:600;">Kalan Büyüme</span><span class="osp-num" style="font-weight:700;">'+result.remaining+' cm</span></div>' +
-        '<div style="display:flex; justify-content:space-between; padding:7px 0;"><span style="font-size:12.5px; color:#7a3b00; font-weight:600;">Biyolojik Yaş (0.5 yakın)</span><span class="osp-num" style="font-weight:700;">'+result.roundedAge+'</span></div>' +
-      '</div>'
-    );
-    resultWrap.appendChild(grid);
-
-    resultWrap.appendChild(el('<p class="osp-norm-note" style="margin-top:10px;">Khamis-Roche yöntemine dayalı tahmini bir hesaplamadır (Kaynak: Khamis &amp; Roche, 1994; Cumming ve ark., 2017 - Bio-banding in Sport). Kesin tıbbi/klinik bir ölçüm değildir; büyüme ve olgunlaşma takibinde genel bir gösterge olarak kullanılmalıdır.</p>'));
-  }
-
-  updateBioDisplay();
-}
-
 function renderDetailTabVeri(container, p){
   var team = getTeam();
   var keys = selectedTestKeys(team);
@@ -1647,24 +1316,6 @@ function renderDetailTabSonuc(container, p){
     '<div style="font-size:11px; color:#a37a00; font-weight:700; text-transform:uppercase; letter-spacing:0.4px;">Genel Performans · '+ageGroup+' Yaş Normu</div>' +
     '<div class="osp-overall-verdict" style="margin-top:6px;">'+verdictText(score)+'</div>';
   container.appendChild(overallCard);
-
-  var bkCard = el('<div class="osp-card" style="margin-top:10px; display:flex; justify-content:space-between; align-items:center; gap:8px;"></div>');
-  bkCard.innerHTML =
-    '<div style="flex:1; text-align:center;">' +
-      '<div style="font-size:10px; color:#a37a00; font-weight:700; text-transform:uppercase; letter-spacing:0.4px;">Boy</div>' +
-      '<div class="osp-num" style="font-weight:700; font-size:16px; color:#1a1a1a; margin-top:2px;">'+(merged.boy!=null?merged.boy+' cm':'-')+'</div>' +
-    '</div>' +
-    '<div style="width:1px; height:30px; background:#f2e2ab;"></div>' +
-    '<div style="flex:1; text-align:center;">' +
-      '<div style="font-size:10px; color:#a37a00; font-weight:700; text-transform:uppercase; letter-spacing:0.4px;">Kilo</div>' +
-      '<div class="osp-num" style="font-weight:700; font-size:16px; color:#1a1a1a; margin-top:2px;">'+(merged.kilo!=null?merged.kilo+' kg':'-')+'</div>' +
-    '</div>' +
-    '<div style="width:1px; height:30px; background:#f2e2ab;"></div>' +
-    '<div style="flex:1; text-align:center;">' +
-      '<div style="font-size:10px; color:#a37a00; font-weight:700; text-transform:uppercase; letter-spacing:0.4px;">VKİ (BMI)</div>' +
-      '<div class="osp-num" style="font-weight:700; font-size:16px; color:#d32f2f; margin-top:2px;">'+(merged.vki!=null?merged.vki:'-')+'</div>' +
-    '</div>';
-  container.appendChild(bkCard);
 
   var catScores = {};
   ['fiz','psi','tek'].forEach(function(cat){
@@ -1778,24 +1429,6 @@ function renderDetailTabKarne(container, p){
     (team ? '<div style="font-size:11px; color:#a37a00; font-weight:600; margin-top:2px;">'+escapeHtml(team.name)+'</div>' : '') + '</div>';
   bodyEl.appendChild(overall);
 
-  var bkCardKarne = el('<div style="display:flex; justify-content:space-between; align-items:center; gap:8px; background:#fff8e1; border-radius:12px; padding:12px 14px; margin-bottom:14px;"></div>');
-  bkCardKarne.innerHTML =
-    '<div style="flex:1; text-align:center;">' +
-      '<div style="font-size:10px; color:#a37a00; font-weight:700; text-transform:uppercase; letter-spacing:0.4px;">Boy</div>' +
-      '<div style="font-family:\'Rajdhani\',sans-serif; font-weight:700; font-size:16px; color:#1a1a1a; margin-top:2px;">'+(merged.boy!=null?merged.boy+' cm':'-')+'</div>' +
-    '</div>' +
-    '<div style="width:1px; height:30px; background:#f2e2ab;"></div>' +
-    '<div style="flex:1; text-align:center;">' +
-      '<div style="font-size:10px; color:#a37a00; font-weight:700; text-transform:uppercase; letter-spacing:0.4px;">Kilo</div>' +
-      '<div style="font-family:\'Rajdhani\',sans-serif; font-weight:700; font-size:16px; color:#1a1a1a; margin-top:2px;">'+(merged.kilo!=null?merged.kilo+' kg':'-')+'</div>' +
-    '</div>' +
-    '<div style="width:1px; height:30px; background:#f2e2ab;"></div>' +
-    '<div style="flex:1; text-align:center;">' +
-      '<div style="font-size:10px; color:#a37a00; font-weight:700; text-transform:uppercase; letter-spacing:0.4px;">VKİ (BMI)</div>' +
-      '<div style="font-family:\'Rajdhani\',sans-serif; font-weight:700; font-size:16px; color:#d32f2f; margin-top:2px;">'+(merged.vki!=null?merged.vki:'-')+'</div>' +
-    '</div>';
-  bodyEl.appendChild(bkCardKarne);
-
   var catScoresKarne = {};
   ['fiz','psi','tek'].forEach(function(cat){
     var catTests = tests.filter(function(t){ return t.cat===cat; });
@@ -1865,7 +1498,6 @@ function renderDetail(){
   var tabs = el(
     '<div class="osp-tabs">' +
       '<div class="osp-tab" data-tab="bilgi"><span style="margin-right:4px; vertical-align:-2px; display:inline-block;">'+SVG_ICONS.info+'</span>Bilgi</div>' +
-      '<div class="osp-tab" data-tab="bio"><span style="margin-right:4px; vertical-align:-2px; display:inline-block;">'+SVG_ICONS.ruler+'</span>Bio-Banding</div>' +
       '<div class="osp-tab" data-tab="veri"><span style="margin-right:4px; vertical-align:-2px; display:inline-block;">'+SVG_ICONS.edit+'</span>Test Verisi</div>' +
       '<div class="osp-tab" data-tab="sonuc"><span style="margin-right:4px; vertical-align:-2px; display:inline-block;">'+SVG_ICONS.chart+'</span>Sonuçlar</div>' +
       '<div class="osp-tab" data-tab="karne"><span style="margin-right:4px; vertical-align:-2px; display:inline-block;">'+SVG_ICONS.award+'</span>Karne</div>' +
@@ -1879,7 +1511,6 @@ function renderDetail(){
 
   var content = el('<div></div>');
   if(state.tab==='bilgi') renderDetailTabInfo(content, p);
-  else if(state.tab==='bio') renderDetailTabBio(content, p);
   else if(state.tab==='veri') renderDetailTabVeri(content, p);
   else if(state.tab==='karne') renderDetailTabKarne(content, p);
   else renderDetailTabSonuc(content, p);
@@ -2397,16 +2028,14 @@ function renderSync(){
 
 function render(){
   var showSecondary = (state.view==='teams');
-  document.getElementById('osp-header').style.display = (state.view==='home') ? 'none' : '';
   document.getElementById('osp-guide-btn').style.display = showSecondary ? 'flex' : 'none';
   document.getElementById('osp-sync-btn').style.display = showSecondary ? 'flex' : 'none';
   Array.prototype.forEach.call(document.querySelectorAll('.osp-nav-item'), function(btn, idx){
     var target = btn.getAttribute('data-target');
-    var isActive = (target===state.view);
+    var isActive = (target===state.view) || (idx===0 && state.view==='teams');
     btn.classList.toggle('active', isActive);
   });
-  if(state.view==='home') renderHome();
-  else if(state.view==='teams') renderTeams();
+  if(state.view==='teams') renderTeams();
   else if(state.view==='newTeam') renderNewTeam();
   else if(state.view==='squad') renderSquad();
   else if(state.view==='players') renderPlayers();
@@ -2424,7 +2053,7 @@ Array.prototype.forEach.call(document.querySelectorAll('.osp-nav-item'), functio
 
 document.getElementById('osp-app-logo').src = APP_LOGO;
 document.getElementById('osp-app-logo').addEventListener('click', function(){
-  state.view = 'home';
+  state.view = 'teams';
   render();
 });
 
@@ -2442,8 +2071,8 @@ document.getElementById('osp-sync-btn').addEventListener('click', function(){
 
 document.getElementById('osp-back-btn').addEventListener('click', function(){
   if(state.view==='detail'){ state.view = 'squad'; }
-  else if(state.view==='guide' || state.view==='sync'){ state.view = state.prevView || 'home'; }
-  else { state.view = 'home'; }
+  else if(state.view==='guide' || state.view==='sync'){ state.view = state.prevView || 'teams'; }
+  else { state.view = 'teams'; }
   render();
 });
 

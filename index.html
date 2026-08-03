@@ -1201,6 +1201,24 @@ function renderDetailTabSonuc(container, p){
     '<div class="osp-overall-verdict" style="margin-top:6px;">'+verdictText(score)+'</div>';
   container.appendChild(overallCard);
 
+  var bkCard = el('<div class="osp-card" style="margin-top:10px; display:flex; justify-content:space-between; align-items:center; gap:8px;"></div>');
+  bkCard.innerHTML =
+    '<div style="flex:1; text-align:center;">' +
+      '<div style="font-size:10px; color:#a37a00; font-weight:700; text-transform:uppercase; letter-spacing:0.4px;">Boy</div>' +
+      '<div class="osp-num" style="font-weight:700; font-size:16px; color:#1a1a1a; margin-top:2px;">'+(merged.boy!=null?merged.boy+' cm':'-')+'</div>' +
+    '</div>' +
+    '<div style="width:1px; height:30px; background:#f2e2ab;"></div>' +
+    '<div style="flex:1; text-align:center;">' +
+      '<div style="font-size:10px; color:#a37a00; font-weight:700; text-transform:uppercase; letter-spacing:0.4px;">Kilo</div>' +
+      '<div class="osp-num" style="font-weight:700; font-size:16px; color:#1a1a1a; margin-top:2px;">'+(merged.kilo!=null?merged.kilo+' kg':'-')+'</div>' +
+    '</div>' +
+    '<div style="width:1px; height:30px; background:#f2e2ab;"></div>' +
+    '<div style="flex:1; text-align:center;">' +
+      '<div style="font-size:10px; color:#a37a00; font-weight:700; text-transform:uppercase; letter-spacing:0.4px;">VKİ (BMI)</div>' +
+      '<div class="osp-num" style="font-weight:700; font-size:16px; color:#d32f2f; margin-top:2px;">'+(merged.vki!=null?merged.vki:'-')+'</div>' +
+    '</div>';
+  container.appendChild(bkCard);
+
   var catScores = {};
   ['fiz','psi','tek'].forEach(function(cat){
     var catTests = tests.filter(function(t){ return t.cat===cat; });
@@ -1312,6 +1330,24 @@ function renderDetailTabKarne(container, p){
     '<div style="text-align:center;"><div class="osp-karne-overall2-label">Genel Performans Notu</div>' +
     (team ? '<div style="font-size:11px; color:#a37a00; font-weight:600; margin-top:2px;">'+escapeHtml(team.name)+'</div>' : '') + '</div>';
   bodyEl.appendChild(overall);
+
+  var bkCardKarne = el('<div style="display:flex; justify-content:space-between; align-items:center; gap:8px; background:#fff8e1; border-radius:12px; padding:12px 14px; margin-bottom:14px;"></div>');
+  bkCardKarne.innerHTML =
+    '<div style="flex:1; text-align:center;">' +
+      '<div style="font-size:10px; color:#a37a00; font-weight:700; text-transform:uppercase; letter-spacing:0.4px;">Boy</div>' +
+      '<div style="font-family:\'Rajdhani\',sans-serif; font-weight:700; font-size:16px; color:#1a1a1a; margin-top:2px;">'+(merged.boy!=null?merged.boy+' cm':'-')+'</div>' +
+    '</div>' +
+    '<div style="width:1px; height:30px; background:#f2e2ab;"></div>' +
+    '<div style="flex:1; text-align:center;">' +
+      '<div style="font-size:10px; color:#a37a00; font-weight:700; text-transform:uppercase; letter-spacing:0.4px;">Kilo</div>' +
+      '<div style="font-family:\'Rajdhani\',sans-serif; font-weight:700; font-size:16px; color:#1a1a1a; margin-top:2px;">'+(merged.kilo!=null?merged.kilo+' kg':'-')+'</div>' +
+    '</div>' +
+    '<div style="width:1px; height:30px; background:#f2e2ab;"></div>' +
+    '<div style="flex:1; text-align:center;">' +
+      '<div style="font-size:10px; color:#a37a00; font-weight:700; text-transform:uppercase; letter-spacing:0.4px;">VKİ (BMI)</div>' +
+      '<div style="font-family:\'Rajdhani\',sans-serif; font-weight:700; font-size:16px; color:#d32f2f; margin-top:2px;">'+(merged.vki!=null?merged.vki:'-')+'</div>' +
+    '</div>';
+  bodyEl.appendChild(bkCardKarne);
 
   var catScoresKarne = {};
   ['fiz','psi','tek'].forEach(function(cat){

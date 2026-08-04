@@ -508,7 +508,7 @@ var RAW_FIELDS = [
   { key:'decision', label:'Karar Verme Testi', unit:'doğru/10', step:'1', cat:'psi' }
 ];
 
-var state = { view:'home', teams:[], norms:null, normsEditMode:false, currentTeamId:null, currentPlayerId:null, tab:'bilgi', guideTab:'aciklama', guideNormAge:'9-10', prevView:'home', teamSearchQuery:'', playerSearchQuery:'', homeSearchQuery:'', homeSortMode:'name', teamFilterMode:'all', teamCompareMetric:'performans', teamSortMode:'name', teamViewMode:'list' };
+var state = { view:'home', teams:[], norms:null, normsEditMode:false, currentTeamId:null, currentPlayerId:null, tab:'bilgi', guideTab:'aciklama', guideNormAge:'9-10', prevView:'home', teamSearchQuery:'', playerSearchQuery:'', homeSearchQuery:'', homeSortMode:'name', teamCompareMetric:'performans', teamSortMode:'name', teamViewMode:'list' };
 var normsEditDraft = null;
 var expandedProtocols = {};
 var SYNC_CONFIG_KEY = 'osp-sync-config-v1';
@@ -1148,7 +1148,7 @@ function renderNewTeam(){
   createBtn.querySelector('button').addEventListener('click', function(){
     if(!newTeamDraft.name.trim()){ alert('Lütfen takım adı gir.'); return; }
     if(newTeamDraft.selectedTests.length===0){ alert('En az bir test seçmelisin.'); return; }
-    var t = { id:'t'+Date.now(), name: newTeamDraft.name.trim(), ageGroup: newTeamDraft.ageGroup, selectedTests: newTeamDraft.selectedTests.slice(), players: [], active: true };
+    var t = { id:'t'+Date.now(), name: newTeamDraft.name.trim(), ageGroup: newTeamDraft.ageGroup, selectedTests: newTeamDraft.selectedTests.slice(), players: [] };
     state.teams.push(t);
     state.currentTeamId = t.id;
     state.view = 'squad';
@@ -1402,8 +1402,6 @@ function renderTeams(){
   var searchInput = searchWrap.querySelector('input');
   searchInput.value = state.teamSearchQuery;
   searchRow.appendChild(searchWrap);
-  var filterBtn = el('<button class="osp-home-filter-btn" id="osp-tm-filter-btn" aria-label="Filtrele">'+SVG_ICONS.sliders+'</button>');
-  searchRow.appendChild(filterBtn);
   var addBtn2 = el('<button class="osp-home-filter-btn" id="osp-tm-add-btn" aria-label="Takım ekle" style="background:#d32f2f; border-color:#d32f2f; color:#fff;"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></button>');
   searchRow.appendChild(addBtn2);
   body.appendChild(searchRow);
@@ -1439,27 +1437,15 @@ function renderTeams(){
     btn.addEventListener('click', function(){ state.teamViewMode = btn.getAttribute('data-mode'); render(); });
   });
 
-  document.getElementById('osp-tm-filter-btn').addEventListener('click', function(){
-    var order = ['all','active','passive'];
-    state.teamFilterMode = order[(order.indexOf(state.teamFilterMode)+1) % order.length];
-    render();
-  });
-  filterBtn.classList.toggle('active', state.teamFilterMode!=='all');
-
   var listWrap = el('<div id="osp-teams-list" style="margin-top:6px;"></div>');
   body.appendChild(listWrap);
-
-  function isActive(t){ return t.active!==false; }
 
   function renderTeamsList(){
     listWrap.innerHTML = '';
     listWrap.classList.toggle('osp-tm-grid', state.teamViewMode==='grid');
     var q = state.teamSearchQuery.trim().toLocaleLowerCase('tr');
     var filtered = state.teams.filter(function(t){
-      if(q && t.name.toLocaleLowerCase('tr').indexOf(q)===-1) return false;
-      if(state.teamFilterMode==='active') return isActive(t);
-      if(state.teamFilterMode==='passive') return !isActive(t);
-      return true;
+      return !q || t.name.toLocaleLowerCase('tr').indexOf(q)!==-1;
     });
     if(state.teamSortMode==='performans'){
       filtered = filtered.slice().sort(function(a,b){ return (teamAvgScore100(b)||0)-(teamAvgScore100(a)||0); });
@@ -1494,7 +1480,6 @@ function renderTeams(){
         var accent = TEAM_ACCENTS[idx % TEAM_ACCENTS.length];
         var score = teamAvgScore100(t);
         var pendingCount = teamPendingCount(t);
-        var active = isActive(t);
         var logoInner = t.logo ? '<img src="'+t.logo+'" alt="">' : SVG_ICONS.shield;
         var dateVal = t.updatedAt ? formatTrDate(new Date(t.updatedAt)) : 'Henüz test yok';
         var agoVal = '';
@@ -1513,7 +1498,6 @@ function renderTeams(){
                 '<p class="osp-tm-name">'+escapeHtml(t.name)+'</p>' +
                 '<p class="osp-tm-meta">'+SVG_ICONS.users+' '+t.players.length+' oyuncu</p>' +
               '</div>' +
-              '<span class="osp-tm-status-badge '+(active?'active':'passive')+'">'+(active?'AKTİF':'PASİF')+'</span>' +
               '<span class="osp-tm-chevron"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></span>' +
             '</div>' +
             '<div class="osp-tm-stats-row">' +
@@ -1535,12 +1519,6 @@ function renderTeams(){
             '</div>' +
           '</div>'
         );
-        card.querySelector('.osp-tm-status-badge').addEventListener('click', function(e){
-          e.stopPropagation();
-          t.active = !active;
-          save();
-          render();
-        });
         card.querySelector('.osp-tm-logo').addEventListener('click', function(e){
           e.stopPropagation();
           pickImage(240, function(dataUrl){ t.logo = dataUrl; save(); render(); });

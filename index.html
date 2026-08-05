@@ -341,6 +341,34 @@
   .osp-tm-grid-card { background: #fffdf5; border: 1px solid #f2e2ab; border-radius: 14px; padding: 14px 10px; text-align: center; cursor: pointer; }
   .osp-tm-grid-card:active { background: #fff5d6; }
   .osp-tm-grid-name { font-size: 12.5px; font-weight: 700; color: #1a1a1a; margin: 8px 0 2px; line-height: 1.2; }
+
+  .osp-pl-card { background: #fffdf5; border: 1px solid #f2e2ab; border-radius: 14px; padding: 14px; margin-bottom: 12px; cursor: pointer; }
+  .osp-pl-card:active { background: #fff5d6; }
+  .osp-pl-top { display: flex; gap: 12px; }
+  .osp-pl-photo-wrap { position: relative; flex-shrink: 0; }
+  .osp-pl-photo { width: 64px; height: 64px; border-radius: 13px; border: 2px solid #f2e2ab; object-fit: cover; background: #fff; display: flex; align-items: center; justify-content: center; color: #c9a94a; overflow: hidden; }
+  .osp-pl-photo img { width: 100%; height: 100%; object-fit: cover; }
+  .osp-pl-num-badge { position: absolute; bottom: -4px; right: -4px; width: 20px; height: 20px; border-radius: 50%; background: #c9971f; color: #fff; font-size: 10.5px; font-weight: 700; display: flex; align-items: center; justify-content: center; border: 2px solid #fff; }
+  .osp-pl-info { flex: 1; min-width: 0; }
+  .osp-pl-name-row { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+  .osp-pl-name { font-size: 15px; font-weight: 700; color: #1a1a1a; margin: 0; }
+  .osp-pl-age-pill { font-size: 10.5px; font-weight: 700; color: #d32f2f; background: #fdecec; padding: 2px 8px; border-radius: 20px; flex-shrink: 0; }
+  .osp-pl-meta-line { font-size: 12px; color: #5a4000; margin-top: 5px; }
+  .osp-pl-meta-line b { color: #a37a00; font-weight: 600; }
+  .osp-pl-meta-line .val { color: #d32f2f; font-weight: 700; }
+  .osp-pl-score-box { flex-shrink: 0; text-align: center; }
+  .osp-pl-score-num { display: inline-block; font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 16px; padding: 5px 10px; border-radius: 10px; }
+  .osp-pl-score-label { font-size: 9.5px; color: #a37a00; font-weight: 600; margin-top: 3px; }
+  .osp-pl-spark { margin-top: 5px; }
+  .osp-pl-bottom-row { display: flex; align-items: center; gap: 14px; margin-top: 12px; padding-top: 12px; border-top: 1px solid #f2e2ab; }
+  .osp-pl-bottom-item { flex: 1; min-width: 0; }
+  .osp-pl-bottom-label { display: flex; align-items: center; gap: 4px; font-size: 9.5px; color: #a37a00; font-weight: 600; white-space: nowrap; }
+  .osp-pl-bottom-val { font-size: 12px; font-weight: 700; color: #1a1a1a; margin-top: 2px; }
+  .osp-pl-chevron { color: #d32f2f; flex-shrink: 0; }
+
+  .osp-pl-grid-card { background: #fffdf5; border: 1px solid #f2e2ab; border-radius: 14px; padding: 14px 10px; text-align: center; cursor: pointer; }
+  .osp-pl-grid-card:active { background: #fff5d6; }
+  .osp-pl-grid-name { font-size: 12.5px; font-weight: 700; color: #1a1a1a; margin: 8px 0 2px; line-height: 1.2; }
 </style>
 </head>
 <body>
@@ -546,7 +574,7 @@ var RAW_FIELDS = [
   { key:'decision', label:'Karar Verme Testi', unit:'doğru/10', step:'1', cat:'psi' }
 ];
 
-var state = { view:'home', teams:[], norms:null, normsEditMode:false, currentTeamId:null, currentPlayerId:null, tab:'bilgi', guideTab:'aciklama', guideNormAge:'9-10', prevView:'home', teamSearchQuery:'', playerSearchQuery:'', teamCompareMetric:'performans', teamSortMode:'name', teamViewMode:'list' };
+var state = { view:'home', teams:[], norms:null, normsEditMode:false, currentTeamId:null, currentPlayerId:null, tab:'bilgi', guideTab:'aciklama', guideNormAge:'9-10', prevView:'home', teamSearchQuery:'', playerSearchQuery:'', teamCompareMetric:'performans', teamSortMode:'name', teamViewMode:'list', playerSortMode:'name', playerViewMode:'list', playerTeamFilter:null };
 var normsEditDraft = null;
 var expandedProtocols = {};
 var SYNC_CONFIG_KEY = 'osp-sync-config-v1';
@@ -1262,8 +1290,34 @@ function updateField(key, val){
   if(t){
     t.updatedAt = new Date().toISOString();
     if(findTestDefByKey(key)) t.lastTestKey = key;
+    p.updatedAt = new Date().toISOString();
+    var score = overallScore(p, t);
+    if(score!==null){
+      var today = new Date().toISOString().slice(0,10);
+      if(!p.scoreHistory) p.scoreHistory = [];
+      var last = p.scoreHistory[p.scoreHistory.length-1];
+      if(last && last.date===today){ last.score = score; }
+      else { p.scoreHistory.push({date:today, score:score}); if(p.scoreHistory.length>30) p.scoreHistory.shift(); }
+    }
   }
   save();
+}
+
+function playerTestCount(p, t){
+  var n = 0;
+  activeTestsFor(t).forEach(function(test){
+    var d = computeDerived(p);
+    var merged = Object.assign({}, p, d);
+    var raw = test.source==='input' ? num(p[test.key]) : merged[test.source];
+    if(scoreFor(test, raw)!==null) n++;
+  });
+  return n;
+}
+
+function playerGrowth(p){
+  if(!p.scoreHistory || p.scoreHistory.length<2) return null;
+  var first = p.scoreHistory[0], last = p.scoreHistory[p.scoreHistory.length-1];
+  return round1(last.score - first.score);
 }
 
 function exportData(){
@@ -1319,20 +1373,26 @@ function fieldRow(label, key, value, opts){
 
 var TEAM_ACCENTS = ['#d32f2f', '#1e88e5', '#2e7d32', '#f57c00'];
 
-function buildAppHero(){
+function buildAppHero(opts){
+  opts = opts || {};
   var allPlayers = [];
   state.teams.forEach(function(t){ t.players.forEach(function(p){ allPlayers.push(p); }); });
   var avg100 = globalAvgScore100();
+
+  var titleBlockHtml = opts.pageTitle ?
+    ('<div class="osp-home-title-1" style="font-size:21px;">'+escapeHtml(opts.pageTitle)+'</div>' +
+     '<div class="osp-home-subtitle" style="color:#ffcc00; font-weight:700; margin-top:2px;">'+escapeHtml(opts.pageSubtitle||'')+'</div>' +
+     '<div class="osp-home-subtitle" style="margin-top:1px;">Futbolcu Analiz Sistemi</div>')
+    :
+    ('<div class="osp-home-title-1">PERFORMANS</div>' +
+     '<div class="osp-home-title-2">PUSULASI</div>' +
+     '<div class="osp-home-subtitle">Futbolcu Analiz Sistemi</div>');
 
   var hero = el('<div class="osp-home-hero"></div>');
   hero.innerHTML =
     '<div class="osp-home-hero-top">' +
       '<img class="osp-home-logo" id="osp-home-logo" src="'+APP_LOGO+'" alt="Performans Pusulası">' +
-      '<div class="osp-home-title-block">' +
-        '<div class="osp-home-title-1">PERFORMANS</div>' +
-        '<div class="osp-home-title-2">PUSULASI</div>' +
-        '<div class="osp-home-subtitle">Futbolcu Analiz Sistemi</div>' +
-      '</div>' +
+      '<div class="osp-home-title-block">' + titleBlockHtml + '</div>' +
       '<div class="osp-home-actions">' +
         '<button class="osp-home-icon-btn" id="osp-home-sync-btn2" aria-label="Senkronizasyon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 01-15.3 6.4L3 21"></path><path d="M3 12a9 9 0 0115.3-6.4L21 3"></path><path d="M3 21v-5h5"></path><path d="M21 3v5h-5"></path></svg></button>' +
       '</div>' +
@@ -1661,54 +1721,181 @@ function renderTeams(){
 }
 
 function renderPlayers(){
-  document.getElementById('osp-back-btn').style.display = 'flex';
-  document.getElementById('osp-header-logo').style.display = 'none';
-  document.getElementById('osp-title').textContent = 'Oyuncular';
+  var body = document.getElementById('osp-body');
+  body.innerHTML = '';
+
   var allPlayers = [];
   state.teams.forEach(function(t){
     t.players.forEach(function(p){ allPlayers.push({ p:p, t:t }); });
   });
-  document.getElementById('osp-subtitle').textContent = allPlayers.length + ' oyuncu · tüm takımlar';
-  var body = document.getElementById('osp-body');
-  body.innerHTML = '';
 
+  var filterTeam = state.playerTeamFilter ? state.teams.filter(function(t){ return t.id===state.playerTeamFilter; })[0] : null;
+  var baseList = filterTeam ? allPlayers.filter(function(e){ return e.t.id===filterTeam.id; }) : allPlayers;
+
+  body.appendChild(buildAppHero({
+    pageTitle: 'OYUNCULAR',
+    pageSubtitle: baseList.length + ' oyuncu • ' + (filterTeam ? filterTeam.name : 'tüm takımlar')
+  }));
+
+  var searchRow = el('<div class="osp-home-search-row"></div>');
   var searchWrap = el('<div class="osp-search-wrap">'+SVG_ICONS.search+'<input type="text" placeholder="Oyuncu ara..."></div>');
   var searchInput = searchWrap.querySelector('input');
   searchInput.value = state.playerSearchQuery;
-  searchInput.addEventListener('input', function(){ state.playerSearchQuery = searchInput.value; renderPlayersList(); });
-  body.appendChild(searchWrap);
+  searchRow.appendChild(searchWrap);
+  var filterBtn = el('<button class="osp-home-filter-btn" id="osp-pl-filter-btn" aria-label="Takıma göre filtrele">'+SVG_ICONS.sliders+'</button>');
+  searchRow.appendChild(filterBtn);
+  var addBtn = el('<button class="osp-home-filter-btn" id="osp-pl-add-btn" aria-label="Oyuncu ekle" style="background:#d32f2f; border-color:#d32f2f; color:#fff;"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></button>');
+  searchRow.appendChild(addBtn);
+  body.appendChild(searchRow);
+  filterBtn.classList.toggle('active', !!filterTeam);
 
-  var listWrap = el('<div id="osp-players-list"></div>');
+  addBtn.addEventListener('click', function(){
+    if(state.teams.length===1){
+      state.currentTeamId = state.teams[0].id;
+      addPlayer();
+    } else {
+      state.prevView = 'players';
+      state.view = 'teams';
+      render();
+    }
+  });
+  filterBtn.addEventListener('click', function(){
+    var ids = [null].concat(state.teams.map(function(t){ return t.id; }));
+    var curIdx = ids.indexOf(state.playerTeamFilter);
+    state.playerTeamFilter = ids[(curIdx+1) % ids.length];
+    render();
+  });
+
+  var miniStats = el('<div class="osp-tm-mini-stats" id="osp-pl-mini-stats"></div>');
+  body.appendChild(miniStats);
+
+  var sortRow = el(
+    '<div class="osp-tm-sort-row">' +
+      '<div class="osp-tm-sort-select-wrap"><span class="osp-tm-sort-label">Sırala:</span><select id="osp-pl-sort-select">' +
+        '<option value="name">İsme göre (A-Z)</option>' +
+        '<option value="performans">Performansa göre</option>' +
+      '</select></div>' +
+      '<div class="osp-tm-view-toggle">' +
+        '<button class="osp-tm-view-btn" data-mode="list" aria-label="Liste görünümü">'+SVG_ICONS.list.replace('width="14" height="14"','width="17" height="17"')+'</button>' +
+        '<button class="osp-tm-view-btn" data-mode="grid" aria-label="Izgara görünümü"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="1.5"></rect><rect x="13" y="3" width="8" height="8" rx="1.5"></rect><rect x="3" y="13" width="8" height="8" rx="1.5"></rect><rect x="13" y="13" width="8" height="8" rx="1.5"></rect></svg></button>' +
+      '</div>' +
+    '</div>'
+  );
+  body.appendChild(sortRow);
+  var sortSelect = sortRow.querySelector('#osp-pl-sort-select');
+  sortSelect.value = state.playerSortMode;
+  sortSelect.addEventListener('change', function(){ state.playerSortMode = sortSelect.value; renderPlayersList(); });
+  sortRow.querySelectorAll('.osp-tm-view-btn').forEach(function(btn){
+    if(btn.getAttribute('data-mode')===state.playerViewMode) btn.classList.add('active');
+    btn.addEventListener('click', function(){ state.playerViewMode = btn.getAttribute('data-mode'); render(); });
+  });
+
+  var listWrap = el('<div id="osp-players-list" style="margin-top:6px;"></div>');
   body.appendChild(listWrap);
+
+  function sparkSvg(history, color){
+    if(!history || history.length<2) return '';
+    var w=70, h=24, pad=3;
+    var scores = history.map(function(h){ return h.score; });
+    var min = Math.min.apply(null, scores), max = Math.max.apply(null, scores);
+    var range = (max-min) || 1;
+    var pts = scores.map(function(s, i){
+      var x = pad + (i/(scores.length-1))*(w-2*pad);
+      var y = h - pad - ((s-min)/range)*(h-2*pad);
+      return x.toFixed(1)+','+y.toFixed(1);
+    }).join(' ');
+    var lastPt = pts.split(' ').pop().split(',');
+    return '<svg viewBox="0 0 '+w+' '+h+'" width="'+w+'" height="'+h+'"><polyline points="'+pts+'" fill="none" stroke="'+color+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="'+lastPt[0]+'" cy="'+lastPt[1]+'" r="2.4" fill="'+color+'"/></svg>';
+  }
 
   function renderPlayersList(){
     listWrap.innerHTML = '';
+    listWrap.classList.toggle('osp-tm-grid', state.playerViewMode==='grid');
     var q = state.playerSearchQuery.trim().toLocaleLowerCase('tr');
-    var filtered = allPlayers.filter(function(entry){
+    var filtered = baseList.filter(function(entry){
       if(!q) return true;
       var name = (entry.p.adSoyad || '').toLocaleLowerCase('tr');
       var teamName = entry.t.name.toLocaleLowerCase('tr');
       return name.indexOf(q)!==-1 || teamName.indexOf(q)!==-1;
     });
 
+    if(state.playerSortMode==='performans'){
+      filtered = filtered.slice().sort(function(a,b){ return (overallScore(b.p,b.t)||-1)-(overallScore(a.p,a.t)||-1); });
+    } else {
+      filtered = filtered.slice().sort(function(a,b){ return (a.p.adSoyad||'').localeCompare(b.p.adSoyad||'', 'tr'); });
+    }
+
+    var miniOyuncu = filtered.length;
+    var miniTeamIds = {};
+    filtered.forEach(function(e){ miniTeamIds[e.t.id]=1; });
+    var miniTakim = Object.keys(miniTeamIds).length;
+    var scoresForAvg = filtered.map(function(e){ return overallScore(e.p, e.t); }).filter(function(s){ return s!==null; });
+    var miniAvg = scoresForAvg.length ? round1(scoresForAvg.reduce(function(a,b){return a+b;},0)/scoresForAvg.length) : null;
+    miniStats.innerHTML =
+      '<div class="osp-tm-mini-card"><div class="osp-tm-mini-icon" style="color:#c9971f;">'+SVG_ICONS.users+'</div><div class="osp-tm-mini-num">'+miniOyuncu+'</div><div class="osp-tm-mini-label">Oyuncu</div><div class="osp-tm-mini-bar" style="background:#ffcc00;"></div></div>' +
+      '<div class="osp-tm-mini-card"><div class="osp-tm-mini-icon" style="color:#d32f2f;">'+SVG_ICONS.shield+'</div><div class="osp-tm-mini-num">'+miniTakim+'</div><div class="osp-tm-mini-label">Takım</div><div class="osp-tm-mini-bar" style="background:#d32f2f;"></div></div>' +
+      '<div class="osp-tm-mini-card"><div class="osp-tm-mini-icon" style="color:#2e7d32;">'+SVG_ICONS.trendUp+'</div><div class="osp-tm-mini-num">'+(miniAvg!==null?miniAvg:'-')+'</div><div class="osp-tm-mini-label">Ort. Performans</div><div class="osp-tm-mini-bar" style="background:#66bb6a;"></div></div>';
+
     if(allPlayers.length===0){
       listWrap.appendChild(el('<div class="osp-empty"><i class="ti ti-users" aria-hidden="true"></i><p>Henüz hiç oyuncu eklenmedi.</p></div>'));
     } else if(filtered.length===0){
-      listWrap.appendChild(el('<div class="osp-empty">'+SVG_ICONS.search+'<p>"'+escapeHtml(state.playerSearchQuery)+'" ile eşleşen oyuncu yok.</p></div>'));
-    } else {
-      filtered.sort(function(a,b){ return (a.p.adSoyad||'').localeCompare(b.p.adSoyad||'', 'tr'); });
+      listWrap.appendChild(el('<div class="osp-empty">'+SVG_ICONS.search+'<p>Bu filtreyle eşleşen oyuncu yok.</p></div>'));
+    } else if(state.playerViewMode==='grid'){
       filtered.forEach(function(entry){
         var p = entry.p, t = entry.t;
         var score = overallScore(p, t);
-        var jerseyInner = p.photo ? '<img src="'+p.photo+'" alt="">' : (p.no!=null?p.no:'-');
+        var photoInner = p.photo ? '<img src="'+p.photo+'" alt="">' : (p.no!=null?p.no:'-');
         var card = el(
-          '<div class="osp-player-card">' +
-            '<div class="osp-jersey">'+jerseyInner+'</div>' +
-            '<div style="min-width:0; flex:1;">' +
-              '<p class="osp-player-name">'+(p.adSoyad ? escapeHtml(p.adSoyad) : 'İsimsiz oyuncu')+'</p>' +
-              '<p class="osp-player-meta">'+escapeHtml(t.name)+(p.yas?' · '+p.yas+' yaş':'')+'</p>' +
+          '<div class="osp-pl-grid-card">' +
+            '<div class="osp-pl-photo" style="width:52px; height:52px; margin:0 auto;">'+photoInner+'</div>' +
+            '<p class="osp-pl-grid-name">'+(p.adSoyad?escapeHtml(p.adSoyad):'İsimsiz oyuncu')+'</p>' +
+            '<span class="osp-pl-score-num" style="font-size:13px; padding:3px 8px; background:'+(score!==null?scoreColor(score)+'22':'#eee')+'; color:'+scoreColor(score)+';">'+(score!==null?score+'/20':'-')+'</span>' +
+          '</div>'
+        );
+        card.addEventListener('click', function(){
+          state.currentTeamId = t.id; state.currentPlayerId = p.id; state.tab='bilgi'; state.view='detail'; render();
+        });
+        listWrap.appendChild(card);
+      });
+    } else {
+      filtered.forEach(function(entry){
+        var p = entry.p, t = entry.t;
+        var score = overallScore(p, t);
+        var color = scoreColor(score);
+        var photoInner = p.photo ? '<img src="'+p.photo+'" alt="">' : (p.no!=null?p.no:'-');
+        var growth = playerGrowth(p);
+        var growthTxt = growth===null ? '—' : ((growth>=0?'+':'')+growth);
+        var growthColor = growth===null ? '#a37a00' : (growth>=0 ? '#2e7d32' : '#d32f2f');
+        var lastTestTxt = p.updatedAt ? formatTrDate(new Date(p.updatedAt)) : 'Henüz yok';
+        var testCount = playerTestCount(p, t);
+        var card = el(
+          '<div class="osp-pl-card">' +
+            '<div class="osp-pl-top">' +
+              '<div class="osp-pl-photo-wrap">' +
+                '<div class="osp-pl-photo">'+photoInner+'</div>' +
+                '<div class="osp-pl-num-badge">'+(p.no!=null?p.no:'-')+'</div>' +
+              '</div>' +
+              '<div class="osp-pl-info">' +
+                '<div class="osp-pl-name-row">' +
+                  '<p class="osp-pl-name">'+(p.adSoyad?escapeHtml(p.adSoyad):'İsimsiz oyuncu')+'</p>' +
+                  (p.yas!=null?'<span class="osp-pl-age-pill">'+p.yas+' yaş</span>':'') +
+                '</div>' +
+                '<div class="osp-pl-meta-line"><b>Takım:</b> <span class="val">'+escapeHtml(t.name)+'</span></div>' +
+                '<div class="osp-pl-meta-line"><b>Pozisyon:</b> '+(p.mevkii?escapeHtml(p.mevkii):'-')+'</div>' +
+                '<div class="osp-pl-meta-line"><b>Boy:</b> '+(p.boy?p.boy+' cm':'-')+'   <b>Kilo:</b> '+(p.kilo?p.kilo+' kg':'-')+'</div>' +
+              '</div>' +
+              '<div class="osp-pl-score-box">' +
+                '<div class="osp-pl-score-num" style="background:'+color+'22; color:'+color+';">'+(score!==null?score+'/20':'-')+'</div>' +
+                '<div class="osp-pl-score-label">Skor</div>' +
+                '<div class="osp-pl-spark">'+sparkSvg(p.scoreHistory, color)+'</div>' +
+              '</div>' +
             '</div>' +
-            '<span class="osp-score-badge" style="background:'+(score!==null?scoreColor(score)+'22':'#eee')+'; color:'+scoreColor(score)+';">'+(score!==null?score+'/20':'-')+'</span>' +
+            '<div class="osp-pl-bottom-row">' +
+              '<div class="osp-pl-bottom-item"><div class="osp-pl-bottom-label">'+SVG_ICONS.clipboard+' Son Test</div><div class="osp-pl-bottom-val">'+lastTestTxt+'</div></div>' +
+              '<div class="osp-pl-bottom-item"><div class="osp-pl-bottom-label">'+SVG_ICONS.calendar+' Test Sayısı</div><div class="osp-pl-bottom-val">'+testCount+'</div></div>' +
+              '<div class="osp-pl-bottom-item"><div class="osp-pl-bottom-label">'+SVG_ICONS.trendUp+' Gelişim</div><div class="osp-pl-bottom-val" style="color:'+growthColor+';">'+growthTxt+'</div></div>' +
+              '<span class="osp-pl-chevron"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></span>' +
+            '</div>' +
           '</div>'
         );
         card.addEventListener('click', function(){
@@ -1718,6 +1905,7 @@ function renderPlayers(){
       });
     }
   }
+  searchInput.addEventListener('input', function(){ state.playerSearchQuery = searchInput.value; renderPlayersList(); });
   renderPlayersList();
 }
 
@@ -2682,7 +2870,7 @@ function renderSync(){
 
 function render(){
   var showSecondary = (state.view==='teams');
-  document.getElementById('osp-header').style.display = (state.view==='home' || state.view==='teams') ? 'none' : '';
+  document.getElementById('osp-header').style.display = (state.view==='home' || state.view==='teams' || state.view==='players') ? 'none' : '';
   document.getElementById('osp-guide-btn').style.display = showSecondary ? 'flex' : 'none';
   document.getElementById('osp-sync-btn').style.display = showSecondary ? 'flex' : 'none';
   Array.prototype.forEach.call(document.querySelectorAll('.osp-nav-item'), function(btn, idx){

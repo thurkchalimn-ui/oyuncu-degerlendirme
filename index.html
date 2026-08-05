@@ -1189,6 +1189,7 @@ function renderNewTeam(){
     var t = { id:'t'+Date.now(), name: newTeamDraft.name.trim(), ageGroup: newTeamDraft.ageGroup, selectedTests: newTeamDraft.selectedTests.slice(), players: [] };
     state.teams.push(t);
     state.currentTeamId = t.id;
+    state.prevView = 'teams';
     state.view = 'squad';
     save();
     render();
@@ -1245,6 +1246,13 @@ function teamTestScore100(t, testKey){
   if(!scores.length) return null;
   var avg = scores.reduce(function(a,b){return a+b;},0)/scores.length;
   return Math.round(avg*5);
+}
+
+function goToSquad(teamId){
+  state.prevView = state.view;
+  state.currentTeamId = teamId;
+  state.view = 'squad';
+  render();
 }
 
 function updateField(key, val){
@@ -1407,7 +1415,7 @@ function renderHome(){
           '<div class="osp-home-mini-track"><div class="osp-home-mini-fill" style="width:'+(score!==null?score:0)+'%; background:'+accent+';"></div></div>' +
         '</div>'
       );
-      card.addEventListener('click', function(){ state.currentTeamId = t.id; state.view='squad'; render(); });
+      card.addEventListener('click', function(){ goToSquad(t.id); });
       hscroll.appendChild(card);
     });
     body.appendChild(hscroll);
@@ -1447,27 +1455,10 @@ function renderHome(){
           '<span class="osp-home-test-chevron"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></span>' +
         '</div>'
       );
-      row.addEventListener('click', function(){ state.currentTeamId = t.id; state.view='squad'; render(); });
+      row.addEventListener('click', function(){ goToSquad(t.id); });
       body.appendChild(row);
     });
   }
-
-  var quickHead = el('<div class="osp-home-section-head"><p class="osp-home-section-title">Hızlı İşlemler</p></div>');
-  body.appendChild(quickHead);
-
-  var quickGrid = el(
-    '<div class="osp-home-quick-grid">' +
-      '<div class="osp-home-quick-btn" id="osp-home-qa-test"><div class="osp-home-quick-icon" style="background:#d32f2f22; color:#d32f2f;">'+SVG_ICONS.clipboard+'</div><span class="osp-home-quick-label">Test Ekle</span></div>' +
-      '<div class="osp-home-quick-btn" id="osp-home-qa-player"><div class="osp-home-quick-icon" style="background:#ffcc0022; color:#c9971f;">'+SVG_ICONS.users+'</div><span class="osp-home-quick-label">Oyuncu Ekle</span></div>' +
-      '<div class="osp-home-quick-btn" id="osp-home-qa-reports"><div class="osp-home-quick-icon" style="background:#2e7d3222; color:#2e7d32;">'+SVG_ICONS.trendUp+'</div><span class="osp-home-quick-label">Raporlar</span></div>' +
-      '<div class="osp-home-quick-btn" id="osp-home-qa-norms"><div class="osp-home-quick-icon" style="background:#1e88e522; color:#1e88e5;">'+SVG_ICONS.list+'</div><span class="osp-home-quick-label">Normlar</span></div>' +
-    '</div>'
-  );
-  body.appendChild(quickGrid);
-  document.getElementById('osp-home-qa-test').addEventListener('click', function(){ state.view='players'; render(); });
-  document.getElementById('osp-home-qa-player').addEventListener('click', function(){ state.view='teams'; render(); });
-  document.getElementById('osp-home-qa-reports').addEventListener('click', function(){ state.view='teams'; render(); });
-  document.getElementById('osp-home-qa-norms').addEventListener('click', function(){ state.prevView='home'; state.guideTab='normlar'; state.view='guide'; render(); });
 }
 
 function renderTeams(){
@@ -1555,7 +1546,7 @@ function renderTeams(){
             '<div class="osp-tm-perf-row" style="justify-content:center; margin-top:6px;"><span class="osp-tm-perf-num" style="color:'+accent+';">'+(score!==null?score:'-')+'</span><span class="osp-tm-perf-max">/100</span></div>' +
           '</div>'
         );
-        card.addEventListener('click', function(){ state.currentTeamId = t.id; state.view='squad'; render(); });
+        card.addEventListener('click', function(){ goToSquad(t.id); });
         listWrap.appendChild(card);
       });
     } else {
@@ -1608,7 +1599,7 @@ function renderTeams(){
           pickImage(240, function(dataUrl){ t.logo = dataUrl; save(); render(); });
         });
         card.addEventListener('click', function(){
-          state.currentTeamId = t.id; state.view='squad'; render();
+          goToSquad(t.id);
         });
         listWrap.appendChild(card);
       });
@@ -1670,7 +1661,7 @@ function renderTeams(){
 }
 
 function renderPlayers(){
-  document.getElementById('osp-back-btn').style.display = 'none';
+  document.getElementById('osp-back-btn').style.display = 'flex';
   document.getElementById('osp-header-logo').style.display = 'none';
   document.getElementById('osp-title').textContent = 'Oyuncular';
   var allPlayers = [];
@@ -1734,7 +1725,7 @@ function renderSquad(){
   var t = getTeam();
   if(!t){ state.view='teams'; render(); return; }
 
-  document.getElementById('osp-back-btn').style.display = 'none';
+  document.getElementById('osp-back-btn').style.display = 'flex';
   var headerLogo = document.getElementById('osp-header-logo');
   headerLogo.style.display = 'none';
   document.getElementById('osp-title').textContent = t.name;
@@ -2612,7 +2603,7 @@ function renderGuideNormlarEdit(container){
 }
 
 function renderGuide(){
-  document.getElementById('osp-back-btn').style.display = 'none';
+  document.getElementById('osp-back-btn').style.display = 'flex';
   var guideHeaderLogo = document.getElementById('osp-header-logo');
   guideHeaderLogo.style.display = 'none';
   document.getElementById('osp-title').textContent = 'Rehber';
@@ -2711,6 +2702,7 @@ function render(){
 
 Array.prototype.forEach.call(document.querySelectorAll('.osp-nav-item'), function(btn){
   btn.addEventListener('click', function(){
+    state.prevView = state.view;
     state.view = btn.getAttribute('data-target');
     render();
   });
@@ -2736,7 +2728,7 @@ document.getElementById('osp-sync-btn').addEventListener('click', function(){
 
 document.getElementById('osp-back-btn').addEventListener('click', function(){
   if(state.view==='detail'){ state.view = 'squad'; }
-  else if(state.view==='guide' || state.view==='sync'){ state.view = state.prevView || 'home'; }
+  else if(state.view==='squad' || state.view==='guide' || state.view==='sync' || state.view==='players'){ state.view = state.prevView || 'home'; }
   else { state.view = 'home'; }
   render();
 });

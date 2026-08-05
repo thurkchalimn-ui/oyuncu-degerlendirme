@@ -369,6 +369,11 @@
   .osp-pl-grid-card { background: #fffdf5; border: 1px solid #f2e2ab; border-radius: 14px; padding: 14px 10px; text-align: center; cursor: pointer; }
   .osp-pl-grid-card:active { background: #fff5d6; }
   .osp-pl-grid-name { font-size: 12.5px; font-weight: 700; color: #1a1a1a; margin: 8px 0 2px; line-height: 1.2; }
+
+  .osp-pl-filter-menu { position: absolute; top: 48px; right: 0; z-index: 30; min-width: 190px; max-height: 260px; overflow-y: auto; background: #fffdf5; border: 1px solid #f2e2ab; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.18); padding: 6px; }
+  .osp-pl-filter-item { padding: 10px 12px; border-radius: 8px; font-size: 13px; font-weight: 600; color: #5a4000; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .osp-pl-filter-item:active { background: #fff5d6; }
+  .osp-pl-filter-item.active { background: #d32f2f; color: #fff; }
 </style>
 </head>
 <body>
@@ -1742,8 +1747,23 @@ function renderPlayers(){
   var searchInput = searchWrap.querySelector('input');
   searchInput.value = state.playerSearchQuery;
   searchRow.appendChild(searchWrap);
+  var filterWrap = el('<div style="position:relative; flex-shrink:0;"></div>');
   var filterBtn = el('<button class="osp-home-filter-btn" id="osp-pl-filter-btn" aria-label="Takıma göre filtrele">'+SVG_ICONS.sliders+'</button>');
-  searchRow.appendChild(filterBtn);
+  filterWrap.appendChild(filterBtn);
+  var filterMenu = el('<div class="osp-pl-filter-menu"></div>');
+  filterMenu.style.display = 'none';
+  var filterOpts = [{id:null, label:'Tüm Takımlar'}].concat(state.teams.map(function(t){ return {id:t.id, label:t.name}; }));
+  filterOpts.forEach(function(o){
+    var item = el('<div class="osp-pl-filter-item">'+escapeHtml(o.label)+'</div>');
+    if(o.id===state.playerTeamFilter) item.classList.add('active');
+    item.addEventListener('click', function(){
+      state.playerTeamFilter = o.id;
+      render();
+    });
+    filterMenu.appendChild(item);
+  });
+  filterWrap.appendChild(filterMenu);
+  searchRow.appendChild(filterWrap);
   var addBtn = el('<button class="osp-home-filter-btn" id="osp-pl-add-btn" aria-label="Oyuncu ekle" style="background:#d32f2f; border-color:#d32f2f; color:#fff;"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></button>');
   searchRow.appendChild(addBtn);
   body.appendChild(searchRow);
@@ -1759,11 +1779,17 @@ function renderPlayers(){
       render();
     }
   });
-  filterBtn.addEventListener('click', function(){
-    var ids = [null].concat(state.teams.map(function(t){ return t.id; }));
-    var curIdx = ids.indexOf(state.playerTeamFilter);
-    state.playerTeamFilter = ids[(curIdx+1) % ids.length];
-    render();
+  filterBtn.addEventListener('click', function(e){
+    e.stopPropagation();
+    var isOpen = filterMenu.style.display!=='none';
+    filterMenu.style.display = isOpen ? 'none' : 'block';
+    if(!isOpen){
+      setTimeout(function(){
+        document.addEventListener('click', function(ev){
+          if(!filterWrap.contains(ev.target)) filterMenu.style.display = 'none';
+        }, {once:true});
+      }, 0);
+    }
   });
 
   var miniStats = el('<div class="osp-tm-mini-stats" id="osp-pl-mini-stats"></div>');

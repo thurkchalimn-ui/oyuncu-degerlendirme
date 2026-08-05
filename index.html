@@ -2817,13 +2817,14 @@ function renderGuideNormlarEdit(container){
 }
 
 function renderGuide(){
-  document.getElementById('osp-back-btn').style.display = 'flex';
-  var guideHeaderLogo = document.getElementById('osp-header-logo');
-  guideHeaderLogo.style.display = 'none';
-  document.getElementById('osp-title').textContent = 'Rehber';
-  document.getElementById('osp-subtitle').textContent = 'Açıklama · protokoller · normlar';
   var body = document.getElementById('osp-body');
   body.innerHTML = '';
+
+  var subtitleByTab = { aciklama:'Açıklama · protokoller · normlar', protokol:'Test Protokolleri', norm:'Norm Değerleri' };
+  body.appendChild(buildAppHero({
+    pageTitle: 'REHBER',
+    pageSubtitle: subtitleByTab[state.guideTab] || 'Açıklama · protokoller · normlar'
+  }));
 
   var tabs = el(
     '<div class="osp-tabs">' +
@@ -2896,7 +2897,7 @@ function renderSync(){
 
 function render(){
   var showSecondary = (state.view==='teams');
-  document.getElementById('osp-header').style.display = (state.view==='home' || state.view==='teams' || state.view==='players') ? 'none' : '';
+  document.getElementById('osp-header').style.display = (state.view==='home' || state.view==='teams' || state.view==='players' || state.view==='guide') ? 'none' : '';
   document.getElementById('osp-guide-btn').style.display = showSecondary ? 'flex' : 'none';
   document.getElementById('osp-sync-btn').style.display = showSecondary ? 'flex' : 'none';
   Array.prototype.forEach.call(document.querySelectorAll('.osp-nav-item'), function(btn, idx){

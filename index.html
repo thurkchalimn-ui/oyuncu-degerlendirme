@@ -1563,7 +1563,10 @@ function renderTeams(){
   var body = document.getElementById('osp-body');
   body.innerHTML = '';
 
-  body.appendChild(buildAppHero());
+  body.appendChild(buildAppHero({
+    pageTitle: 'TAKIMLAR',
+    pageSubtitle: state.teams.length + ' takım'
+  }));
 
   var allPlayers = [];
   state.teams.forEach(function(t){ t.players.forEach(function(p){ allPlayers.push(p); }); });
@@ -2379,19 +2382,23 @@ function renderDetail(){
   if(!p){ state.view='squad'; render(); return; }
   var t = getTeam();
 
-  var backBtn = document.getElementById('osp-back-btn');
-  backBtn.style.display = 'flex';
-  if(t && t.logo){
-    backBtn.innerHTML = '<img src="'+t.logo+'" alt="" style="width:100%; height:100%; object-fit:cover; border-radius:6px;">';
-  } else {
-    backBtn.innerHTML = '<i class="ti ti-arrow-left"></i>';
-  }
-  document.getElementById('osp-header-logo').style.display = 'none';
-  document.getElementById('osp-title').textContent = p.adSoyad || ('Oyuncu #'+p.no);
-  document.getElementById('osp-subtitle').textContent = 'No '+(p.no!=null?p.no:'-')+(p.yas?' · '+p.yas+' yaş':'');
-
   var body = document.getElementById('osp-body');
   body.innerHTML = '';
+
+  var photoInner = p.photo ? '<img src="'+p.photo+'" alt="" style="width:100%; height:100%; object-fit:cover;">' : '<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="#d32f2f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 20c0-4 3.6-6 8-6s8 2 8 6"></path></svg>';
+  var hero = el('<div class="osp-home-hero"></div>');
+  hero.innerHTML =
+    '<div class="osp-home-hero-top">' +
+      '<button class="osp-home-icon-btn" id="osp-detail-back-btn" aria-label="Geri" style="flex-shrink:0;"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"></path></svg></button>' +
+      '<div class="osp-home-logo" style="padding:0; overflow:hidden; display:flex; align-items:center; justify-content:center;">'+photoInner+'</div>' +
+      '<div class="osp-home-title-block">' +
+        '<div class="osp-home-title-1" style="font-size:19px;">'+escapeHtml(p.adSoyad || ('Oyuncu #'+p.no))+'</div>' +
+        '<div class="osp-home-subtitle" style="color:#ffcc00; font-weight:700; margin-top:2px;">'+(t?escapeHtml(t.name):'')+'</div>' +
+        '<div class="osp-home-subtitle" style="margin-top:1px;">No '+(p.no!=null?p.no:'-')+(p.yas!=null?' · '+p.yas+' yaş':'')+(p.mevkii?' · '+escapeHtml(p.mevkii):'')+'</div>' +
+      '</div>' +
+    '</div>';
+  hero.querySelector('#osp-detail-back-btn').addEventListener('click', function(){ state.view = 'squad'; render(); });
+  body.appendChild(hero);
 
   var tabs = el(
     '<div class="osp-tabs">' +
@@ -2976,7 +2983,7 @@ function renderSync(){
 
 function render(){
   var showSecondary = (state.view==='teams');
-  document.getElementById('osp-header').style.display = (state.view==='home' || state.view==='teams' || state.view==='players' || state.view==='guide') ? 'none' : '';
+  document.getElementById('osp-header').style.display = (state.view==='home' || state.view==='teams' || state.view==='players' || state.view==='guide' || state.view==='detail') ? 'none' : '';
   document.getElementById('osp-guide-btn').style.display = showSecondary ? 'flex' : 'none';
   document.getElementById('osp-sync-btn').style.display = showSecondary ? 'flex' : 'none';
   Array.prototype.forEach.call(document.querySelectorAll('.osp-nav-item'), function(btn, idx){

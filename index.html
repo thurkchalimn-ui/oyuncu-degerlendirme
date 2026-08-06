@@ -293,6 +293,8 @@
   .osp-tm-logo { width: 46px; height: 46px; border-radius: 11px; border: 2px solid #f2e2ab; object-fit: cover; background: #fff; display: flex; align-items: center; justify-content: center; color: #d32f2f; }
   .osp-tm-logo img { width: 100%; height: 100%; object-fit: cover; border-radius: inherit; }
   .osp-tm-dot { position: absolute; bottom: -3px; right: -3px; width: 14px; height: 14px; border-radius: 50%; border: 2px solid #fff; }
+  .osp-tm-logo-edit { position: absolute; top: -5px; left: -5px; width: 19px; height: 19px; border-radius: 50%; background: #d32f2f; color: #fff; display: flex; align-items: center; justify-content: center; border: 2px solid #fff; cursor: pointer; }
+  .osp-squad-logo-row { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
   .osp-tm-name-block { min-width: 0; flex: 1; }
   .osp-tm-name { font-size: 15px; font-weight: 700; color: #1a1a1a; margin: 0; }
   .osp-tm-meta { display: flex; align-items: center; gap: 5px; font-size: 12px; color: #a37a00; font-weight: 600; margin-top: 3px; }
@@ -1667,6 +1669,7 @@ function renderTeams(){
             '<div class="osp-tm-card-top">' +
               '<div class="osp-tm-logo-wrap">' +
                 '<div class="osp-tm-logo">'+logoInner+'</div>' +
+                '<div class="osp-tm-logo-edit" title="Logo değiştir"><i class="ti ti-camera" aria-hidden="true" style="font-size:10px;"></i></div>' +
                 '<div class="osp-tm-dot" style="background:'+(pendingCount>0?'#d32f2f':'#2e7d32')+';"></div>' +
               '</div>' +
               '<div class="osp-tm-name-block">' +
@@ -1694,6 +1697,10 @@ function renderTeams(){
             '</div>' +
           '</div>'
         );
+        card.querySelector('.osp-tm-logo-edit').addEventListener('click', function(e){
+          e.stopPropagation();
+          pickImage(240, function(dataUrl){ t.logo = dataUrl; save(); render(); });
+        });
         card.querySelector('.osp-tm-logo').addEventListener('click', function(e){
           e.stopPropagation();
           pickImage(240, function(dataUrl){ t.logo = dataUrl; save(); render(); });
@@ -1981,6 +1988,19 @@ function renderSquad(){
   document.getElementById('osp-subtitle').textContent = t.players.length + ' oyuncu · ' + ageOf(t) + ' Yaş kadrosu';
   var body = document.getElementById('osp-body');
   body.innerHTML = '';
+
+  var logoRow = el('<div class="osp-squad-logo-row"></div>');
+  var squadLogoInner = t.logo ? '<img src="'+t.logo+'" alt="">' : SVG_ICONS.shield;
+  logoRow.innerHTML =
+    '<div class="osp-tm-logo-wrap">' +
+      '<div class="osp-tm-logo" style="width:52px; height:52px;">'+squadLogoInner+'</div>' +
+      '<div class="osp-tm-logo-edit" title="Logo değiştir"><i class="ti ti-camera" aria-hidden="true" style="font-size:10px;"></i></div>' +
+    '</div>' +
+    '<div><p style="margin:0; font-size:12.5px; color:#5a4000; font-weight:700;">Takım Logosu</p><p style="margin:2px 0 0; font-size:11px; color:#a37a00;">Değiştirmek için dokun</p></div>';
+  logoRow.querySelector('.osp-tm-logo-edit').addEventListener('click', function(){
+    pickImage(240, function(dataUrl){ t.logo = dataUrl; save(); render(); });
+  });
+  body.appendChild(logoRow);
 
   if(t.players.length===0){
     body.appendChild(el('<div class="osp-empty"><i class="ti ti-users" aria-hidden="true"></i><p>Bu takımda henüz oyuncu yok.<br>İlk oyuncuyu ekleyerek başla.</p></div>'));
@@ -2390,7 +2410,10 @@ function renderDetail(){
   hero.innerHTML =
     '<div class="osp-home-hero-top">' +
       '<button class="osp-home-icon-btn" id="osp-detail-back-btn" aria-label="Geri" style="flex-shrink:0;"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"></path></svg></button>' +
-      '<div class="osp-home-logo" style="padding:0; overflow:hidden; display:flex; align-items:center; justify-content:center;">'+photoInner+'</div>' +
+      '<div style="position:relative; flex-shrink:0;">' +
+        '<div class="osp-home-logo" id="osp-detail-photo" style="padding:0; overflow:hidden; display:flex; align-items:center; justify-content:center; cursor:pointer;">'+photoInner+'</div>' +
+        '<div class="osp-tm-logo-edit" id="osp-detail-photo-edit" title="Fotoğraf değiştir" style="top:auto; bottom:-5px; left:auto; right:-5px;"><i class="ti ti-camera" aria-hidden="true" style="font-size:10px;"></i></div>' +
+      '</div>' +
       '<div class="osp-home-title-block">' +
         '<div class="osp-home-title-1" style="font-size:19px;">'+escapeHtml(p.adSoyad || ('Oyuncu #'+p.no))+'</div>' +
         '<div class="osp-home-subtitle" style="color:#ffcc00; font-weight:700; margin-top:2px;">'+(t?escapeHtml(t.name):'')+'</div>' +
@@ -2398,6 +2421,9 @@ function renderDetail(){
       '</div>' +
     '</div>';
   hero.querySelector('#osp-detail-back-btn').addEventListener('click', function(){ state.view = 'squad'; render(); });
+  var detailPhotoEdit = function(){ pickImage(400, function(dataUrl){ p.photo = dataUrl; save(); render(); }); };
+  hero.querySelector('#osp-detail-photo').addEventListener('click', detailPhotoEdit);
+  hero.querySelector('#osp-detail-photo-edit').addEventListener('click', function(e){ e.stopPropagation(); detailPhotoEdit(); });
   body.appendChild(hero);
 
   var tabs = el(

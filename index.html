@@ -101,6 +101,18 @@
   .osp-stopwatch-cancel, .osp-stopwatch-use { flex: 1; padding: 11px; border-radius: 12px; font-size: 13px; font-weight: 700; cursor: pointer; border: none; }
   .osp-stopwatch-cancel { background: transparent; color: #a37a00; border: 1px solid #f2e2ab; }
   .osp-stopwatch-use { background: #1a1a1a; color: #fff; }
+  .osp-stopwatch-use:disabled, .osp-camtimer-manual-btn:disabled { opacity: 0.4; cursor: default; }
+
+  .osp-camtimer-modal { background: #fffdf5; border-radius: 20px; padding: 18px; width: 100%; max-width: 380px; text-align: center; box-shadow: 0 12px 40px rgba(0,0,0,0.3); max-height: 92vh; overflow-y: auto; }
+  .osp-camtimer-video-wrap { position: relative; width: 100%; aspect-ratio: 3/4; background: #0a0e1f; border-radius: 12px; overflow: hidden; }
+  .osp-camtimer-video-wrap video { width: 100%; height: 100%; object-fit: cover; }
+  .osp-camtimer-gate { position: absolute; top: 0; bottom: 0; width: 4px; background: #4caf50; cursor: ew-resize; touch-action: none; }
+  .osp-camtimer-gate.finish { background: #ff5252; }
+  .osp-camtimer-gate span { position: absolute; top: 6px; left: 50%; transform: translateX(-50%); white-space: nowrap; font-size: 9px; font-weight: 700; color: #fff; background: rgba(0,0,0,0.55); padding: 3px 6px; border-radius: 6px; }
+  .osp-camtimer-status { position: absolute; left: 0; right: 0; bottom: 0; padding: 8px; font-size: 11px; font-weight: 600; color: #fff; background: rgba(0,0,0,0.55); text-align: center; }
+  .osp-camtimer-hint { font-size: 10.5px; color: #a37a00; line-height: 1.4; margin: 10px 0 0; text-align: left; }
+  .osp-camtimer-manual-row { margin-top: 10px; }
+  .osp-camtimer-manual-btn { width: 100%; padding: 10px; border-radius: 10px; background: #fdecec; color: #d32f2f; border: 1px solid #f7dcd8; font-size: 12.5px; font-weight: 700; cursor: pointer; }
   .osp-field:last-child { margin-bottom: 0; }
   .osp-field label { display: block; font-size: 12px; color: #7a3b00; margin-bottom: 4px; font-weight: 600; }
   .osp-field input, .osp-field select, .osp-field textarea { width: 100%; background: #ffffff; border: 1px solid #e8d48a; color: #1a1a1a; border-radius: 8px; padding: 9px 10px; font-size: 14px; }
@@ -1421,18 +1433,30 @@ function fieldRow(label, key, value, opts){
     updateField(key, v);
     if(opts.onChange) opts.onChange(v);
   });
-  if(opts.stopwatch){
+  if(opts.stopwatch || opts.cameraTimer){
     var row = el('<div style="display:flex; gap:8px; align-items:center;"></div>');
     input.style.flex = '1';
     row.appendChild(input);
-    var swBtn = el('<button type="button" class="osp-stopwatch-launch" title="Kronometre ile ölç" aria-label="Kronometre ile ölç">'+SVG_ICONS.clock+'</button>');
-    swBtn.addEventListener('click', function(){
-      openStopwatch(opts.stopwatchUnit || 'sn', function(val){
-        input.value = val;
-        input.dispatchEvent(new Event('input'));
+    if(opts.stopwatch){
+      var swBtn = el('<button type="button" class="osp-stopwatch-launch" title="Kronometre ile ölç" aria-label="Kronometre ile ölç">'+SVG_ICONS.clock+'</button>');
+      swBtn.addEventListener('click', function(){
+        openStopwatch(opts.stopwatchUnit || 'sn', function(val){
+          input.value = val;
+          input.dispatchEvent(new Event('input'));
+        });
       });
-    });
-    row.appendChild(swBtn);
+      row.appendChild(swBtn);
+    }
+    if(opts.cameraTimer){
+      var camBtn = el('<button type="button" class="osp-stopwatch-launch" title="Kamera ile otomatik ölç" aria-label="Kamera ile otomatik ölç"><i class="ti ti-camera" aria-hidden="true"></i></button>');
+      camBtn.addEventListener('click', function(){
+        openCameraTimer(opts.stopwatchUnit || 'sn', function(val){
+          input.value = val;
+          input.dispatchEvent(new Event('input'));
+        });
+      });
+      row.appendChild(camBtn);
+    }
     wrap.appendChild(row);
   } else {
     wrap.appendChild(input);
@@ -1502,6 +1526,193 @@ function openStopwatch(unit, onConfirm){
     var val = parseFloat(fmt(currentElapsed()));
     running = false;
     cancelAnimationFrame(raf);
+    onConfirm(val);
+    close();
+  });
+  overlay.addEventListener('click', function(e){ if(e.target===overlay) close(); });
+}
+
+function openCameraTimer(unit, onConfirm){
+  var overlay = el('<div class="osp-stopwatch-overlay"></div>');
+  var modal = el('<div class="osp-camtimer-modal"></div>');
+  modal.innerHTML =
+    '<p class="osp-stopwatch-title"><i class="ti ti-camera" aria-hidden="true"></i> Kamera ile Otomatik Ölç</p>' +
+    '<div class="osp-camtimer-video-wrap">' +
+      '<video id="osp-ct-video" autoplay playsinline muted></video>' +
+      '<div class="osp-camtimer-gate start" id="osp-ct-gate-start"><span>BAŞLANGIÇ</span></div>' +
+      '<div class="osp-camtimer-gate finish" id="osp-ct-gate-finish"><span>BİTİŞ</span></div>' +
+      '<div class="osp-camtimer-status" id="osp-ct-status">Kamera başlatılıyor…</div>' +
+    '</div>' +
+    '<p class="osp-camtimer-hint">Çizgileri sürükleyerek başlangıç ve bitiş noktalarının kamerada göründüğü yere hizala, telefonu koşu güzergâhını görecek şekilde sabit tut. Bu deneysel bir özelliktir; ışık/gölge farklılıkları yanlış tetiklemeye yol açabilir — sonucu her zaman kontrol et, gerekirse elle tetikleme butonlarını kullan.</p>' +
+    '<div class="osp-stopwatch-display" id="osp-ct-display">0.00</div>' +
+    '<div class="osp-camtimer-manual-row">' +
+      '<button type="button" class="osp-camtimer-manual-btn" id="osp-ct-manual" disabled>Elle Tetikle</button>' +
+    '</div>' +
+    '<div class="osp-stopwatch-btns">' +
+      '<button type="button" class="osp-stopwatch-btn reset" id="osp-ct-reset">Yeniden Dene</button>' +
+      '<button type="button" class="osp-stopwatch-btn start" id="osp-ct-arm">Ölçümü Başlat</button>' +
+    '</div>' +
+    '<div class="osp-stopwatch-actions">' +
+      '<button type="button" class="osp-stopwatch-cancel" id="osp-ct-cancel">Vazgeç</button>' +
+      '<button type="button" class="osp-stopwatch-use" id="osp-ct-use" disabled>Bu Süreyi Kullan</button>' +
+    '</div>';
+  overlay.appendChild(modal);
+  document.body.appendChild(overlay);
+
+  var videoEl = modal.querySelector('#osp-ct-video');
+  var gateStart = modal.querySelector('#osp-ct-gate-start');
+  var gateFinish = modal.querySelector('#osp-ct-gate-finish');
+  var statusEl = modal.querySelector('#osp-ct-status');
+  var displayEl = modal.querySelector('#osp-ct-display');
+  var armBtn = modal.querySelector('#osp-ct-arm');
+  var resetBtn = modal.querySelector('#osp-ct-reset');
+  var useBtn = modal.querySelector('#osp-ct-use');
+  var cancelBtn = modal.querySelector('#osp-ct-cancel');
+  var manualBtn = modal.querySelector('#osp-ct-manual');
+  var videoWrap = modal.querySelector('.osp-camtimer-video-wrap');
+
+  var stream = null, raf = null;
+  var canvas = document.createElement('canvas');
+  var ctx = canvas.getContext('2d', {willReadFrequently:true});
+  var gateStartPct = 25, gateFinishPct = 75;
+  var phase = 'idle';
+  var t0 = 0, t1 = 0;
+  var prevStart = null, prevFinish = null;
+  var lastTriggerStart = 0, lastTriggerFinish = 0;
+  var THRESHOLD = 16;
+
+  function fmt(sec){ return unit==='ms' ? Math.round(sec*1000)+'' : sec.toFixed(2); }
+
+  function positionGates(){
+    gateStart.style.left = gateStartPct+'%';
+    gateFinish.style.left = gateFinishPct+'%';
+  }
+  positionGates();
+
+  function makeDraggable(handle, isStart){
+    function onMove(clientX){
+      var rect = videoWrap.getBoundingClientRect();
+      var pct = Math.min(96, Math.max(4, ((clientX-rect.left)/rect.width)*100));
+      if(isStart){ gateStartPct = pct; } else { gateFinishPct = pct; }
+      positionGates();
+    }
+    handle.addEventListener('touchmove', function(e){ onMove(e.touches[0].clientX); e.preventDefault(); }, {passive:false});
+    handle.addEventListener('mousedown', function(e){
+      e.preventDefault();
+      function mm(ev){ onMove(ev.clientX); }
+      function mu(){ document.removeEventListener('mousemove', mm); document.removeEventListener('mouseup', mu); }
+      document.addEventListener('mousemove', mm);
+      document.addEventListener('mouseup', mu);
+    });
+  }
+  makeDraggable(gateStart, true);
+  makeDraggable(gateFinish, false);
+
+  navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio:false }).then(function(s){
+    stream = s;
+    videoEl.srcObject = s;
+    statusEl.textContent = 'Çizgileri ayarla, sonra "Ölçümü Başlat"a bas.';
+  }).catch(function(){
+    statusEl.textContent = 'Kameraya erişilemedi. Tarayıcı/uygulama izinlerini kontrol et.';
+  });
+
+  function sampleGate(pct){
+    var vw = videoEl.videoWidth, vh = videoEl.videoHeight;
+    if(!vw || !vh) return null;
+    canvas.width = vw; canvas.height = vh;
+    ctx.drawImage(videoEl, 0, 0, vw, vh);
+    var stripW = Math.max(4, Math.round(vw*0.03));
+    var x = Math.round((pct/100)*vw - stripW/2);
+    x = Math.max(0, Math.min(vw-stripW, x));
+    var data;
+    try { data = ctx.getImageData(x, 0, stripW, vh).data; } catch(e){ return null; }
+    var sum = 0, n = data.length/4;
+    for(var i=0;i<data.length;i+=4){ sum += (data[i]+data[i+1]+data[i+2]); }
+    return sum/n;
+  }
+
+  function triggerStart(){
+    if(phase!=='waiting-start') return;
+    t0 = performance.now();
+    phase = 'waiting-finish';
+    statusEl.textContent = 'Süre ölçülüyor… Bitiş çizgisini bekliyor.';
+    manualBtn.textContent = 'Bitişi Elle Tetikle';
+  }
+  function triggerFinish(){
+    if(phase!=='waiting-finish') return;
+    t1 = performance.now();
+    var elapsedSec = (t1-t0)/1000;
+    displayEl.textContent = fmt(elapsedSec);
+    statusEl.textContent = 'Bitiş algılandı: '+fmt(elapsedSec)+(unit==='ms'?' ms':' sn');
+    phase = 'done';
+    useBtn.disabled = false;
+    manualBtn.disabled = true;
+    armBtn.textContent = 'Ölçümü Başlat';
+    armBtn.disabled = false;
+  }
+
+  function loop(){
+    if(phase==='waiting-start' || phase==='waiting-finish'){
+      var now = performance.now();
+      if(phase==='waiting-start'){
+        var sVal = sampleGate(gateStartPct);
+        if(sVal!==null){
+          if(prevStart!==null && Math.abs(sVal-prevStart) > THRESHOLD && now-lastTriggerStart>500){
+            lastTriggerStart = now;
+            triggerStart();
+          }
+          prevStart = sVal;
+        }
+      } else if(phase==='waiting-finish'){
+        var fVal = sampleGate(gateFinishPct);
+        if(fVal!==null){
+          if(prevFinish!==null && Math.abs(fVal-prevFinish) > THRESHOLD && now-lastTriggerFinish>500 && now-t0>150){
+            lastTriggerFinish = now;
+            triggerFinish();
+          }
+          prevFinish = fVal;
+        }
+      }
+    }
+    raf = requestAnimationFrame(loop);
+  }
+  raf = requestAnimationFrame(loop);
+
+  armBtn.addEventListener('click', function(){
+    phase = 'waiting-start';
+    prevStart = null; prevFinish = null;
+    t0 = 0; t1 = 0;
+    displayEl.textContent = fmt(0);
+    useBtn.disabled = true;
+    manualBtn.disabled = false;
+    manualBtn.textContent = 'Başlangıcı Elle Tetikle';
+    statusEl.textContent = 'Başlangıç çizgisini bekliyor…';
+    armBtn.disabled = true;
+  });
+  manualBtn.addEventListener('click', function(){
+    if(phase==='waiting-start') triggerStart();
+    else if(phase==='waiting-finish') triggerFinish();
+  });
+  resetBtn.addEventListener('click', function(){
+    phase = 'idle';
+    prevStart = null; prevFinish = null;
+    t0 = 0; t1 = 0;
+    displayEl.textContent = fmt(0);
+    useBtn.disabled = true;
+    manualBtn.disabled = true;
+    armBtn.disabled = false;
+    armBtn.textContent = 'Ölçümü Başlat';
+    statusEl.textContent = 'Çizgileri ayarla, sonra "Ölçümü Başlat"a bas.';
+  });
+
+  function stopCamera(){
+    if(stream){ stream.getTracks().forEach(function(tr){ tr.stop(); }); }
+    if(raf) cancelAnimationFrame(raf);
+  }
+  function close(){ stopCamera(); if(overlay.parentNode) document.body.removeChild(overlay); }
+  cancelBtn.addEventListener('click', close);
+  useBtn.addEventListener('click', function(){
+    var val = parseFloat(displayEl.textContent);
     onConfirm(val);
     close();
   });
@@ -2282,7 +2493,8 @@ function renderDetailTabVeri(container, p){
     var card = el('<div class="osp-card"></div>');
     fields.forEach(function(f){
       var isTimed = (f.unit==='sn' || f.unit==='ms');
-      card.appendChild(fieldRow(f.label, f.key, p[f.key], {unit:f.unit, step:f.step, stopwatch:isTimed, stopwatchUnit:f.unit==='ms'?'ms':'sn'}));
+      var isSprint = (f.key==='sprint10' || f.key==='sprint20');
+      card.appendChild(fieldRow(f.label, f.key, p[f.key], {unit:f.unit, step:f.step, stopwatch:isTimed, cameraTimer:isSprint, stopwatchUnit:f.unit==='ms'?'ms':'sn'}));
     });
     sec.appendChild(card);
     container.appendChild(sec);

@@ -386,7 +386,8 @@
   .osp-guide-check-icon { color: #d32f2f; flex-shrink: 0; margin-top: 1px; }
   .osp-guide-check-title { font-size: 13.5px; font-weight: 700; color: #1a1a1a; margin: 0; }
   .osp-guide-check-desc { font-size: 12px; color: #7a3b00; margin-top: 2px; line-height: 1.4; }
-  .osp-guide-illust { position: absolute; right: -10px; bottom: -6px; opacity: 0.9; pointer-events: none; }
+  .osp-guide-illust { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0.09; pointer-events: none; z-index: 0; }
+  .osp-guide-hero-content { position: relative; z-index: 1; }
 
   .osp-guide-tip-head { display: flex; align-items: center; gap: 10px; margin: 18px 0 12px; }
   .osp-guide-tip-icon { width: 34px; height: 34px; border-radius: 50%; background: #fdecec; color: #d32f2f; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
@@ -2489,6 +2490,23 @@ function renderGuideAciklama(container){
   ];
 
   var heroCard = el('<div class="osp-card osp-guide-hero-card"></div>');
+  var illust = el(
+    '<svg class="osp-guide-illust" viewBox="0 0 400 320" preserveAspectRatio="xMidYMid slice">' +
+      '<circle cx="290" cy="160" r="150" fill="#d32f2f"/>' +
+      '<circle cx="330" cy="220" r="55" fill="none" stroke="#d32f2f" stroke-width="14"/>' +
+      '<path d="M330 190v32l22 14" stroke="#d32f2f" stroke-width="8" fill="none" stroke-linecap="round"/>' +
+      '<rect x="150" y="70" width="150" height="200" rx="16" fill="none" stroke="#d32f2f" stroke-width="8"/>' +
+      '<rect x="195" y="50" width="60" height="34" rx="8" fill="none" stroke="#d32f2f" stroke-width="8"/>' +
+      '<path d="M172 130l14 14 26-26" stroke="#d32f2f" stroke-width="10" fill="none" stroke-linecap="round" stroke-linejoin="round"/>' +
+      '<line x1="222" y1="138" x2="272" y2="138" stroke="#d32f2f" stroke-width="10" stroke-linecap="round"/>' +
+      '<path d="M172 182l14 14 26-26" stroke="#d32f2f" stroke-width="10" fill="none" stroke-linecap="round" stroke-linejoin="round"/>' +
+      '<line x1="222" y1="190" x2="272" y2="190" stroke="#d32f2f" stroke-width="10" stroke-linecap="round"/>' +
+      '<path d="M172 234l14 14 26-26" stroke="#d32f2f" stroke-width="10" fill="none" stroke-linecap="round" stroke-linejoin="round"/>' +
+      '<line x1="222" y1="242" x2="272" y2="242" stroke="#d32f2f" stroke-width="10" stroke-linecap="round"/>' +
+    '</svg>'
+  );
+  heroCard.appendChild(illust);
+  var heroContent = el('<div class="osp-guide-hero-content"></div>');
   var heroHtml =
     '<div class="osp-guide-hero-title-row">' +
       '<div class="osp-guide-hero-icon">'+SVG_ICONS.book+'</div>' +
@@ -2502,23 +2520,8 @@ function renderGuideAciklama(container){
         '<div><p class="osp-guide-check-title">'+c.title+'</p><p class="osp-guide-check-desc">'+c.desc+'</p></div>' +
       '</div>';
   });
-  heroCard.innerHTML = heroHtml;
-  var illust = el(
-    '<svg class="osp-guide-illust" viewBox="0 0 160 170" width="120" height="128">' +
-      '<circle cx="80" cy="85" r="78" fill="#fdecec"/>' +
-      '<circle cx="118" cy="128" r="30" fill="none" stroke="#f3b8b3" stroke-width="8"/>' +
-      '<path d="M118 112v18l12 8" stroke="#e8827a" stroke-width="4" fill="none" stroke-linecap="round"/>' +
-      '<rect x="30" y="34" width="70" height="96" rx="8" fill="#fff" stroke="#e8827a" stroke-width="4"/>' +
-      '<rect x="52" y="24" width="26" height="16" rx="4" fill="#fff" stroke="#e8827a" stroke-width="4"/>' +
-      '<path d="M42 62l6 6 12-12" stroke="#d32f2f" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>' +
-      '<line x1="66" y1="66" x2="90" y2="66" stroke="#e8827a" stroke-width="5" stroke-linecap="round"/>' +
-      '<path d="M42 88l6 6 12-12" stroke="#d32f2f" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>' +
-      '<line x1="66" y1="92" x2="90" y2="92" stroke="#e8827a" stroke-width="5" stroke-linecap="round"/>' +
-      '<path d="M42 114l6 6 12-12" stroke="#d32f2f" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>' +
-      '<line x1="66" y1="118" x2="90" y2="118" stroke="#e8827a" stroke-width="5" stroke-linecap="round"/>' +
-    '</svg>'
-  );
-  heroCard.appendChild(illust);
+  heroContent.innerHTML = heroHtml;
+  heroCard.appendChild(heroContent);
   container.appendChild(heroCard);
 
   var tips = [

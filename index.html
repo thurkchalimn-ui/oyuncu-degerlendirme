@@ -86,6 +86,21 @@
   .osp-card { background: #fffdf5; border: 1px solid #f2e2ab; border-radius: 12px; padding: 12px 14px; }
 
   .osp-field { margin-bottom: 10px; }
+  .osp-stopwatch-launch { width: 42px; height: 42px; flex-shrink: 0; border-radius: 10px; background: #fdecec; border: 1px solid #f7dcd8; color: #d32f2f; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  .osp-stopwatch-overlay { position: fixed; inset: 0; background: rgba(10,14,31,0.55); display: flex; align-items: center; justify-content: center; z-index: 200; padding: 20px; }
+  .osp-stopwatch-modal { background: #fffdf5; border-radius: 20px; padding: 24px 22px; width: 100%; max-width: 320px; text-align: center; box-shadow: 0 12px 40px rgba(0,0,0,0.3); }
+  .osp-stopwatch-title { display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px; font-weight: 700; color: #1a1a1a; margin: 0 0 14px; }
+  .osp-stopwatch-display { font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 52px; color: #d32f2f; line-height: 1; font-variant-numeric: tabular-nums; }
+  .osp-stopwatch-unit { font-size: 11px; color: #a37a00; font-weight: 600; margin-top: 4px; }
+  .osp-stopwatch-btns { display: flex; gap: 10px; margin-top: 20px; }
+  .osp-stopwatch-btn { flex: 1; padding: 13px; border-radius: 12px; font-size: 14px; font-weight: 700; cursor: pointer; border: none; }
+  .osp-stopwatch-btn.reset { background: #f0e6c8; color: #7a3b00; }
+  .osp-stopwatch-btn.start { background: #d32f2f; color: #fff; }
+  .osp-stopwatch-btn.start.running { background: #7a1f1f; }
+  .osp-stopwatch-actions { display: flex; gap: 10px; margin-top: 12px; }
+  .osp-stopwatch-cancel, .osp-stopwatch-use { flex: 1; padding: 11px; border-radius: 12px; font-size: 13px; font-weight: 700; cursor: pointer; border: none; }
+  .osp-stopwatch-cancel { background: transparent; color: #a37a00; border: 1px solid #f2e2ab; }
+  .osp-stopwatch-use { background: #1a1a1a; color: #fff; }
   .osp-field:last-child { margin-bottom: 0; }
   .osp-field label { display: block; font-size: 12px; color: #7a3b00; margin-bottom: 4px; font-weight: 600; }
   .osp-field input, .osp-field select, .osp-field textarea { width: 100%; background: #ffffff; border: 1px solid #e8d48a; color: #1a1a1a; border-radius: 8px; padding: 9px 10px; font-size: 14px; }
@@ -1406,8 +1421,91 @@ function fieldRow(label, key, value, opts){
     updateField(key, v);
     if(opts.onChange) opts.onChange(v);
   });
-  wrap.appendChild(input);
+  if(opts.stopwatch){
+    var row = el('<div style="display:flex; gap:8px; align-items:center;"></div>');
+    input.style.flex = '1';
+    row.appendChild(input);
+    var swBtn = el('<button type="button" class="osp-stopwatch-launch" title="Kronometre ile ölç" aria-label="Kronometre ile ölç">'+SVG_ICONS.clock+'</button>');
+    swBtn.addEventListener('click', function(){
+      openStopwatch(opts.stopwatchUnit || 'sn', function(val){
+        input.value = val;
+        input.dispatchEvent(new Event('input'));
+      });
+    });
+    row.appendChild(swBtn);
+    wrap.appendChild(row);
+  } else {
+    wrap.appendChild(input);
+  }
   return wrap;
+}
+
+function openStopwatch(unit, onConfirm){
+  var overlay = el('<div class="osp-stopwatch-overlay"></div>');
+  var modal = el('<div class="osp-stopwatch-modal"></div>');
+  var running = false, startTs = 0, elapsed = 0, raf = null;
+  modal.innerHTML =
+    '<p class="osp-stopwatch-title">'+SVG_ICONS.clock+' Kronometre</p>' +
+    '<div class="osp-stopwatch-display" id="osp-sw-display">0.00</div>' +
+    '<div class="osp-stopwatch-unit">'+(unit==='ms'?'milisaniye (ms)':'saniye (sn)')+'</div>' +
+    '<div class="osp-stopwatch-btns">' +
+      '<button type="button" class="osp-stopwatch-btn reset" id="osp-sw-reset">Sıfırla</button>' +
+      '<button type="button" class="osp-stopwatch-btn start" id="osp-sw-start">Başlat</button>' +
+    '</div>' +
+    '<div class="osp-stopwatch-actions">' +
+      '<button type="button" class="osp-stopwatch-cancel" id="osp-sw-cancel">Vazgeç</button>' +
+      '<button type="button" class="osp-stopwatch-use" id="osp-sw-use">Bu Süreyi Kullan</button>' +
+    '</div>';
+  overlay.appendChild(modal);
+  document.body.appendChild(overlay);
+
+  var displayEl = modal.querySelector('#osp-sw-display');
+  var startBtn = modal.querySelector('#osp-sw-start');
+  var resetBtn = modal.querySelector('#osp-sw-reset');
+  var useBtn = modal.querySelector('#osp-sw-use');
+  var cancelBtn = modal.querySelector('#osp-sw-cancel');
+
+  function fmt(sec){ return unit==='ms' ? Math.round(sec*1000)+'' : sec.toFixed(2); }
+  function currentElapsed(){ return running ? elapsed + (performance.now()-startTs)/1000 : elapsed; }
+  function tick(){
+    if(!running) return;
+    displayEl.textContent = fmt(currentElapsed());
+    raf = requestAnimationFrame(tick);
+  }
+  startBtn.addEventListener('click', function(){
+    if(!running){
+      running = true;
+      startTs = performance.now();
+      startBtn.textContent = 'Durdur';
+      startBtn.classList.add('running');
+      tick();
+    } else {
+      elapsed = currentElapsed();
+      running = false;
+      cancelAnimationFrame(raf);
+      startBtn.textContent = 'Devam Et';
+      startBtn.classList.remove('running');
+      displayEl.textContent = fmt(elapsed);
+    }
+  });
+  resetBtn.addEventListener('click', function(){
+    running = false;
+    elapsed = 0;
+    cancelAnimationFrame(raf);
+    displayEl.textContent = fmt(0);
+    startBtn.textContent = 'Başlat';
+    startBtn.classList.remove('running');
+  });
+  function close(){ if(overlay.parentNode) document.body.removeChild(overlay); cancelAnimationFrame(raf); }
+  cancelBtn.addEventListener('click', close);
+  useBtn.addEventListener('click', function(){
+    var val = parseFloat(fmt(currentElapsed()));
+    running = false;
+    cancelAnimationFrame(raf);
+    onConfirm(val);
+    close();
+  });
+  overlay.addEventListener('click', function(e){ if(e.target===overlay) close(); });
 }
 
 var TEAM_ACCENTS = ['#d32f2f', '#1e88e5', '#2e7d32', '#f57c00'];
@@ -2183,7 +2281,8 @@ function renderDetailTabVeri(container, p){
     sec.appendChild(el('<p class="osp-section-title">'+catIconHtml(cat)+CAT_LABELS[cat]+'</p>'));
     var card = el('<div class="osp-card"></div>');
     fields.forEach(function(f){
-      card.appendChild(fieldRow(f.label, f.key, p[f.key], {unit:f.unit, step:f.step}));
+      var isTimed = (f.unit==='sn' || f.unit==='ms');
+      card.appendChild(fieldRow(f.label, f.key, p[f.key], {unit:f.unit, step:f.step, stopwatch:isTimed, stopwatchUnit:f.unit==='ms'?'ms':'sn'}));
     });
     sec.appendChild(card);
     container.appendChild(sec);

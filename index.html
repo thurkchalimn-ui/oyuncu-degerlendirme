@@ -1981,26 +1981,29 @@ function renderSquad(){
   var t = getTeam();
   if(!t){ state.view='teams'; render(); return; }
 
-  document.getElementById('osp-back-btn').style.display = 'flex';
-  var headerLogo = document.getElementById('osp-header-logo');
-  headerLogo.style.display = 'none';
-  document.getElementById('osp-title').textContent = t.name;
-  document.getElementById('osp-subtitle').textContent = t.players.length + ' oyuncu · ' + ageOf(t) + ' Yaş kadrosu';
   var body = document.getElementById('osp-body');
   body.innerHTML = '';
 
-  var logoRow = el('<div class="osp-squad-logo-row"></div>');
-  var squadLogoInner = t.logo ? '<img src="'+t.logo+'" alt="">' : SVG_ICONS.shield;
-  logoRow.innerHTML =
-    '<div class="osp-tm-logo-wrap">' +
-      '<div class="osp-tm-logo" style="width:52px; height:52px;">'+squadLogoInner+'</div>' +
-      '<div class="osp-tm-logo-edit" title="Logo değiştir"><i class="ti ti-camera" aria-hidden="true" style="font-size:10px;"></i></div>' +
-    '</div>' +
-    '<div><p style="margin:0; font-size:12.5px; color:#5a4000; font-weight:700;">Takım Logosu</p><p style="margin:2px 0 0; font-size:11px; color:#a37a00;">Değiştirmek için dokun</p></div>';
-  logoRow.querySelector('.osp-tm-logo-edit').addEventListener('click', function(){
-    pickImage(240, function(dataUrl){ t.logo = dataUrl; save(); render(); });
-  });
-  body.appendChild(logoRow);
+  var squadLogoInner = t.logo ? '<img src="'+t.logo+'" alt="" style="width:100%; height:100%; object-fit:cover;">' : SVG_ICONS.shield;
+  var hero = el('<div class="osp-home-hero"></div>');
+  hero.innerHTML =
+    '<div class="osp-home-hero-top">' +
+      '<button class="osp-home-icon-btn" id="osp-squad-back-btn" aria-label="Geri" style="flex-shrink:0;"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"></path></svg></button>' +
+      '<div style="position:relative; flex-shrink:0;">' +
+        '<div class="osp-home-logo" id="osp-squad-logo" style="padding:0; overflow:hidden; display:flex; align-items:center; justify-content:center; cursor:pointer; color:#d32f2f;">'+squadLogoInner+'</div>' +
+        '<div class="osp-tm-logo-edit" id="osp-squad-logo-edit" title="Logo değiştir" style="top:auto; bottom:-5px; left:auto; right:-5px;"><i class="ti ti-camera" aria-hidden="true" style="font-size:10px;"></i></div>' +
+      '</div>' +
+      '<div class="osp-home-title-block">' +
+        '<div class="osp-home-title-1" style="font-size:19px;">'+escapeHtml(t.name)+'</div>' +
+        '<div class="osp-home-subtitle" style="color:#ffcc00; font-weight:700; margin-top:2px;">'+t.players.length+' oyuncu</div>' +
+        '<div class="osp-home-subtitle" style="margin-top:1px;">'+ageOf(t)+' Yaş kadrosu</div>' +
+      '</div>' +
+    '</div>';
+  hero.querySelector('#osp-squad-back-btn').addEventListener('click', function(){ state.view = state.prevView || 'teams'; render(); });
+  var squadLogoEdit = function(){ pickImage(240, function(dataUrl){ t.logo = dataUrl; save(); render(); }); };
+  hero.querySelector('#osp-squad-logo').addEventListener('click', squadLogoEdit);
+  hero.querySelector('#osp-squad-logo-edit').addEventListener('click', function(e){ e.stopPropagation(); squadLogoEdit(); });
+  body.appendChild(hero);
 
   if(t.players.length===0){
     body.appendChild(el('<div class="osp-empty"><i class="ti ti-users" aria-hidden="true"></i><p>Bu takımda henüz oyuncu yok.<br>İlk oyuncuyu ekleyerek başla.</p></div>'));
@@ -3009,7 +3012,7 @@ function renderSync(){
 
 function render(){
   var showSecondary = (state.view==='teams');
-  document.getElementById('osp-header').style.display = (state.view==='home' || state.view==='teams' || state.view==='players' || state.view==='guide' || state.view==='detail') ? 'none' : '';
+  document.getElementById('osp-header').style.display = (state.view==='home' || state.view==='teams' || state.view==='players' || state.view==='guide' || state.view==='detail' || state.view==='squad') ? 'none' : '';
   document.getElementById('osp-guide-btn').style.display = showSecondary ? 'flex' : 'none';
   document.getElementById('osp-sync-btn').style.display = showSecondary ? 'flex' : 'none';
   Array.prototype.forEach.call(document.querySelectorAll('.osp-nav-item'), function(btn, idx){

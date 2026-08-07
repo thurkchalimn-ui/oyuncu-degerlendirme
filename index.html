@@ -182,32 +182,77 @@
   .osp-norm-edit-grid input { width: 100%; font-size: 11px; padding: 6px 3px; border: 1px solid #e8d48a; border-radius: 6px; text-align: center; background: #ffffff; color: #1a1a1a; }
   .osp-norm-edit-grid input:focus { outline: none; border-color: #d32f2f; }
 
-  .osp-karne-card { background: #ffffff; border-radius: 18px; overflow: hidden; border: 1px solid #ececec; }
-  .osp-karne-hero { background: linear-gradient(135deg, #0f1c3d, #1b2e5c); padding: 20px 18px 18px; position: relative; }
-  .osp-karne-hero-top { display: flex; align-items: center; gap: 12px; }
-  .osp-karne-hero-logo { width: 42px; height: 42px; border-radius: 10px; background: #ffffff; padding: 4px; object-fit: contain; flex-shrink: 0; }
-  .osp-karne-hero-title { font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 18px; line-height: 1.15; color: #ffffff; text-transform: uppercase; letter-spacing: 0.3px; }
-  .osp-karne-hero-title span { color: #ff5252; }
-  .osp-karne-photobar { background: rgba(255,255,255,0.07); border-radius: 14px; margin-top: 16px; padding: 14px; display: flex; align-items: center; gap: 14px; position: relative; }
-  .osp-karne-photo-lg { width: 72px; height: 72px; border-radius: 50%; border: 3px solid #ff5252; overflow: hidden; background: #ffcc00; display: flex; align-items: center; justify-content: center; font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 26px; color: #d32f2f; flex-shrink: 0; }
-  .osp-karne-photo-lg img { width: 100%; height: 100%; object-fit: cover; }
-  .osp-karne-hero-name { font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 19px; color: #ffffff; margin: 0; }
-  .osp-karne-hero-meta { font-size: 11.5px; color: #c3cde4; margin: 3px 0 0; font-weight: 600; }
-  .osp-karne-team-badge { position: absolute; bottom: -14px; left: 16px; width: 34px; height: 34px; border-radius: 9px; background: #ffffff; border: 2px solid #ff5252; overflow: hidden; display: flex; align-items: center; justify-content: center; }
-  .osp-karne-team-badge img { width: 100%; height: 100%; object-fit: cover; }
-  .osp-karne-body { padding: 26px 18px 20px; }
-  .osp-karne-overall2 { display: flex; align-items: center; justify-content: space-between; background: #fff8e1; border-radius: 12px; padding: 14px 16px; margin-bottom: 20px; }
-  .osp-karne-overall2-label { font-size: 11px; font-weight: 700; color: #7a3b00; text-transform: uppercase; letter-spacing: 0.5px; }
-  .osp-karne-overall2-num { font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 36px; line-height: 1; }
-  .osp-karne-sec-head { display: flex; align-items: center; gap: 7px; margin: 0 0 12px; color: #d32f2f; }
-  .osp-karne-sec-head span { font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 14.5px; color: #1a1a1a; text-transform: uppercase; letter-spacing: 0.3px; white-space: nowrap; }
-  .osp-karne-sec-head .line { flex: 1; height: 2px; background: linear-gradient(90deg, #d32f2f, rgba(211,47,47,0)); }
-  .osp-karne-stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 16px; margin-bottom: 22px; }
-  .osp-karne-stat-label { font-size: 11px; color: #555; font-weight: 600; display: block; margin-bottom: 5px; }
-  .osp-karne-stat-track { height: 6px; background: #ececec; border-radius: 3px; overflow: hidden; }
-  .osp-karne-stat-fill { height: 100%; border-radius: 3px; }
-  .osp-karne-stat-val { font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 13px; flex-shrink: 0; }
-  .osp-karne-footer { text-align: center; margin-top: 4px; font-size: 10px; color: #bbb; }
+  .krn-card { background: #ffffff; border-radius: 18px; padding: 22px; border: 1px solid #eee; }
+  .krn-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .krn-header-left { display: flex; align-items: center; gap: 12px; }
+  .krn-logo { width: 52px; height: 52px; border-radius: 12px; object-fit: contain; flex-shrink: 0; }
+  .krn-title { font-family: 'Rajdhani', sans-serif; font-weight: 800; font-size: 24px; color: #1a1a1a; line-height: 1.05; }
+  .krn-title span { color: #d32f2f; }
+  .krn-subtitle { font-size: 10.5px; color: #999; font-weight: 700; letter-spacing: 0.5px; margin-top: 2px; }
+  .krn-date-box { display: flex; align-items: center; gap: 8px; border: 1px solid #eee; border-radius: 12px; padding: 8px 12px; }
+  .krn-date-icon { color: #d32f2f; flex-shrink: 0; }
+  .krn-date-label { font-size: 8.5px; color: #999; font-weight: 700; letter-spacing: 0.3px; }
+  .krn-date-val { font-size: 11.5px; color: #1a1a1a; font-weight: 700; margin-top: 1px; }
+  .krn-divider { height: 3px; background: #d32f2f; border-radius: 2px; margin: 16px 0 20px; }
+
+  .krn-player-row { display: flex; gap: 16px; align-items: flex-start; flex-wrap: wrap; }
+  .krn-photo-wrap { position: relative; flex-shrink: 0; }
+  .krn-photo { width: 100px; height: 100px; border-radius: 16px; background: #f2f2f2; overflow: hidden; display: flex; align-items: center; justify-content: center; color: #ccc; }
+  .krn-photo img { width: 100%; height: 100%; object-fit: cover; }
+  .krn-jersey-badge { position: absolute; bottom: -6px; right: -6px; width: 30px; height: 30px; border-radius: 50%; background: #d32f2f; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; border: 3px solid #fff; }
+  .krn-player-info { flex: 1; min-width: 200px; padding-top: 2px; }
+  .krn-player-name { font-family: 'Rajdhani', sans-serif; font-weight: 800; font-size: 21px; color: #1a1a1a; margin: 0 0 8px; }
+  .krn-info-line { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #8a8a8a; font-weight: 600; margin-bottom: 6px; }
+  .krn-info-line .icon { color: #d32f2f; flex-shrink: 0; width: 15px; display: flex; }
+  .krn-info-line b { color: #1a1a1a; font-weight: 700; margin-left: 2px; }
+  .krn-overall { flex-shrink: 0; text-align: center; width: 120px; margin: 0 auto; }
+  .krn-overall-label { font-size: 9px; color: #999; font-weight: 700; letter-spacing: 0.3px; margin-bottom: 8px; text-transform: uppercase; }
+  .krn-overall-verdict { font-weight: 700; font-size: 12.5px; margin-top: 6px; }
+
+  .krn-stat-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; margin: 20px 0; background: #fafafa; border-radius: 14px; padding: 14px 6px; }
+  .krn-stat-item { text-align: center; }
+  .krn-stat-icon { color: #d32f2f; margin-bottom: 6px; display: flex; justify-content: center; }
+  .krn-stat-num { font-family: 'Rajdhani', sans-serif; font-weight: 800; font-size: 19px; color: #1a1a1a; }
+  .krn-stat-num span { font-size: 10px; color: #999; font-weight: 600; }
+  .krn-stat-label { font-size: 8.5px; color: #999; font-weight: 700; letter-spacing: 0.2px; margin-top: 2px; text-transform: uppercase; }
+  .krn-stat-verdict { font-size: 9.5px; font-weight: 700; margin-top: 3px; }
+
+  .krn-section-title { display: flex; align-items: center; justify-content: center; gap: 10px; font-family: 'Rajdhani', sans-serif; font-weight: 800; font-size: 15px; color: #1a1a1a; letter-spacing: 0.5px; margin: 22px 0 12px; text-transform: uppercase; }
+  .krn-section-title .dot { width: 6px; height: 6px; border-radius: 50%; background: #d32f2f; flex-shrink: 0; }
+  .krn-legend-row { display: flex; gap: 12px; margin-bottom: 10px; }
+  .krn-legend-spacer { width: 44px; flex-shrink: 0; }
+  .krn-legend-labels { flex: 1; display: flex; justify-content: space-between; font-size: 8.5px; font-weight: 700; letter-spacing: 0.2px; text-transform: uppercase; }
+  .krn-legend-labels span:nth-child(1){ color:#e53935; } .krn-legend-labels span:nth-child(2){ color:#fb8c00; } .krn-legend-labels span:nth-child(3){ color:#43a047; } .krn-legend-labels span:nth-child(4){ color:#1b5e20; }
+  .krn-legend-tail { width: 130px; flex-shrink: 0; }
+  .krn-test-card { border: 1px solid #eee; border-radius: 14px; padding: 6px 16px; }
+  .krn-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #f5f5f5; }
+  .krn-row:last-child { border-bottom: none; }
+  .krn-row-icon { width: 32px; height: 32px; border-radius: 9px; background: #fdecec; color: #d32f2f; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .krn-row-label { width: 118px; flex-shrink: 0; font-size: 11.5px; font-weight: 700; color: #1a1a1a; line-height: 1.25; }
+  .krn-row-bar-wrap { flex: 1; position: relative; height: 9px; border-radius: 5px; background: linear-gradient(to right, #e53935 0%, #e53935 25%, #fb8c00 25%, #fb8c00 50%, #43a047 50%, #43a047 75%, #1b5e20 75%, #1b5e20 100%); }
+  .krn-row-dot { position: absolute; top: 50%; width: 15px; height: 15px; border-radius: 50%; background: #fff; border: 3px solid; transform: translate(-50%,-50%); box-shadow: 0 1px 3px rgba(0,0,0,.3); }
+  .krn-row-val { width: 64px; flex-shrink: 0; text-align: right; font-family: 'Rajdhani', sans-serif; font-weight: 800; font-size: 12.5px; }
+  .krn-row-verdict { width: 56px; flex-shrink: 0; text-align: right; font-size: 10.5px; font-weight: 700; }
+
+  .krn-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 20px; }
+  .krn-box { border: 1px solid #eee; border-radius: 14px; padding: 14px; }
+  .krn-box-title { font-size: 10.5px; font-weight: 800; color: #1a1a1a; letter-spacing: 0.3px; margin-bottom: 10px; text-transform: uppercase; }
+  .krn-bullet { display: flex; gap: 7px; align-items: flex-start; font-size: 11px; color: #444; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+  .krn-bullet .ic { flex-shrink: 0; margin-top: 1px; }
+  .krn-bullet.good .ic { color: #2e7d32; }
+  .krn-bullet.warn .ic { color: #f57c00; }
+  .krn-empty-note { font-size: 11px; color: #aaa; font-weight: 600; }
+
+  .krn-coach { display: flex; gap: 12px; align-items: flex-start; border: 1px solid #eee; border-radius: 14px; padding: 14px; margin-top: 12px; }
+  .krn-coach-avatar { width: 38px; height: 38px; border-radius: 50%; background: #f2f2f2; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #ccc; overflow: hidden; }
+  .krn-coach-text { font-size: 11.5px; color: #444; font-weight: 600; line-height: 1.5; white-space: pre-wrap; }
+  .krn-coach-name { margin-top: 8px; font-weight: 800; color: #1a1a1a; font-size: 11.5px; }
+  .krn-footer { text-align: center; margin-top: 16px; font-size: 9.5px; color: #ccc; }
+
+  .krn-edit-card { background: #fffdf5; border: 1px solid #f2e2ab; border-radius: 14px; padding: 14px; margin-top: 14px; }
+  .krn-edit-label { font-size: 11.5px; color: #7a3b00; font-weight: 700; margin-bottom: 6px; display: block; }
+  .krn-edit-textarea { width: 100%; min-height: 70px; border: 1px solid #f2e2ab; border-radius: 10px; padding: 10px; font-size: 13px; font-family: inherit; resize: vertical; box-sizing: border-box; }
+  .krn-edit-input { width: 100%; border: 1px solid #f2e2ab; border-radius: 10px; padding: 10px; font-size: 13px; font-family: inherit; box-sizing: border-box; margin-top: 10px; }
 
   .osp-home-hero { margin: -14px -14px 16px -14px; padding: 20px 16px 20px; background: linear-gradient(135deg, #0a0e1f 0%, #141b3d 55%, #0a0e1f 100%); border-radius: 0 0 26px 26px; color: #fff; position: relative; }
   .osp-home-hero-top { display: flex; align-items: center; gap: 12px; }
@@ -601,7 +646,9 @@ var SVG_ICONS = {
   book: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5C4 4.7 4.7 4 5.5 4H12v16H5.5c-.8 0-1.5-.7-1.5-1.5v-13z"></path><path d="M20 5.5C20 4.7 19.3 4 18.5 4H12v16h6.5c.8 0 1.5-.7 1.5-1.5v-13z"></path></svg>',
   star: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.7 5.9 6.3.6-4.8 4.3 1.4 6.2L12 16.9 6.4 20l1.4-6.2-4.8-4.3 6.3-.6z"></path></svg>',
   bulb: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"></path><path d="M10 21h4"></path><path d="M12 3a6 6 0 00-3.6 10.8c.5.4.8 1 .8 1.7V16h5.6v-.5c0-.7.3-1.3.8-1.7A6 6 0 0012 3z"></path></svg>',
-  checkCircle: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M8 12.5l2.5 2.5L16 9.5"></path></svg>'
+  checkCircle: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M8 12.5l2.5 2.5L16 9.5"></path></svg>',
+  alertCircle: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="7.5" x2="12" y2="13"></line><circle cx="12" cy="16.5" r="0.6" fill="currentColor"></circle></svg>',
+  foot: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3c-2 0-3 2-3 5 0 2-1 3-1 6 0 3 2 5 5 5 3 0 4-2 4-4 0-3-1-4-1-7 0-3-1-5-4-5z"></path><path d="M9 8c1 0 2 .5 3 .5s2-.5 3-.5"></path></svg>'
 };
 var CAT_ICON_KEY = { fiz:'run', psi:'brain', tek:'ball' };
 function catIconHtml(cat){ return '<span style="margin-right:5px; vertical-align:-2px; display:inline-block;">'+SVG_ICONS[CAT_ICON_KEY[cat]]+'</span>'; }
@@ -1032,6 +1079,28 @@ var CAT_MINI_ICON = {
   psi: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 2a3.5 3.5 0 00-3.5 3.5V6a3 3 0 00-2 5 3 3 0 002 5.5V17a3.5 3.5 0 003.5 3.5"></path><path d="M14.5 2a3.5 3.5 0 013.5 3.5V6a3 3 0 012 5 3 3 0 01-2 5.5V17a3.5 3.5 0 01-3.5 3.5"></path><path d="M9.5 2v19"></path><path d="M14.5 2v19"></path></svg>',
   tek: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7l3 2.2-1.2 3.6H10.2L9 9.2z"></path><path d="M12 3v4M12 17v4M4.5 8l3.2 1M16.3 9l3.2-1M4.5 16l3.2-1M16.3 15l3.2 1"></path></svg>'
 };
+
+function donutRing100(score100, size){
+  size = size || 110;
+  var pct = score100!==null ? score100 : 0;
+  var color = karneTier(score100).color;
+  var stroke = Math.round(size*0.1);
+  var r = (size-stroke)/2;
+  var c = 2*Math.PI*r;
+  var offset = c*(1-pct/100);
+  var fontBig = Math.round(size*0.26);
+  var fontSmall = Math.round(size*0.1);
+  return '<div style="position:relative; width:'+size+'px; height:'+size+'px; flex-shrink:0; margin:0 auto;">' +
+    '<svg width="'+size+'" height="'+size+'" viewBox="0 0 '+size+' '+size+'">' +
+      '<circle cx="'+size/2+'" cy="'+size/2+'" r="'+r+'" fill="none" stroke="#f0f0f0" stroke-width="'+stroke+'"></circle>' +
+      '<circle cx="'+size/2+'" cy="'+size/2+'" r="'+r+'" fill="none" stroke="'+color+'" stroke-width="'+stroke+'" stroke-linecap="round" stroke-dasharray="'+c+'" stroke-dashoffset="'+offset+'" transform="rotate(-90 '+size/2+' '+size/2+')"></circle>' +
+    '</svg>' +
+    '<div style="position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;">' +
+      '<span style="font-family:\'Rajdhani\',sans-serif; font-weight:800; font-size:'+fontBig+'px; color:'+color+'; line-height:1;">'+(score100!==null?score100:'-')+'</span>' +
+      '<span style="font-family:\'Inter\',sans-serif; font-weight:600; font-size:'+fontSmall+'px; color:#999; margin-top:2px;">'+(score100!==null?'/ 100':'Veri yok')+'</span>' +
+    '</div>' +
+  '</div>';
+}
 
 function catScoreCardsHtml(catScores){
   var order = ['fiz','psi','tek'];
@@ -2792,6 +2861,12 @@ function renderDetailTabInfo(container, p){
   var card = el('<div class="osp-card"></div>');
   card.appendChild(fieldRow('Ad Soyad', 'adSoyad', p.adSoyad, {type:'text', placeholder:'Oyuncu adı'}));
   card.appendChild(fieldRow('Mevkii', 'mevkii', p.mevkii, {type:'text', placeholder:'Örn. Forvet, Orta Saha, Kaleci'}));
+  card.appendChild(fieldRow('Dominant Ayak', 'dominantAyak', p.dominantAyak, {type:'select', options:[
+    {value:'', label:'Seçiniz'},
+    {value:'Sağ', label:'Sağ'},
+    {value:'Sol', label:'Sol'},
+    {value:'Çift', label:'Çift (iki ayak)'}
+  ]}));
   var row1 = el('<div class="osp-field-row"></div>');
   row1.appendChild(fieldRow('Forma No', 'no', p.no, {step:'1'}));
   var yasWrap = el('<div class="osp-field"></div>');
@@ -3008,14 +3083,57 @@ function renderDetailTabSonuc(container, p){
 function downloadKarne(playerName){
   var node = document.getElementById('osp-karne-capture');
   if(!node || !window.html2canvas){ alert('Karne oluşturulamadı, sayfayı yenileyip tekrar dene.'); return; }
-  html2canvas(node, { scale: 2, backgroundColor: '#ffffff', useCORS: true }).then(function(canvas){
+  html2canvas(node, { scale: 2, backgroundColor: '#ffffff', useCORS: true }).then(function(srcCanvas){
+    var A4W = 2480, A4H = 3508; // A4 @ 300dpi, portrait
+    var out = document.createElement('canvas');
+    out.width = A4W; out.height = A4H;
+    var octx = out.getContext('2d');
+    octx.fillStyle = '#ffffff';
+    octx.fillRect(0, 0, A4W, A4H);
+    var margin = 60;
+    var availW = A4W - margin*2, availH = A4H - margin*2;
+    var scale = Math.min(availW/srcCanvas.width, availH/srcCanvas.height);
+    var drawW = srcCanvas.width*scale, drawH = srcCanvas.height*scale;
+    var dx = (A4W-drawW)/2, dy = margin;
+    octx.drawImage(srcCanvas, 0, 0, srcCanvas.width, srcCanvas.height, dx, dy, drawW, drawH);
     var link = document.createElement('a');
     link.download = (playerName ? playerName.replace(/[^a-zA-Z0-9ığüşöçİĞÜŞÖÇ ]/g,'').trim().replace(/\s+/g,'-') : 'oyuncu') + '-karne.png';
-    link.href = canvas.toDataURL('image/png');
+    link.href = out.toDataURL('image/png');
     link.click();
   }).catch(function(){
     alert('Karne indirilemedi, tekrar dener misin?');
   });
+}
+
+function karneTier(score100){
+  if(score100===null) return {label:'-', color:'#999'};
+  if(score100>=90) return {label:'Mükemmel', color:'#1b5e20'};
+  if(score100>=75) return {label:'Çok İyi', color:'#2e7d32'};
+  if(score100>=60) return {label:'İyi', color:'#43a047'};
+  if(score100>=45) return {label:'Orta', color:'#fb8c00'};
+  return {label:'Zayıf', color:'#e53935'};
+}
+
+function playerGrowthPct3(p){
+  if(!p.scoreHistory || p.scoreHistory.length<2) return null;
+  var n = Math.min(3, p.scoreHistory.length);
+  var recent = p.scoreHistory.slice(-n);
+  var oldest = recent[0].score, newest = recent[recent.length-1].score;
+  if(!oldest) return null;
+  return round1(((newest-oldest)/oldest)*100);
+}
+
+function karneTestRowHtml(catIcon, test, score, valTxt){
+  var pct = score!==null ? clamp(score/20*100, 0, 100) : null;
+  var color = scoreColor(score);
+  var tier = score===null ? '-' : (score>=16?'Mükemmel':score>=13?'İyi':score>=10?'Orta':'Zayıf');
+  return '<div class="krn-row">' +
+    '<div class="krn-row-icon">'+catIcon+'</div>' +
+    '<div class="krn-row-label">'+escapeHtml(test.label)+'</div>' +
+    '<div class="krn-row-bar-wrap">'+(pct!==null?'<div class="krn-row-dot" style="left:'+pct+'%; border-color:'+color+';"></div>':'')+'</div>' +
+    '<div class="krn-row-val" style="color:'+color+';">'+escapeHtml(valTxt)+'</div>' +
+    '<div class="krn-row-verdict" style="color:'+color+';">'+tier+'</div>' +
+  '</div>';
 }
 
 function renderDetailTabKarne(container, p){
@@ -3025,59 +3143,41 @@ function renderDetailTabKarne(container, p){
   var d = computeDerived(p);
   var merged = Object.assign({}, p, d);
   var score = overallScore(p, team);
-  var CAT_ICONS = {
-    fiz: '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13" cy="4" r="2"></circle><path d="M4 17l4-2 2-5 4 2 3-3 3 2"></path><path d="M9 10l-2 8 5 4"></path><path d="M13 13l3 2-1 6"></path></svg>',
-    psi: '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 2a3.5 3.5 0 00-3.5 3.5V6a3 3 0 00-2 5 3 3 0 002 5.5V17a3.5 3.5 0 003.5 3.5"></path><path d="M14.5 2a3.5 3.5 0 013.5 3.5V6a3 3 0 012 5 3 3 0 01-2 5.5V17a3.5 3.5 0 01-3.5 3.5"></path><path d="M9.5 2v19"></path><path d="M14.5 2v19"></path></svg>',
-    tek: '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7l3 2.2-1.2 3.6H10.2L9 9.2z"></path><path d="M12 3v4M12 17v4M4.5 8l3.2 1M16.3 9l3.2-1M4.5 16l3.2-1M16.3 15l3.2 1"></path></svg>'
-  };
+  var score100 = score!==null ? Math.round(score*5) : null;
+  var overallTier = karneTier(score100);
 
-  var wrap = el('<div id="osp-karne-capture" class="osp-karne-card"></div>');
+  var wrap = el('<div id="osp-karne-capture" class="krn-card"></div>');
 
-  var hero = el('<div class="osp-karne-hero"></div>');
-  hero.innerHTML =
-    '<div class="osp-karne-hero-top">' +
-      '<img class="osp-karne-hero-logo" src="'+APP_LOGO+'" alt="">' +
-      '<div class="osp-karne-hero-title">Performans<span> Pusulası</span></div>' +
+  var header = el('<div class="krn-header"></div>');
+  header.innerHTML =
+    '<div class="krn-header-left">' +
+      '<img class="krn-logo" src="'+APP_LOGO+'" alt="">' +
+      '<div><div class="krn-title">PERFORMANS <span>KARNE</span></div><div class="krn-subtitle">FUTBOLCU ANALİZ SİSTEMİ</div></div>' +
+    '</div>' +
+    '<div class="krn-date-box">' +
+      '<span class="krn-date-icon">'+SVG_ICONS.calendar+'</span>' +
+      '<div><div class="krn-date-label">RAPOR TARİHİ</div><div class="krn-date-val">'+formatTrDate(new Date())+'</div></div>' +
     '</div>';
+  wrap.appendChild(header);
+  wrap.appendChild(el('<div class="krn-divider"></div>'));
 
-  var photoInner = p.photo ? '<img src="'+p.photo+'" alt="">' : '<i class="ti ti-user" aria-hidden="true"></i>';
-  var photobar = el('<div class="osp-karne-photobar"></div>');
-  photobar.innerHTML =
-    '<div class="osp-karne-photo-lg">'+photoInner+'</div>' +
-    '<div>' +
-      '<p class="osp-karne-hero-name">'+(p.adSoyad ? escapeHtml(p.adSoyad) : 'İsimsiz Oyuncu')+'</p>' +
-      '<p class="osp-karne-hero-meta">No '+(p.no!=null?p.no:'-')+(p.yas?' · '+p.yas+' yaş':'')+(team?' · '+ageGroup+' Yaş':'')+'</p>' +
-    '</div>' +
-    (team && team.logo ? '<div class="osp-karne-team-badge"><img src="'+team.logo+'" alt=""></div>' : '');
-  hero.appendChild(photobar);
-  wrap.appendChild(hero);
-
-  var bodyEl = el('<div class="osp-karne-body"></div>');
-
-  var overall = el('<div class="osp-karne-overall2" style="flex-direction:column; align-items:center; gap:10px;"></div>');
-  overall.innerHTML =
-    donutRing(score,110) +
-    '<div style="text-align:center;"><div class="osp-karne-overall2-label">Genel Performans Notu</div>' +
-    (team ? '<div style="font-size:11px; color:#a37a00; font-weight:600; margin-top:2px;">'+escapeHtml(team.name)+'</div>' : '') + '</div>';
-  bodyEl.appendChild(overall);
-
-  var bkCardKarne = el('<div style="display:flex; justify-content:space-between; align-items:center; gap:8px; background:#fff8e1; border-radius:12px; padding:12px 14px; margin-bottom:14px;"></div>');
-  bkCardKarne.innerHTML =
-    '<div style="flex:1; text-align:center;">' +
-      '<div style="font-size:10px; color:#a37a00; font-weight:700; text-transform:uppercase; letter-spacing:0.4px;">Boy</div>' +
-      '<div style="font-family:\'Rajdhani\',sans-serif; font-weight:700; font-size:16px; color:#1a1a1a; margin-top:2px;">'+(merged.boy!=null?merged.boy+' cm':'-')+'</div>' +
-    '</div>' +
-    '<div style="width:1px; height:30px; background:#f2e2ab;"></div>' +
-    '<div style="flex:1; text-align:center;">' +
-      '<div style="font-size:10px; color:#a37a00; font-weight:700; text-transform:uppercase; letter-spacing:0.4px;">Kilo</div>' +
-      '<div style="font-family:\'Rajdhani\',sans-serif; font-weight:700; font-size:16px; color:#1a1a1a; margin-top:2px;">'+(merged.kilo!=null?merged.kilo+' kg':'-')+'</div>' +
-    '</div>' +
-    '<div style="width:1px; height:30px; background:#f2e2ab;"></div>' +
-    '<div style="flex:1; text-align:center;">' +
-      '<div style="font-size:10px; color:#a37a00; font-weight:700; text-transform:uppercase; letter-spacing:0.4px;">VKİ (BMI)</div>' +
-      '<div style="font-family:\'Rajdhani\',sans-serif; font-weight:700; font-size:16px; color:#d32f2f; margin-top:2px;">'+(merged.vki!=null?merged.vki:'-')+'</div>' +
+  var photoInner = p.photo ? '<img src="'+p.photo+'" alt="">' : '<svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 20c0-4 3.6-6 8-6s8 2 8 6"></path></svg>';
+  var playerRow = el('<div class="krn-player-row"></div>');
+  var infoLines =
+    '<div class="krn-info-line"><span class="icon">'+SVG_ICONS.shield+'</span>Takım <b>'+(team?escapeHtml(team.name):'-')+'</b></div>' +
+    '<div class="krn-info-line"><span class="icon">'+SVG_ICONS.calendar+'</span>Doğum Tarihi <b>'+(p.dogumTarihi?formatTrDate(new Date(p.dogumTarihi))+(p.yas!=null?' ('+p.yas+' Yaş)':''):'-')+'</b></div>' +
+    '<div class="krn-info-line"><span class="icon">'+CAT_MINI_ICON.tek+'</span>Mevki <b>'+(p.mevkii?escapeHtml(p.mevkii):'-')+'</b></div>' +
+    '<div class="krn-info-line"><span class="icon">'+SVG_ICONS.ruler+'</span>Boy / Kilo <b>'+(merged.boy!=null?merged.boy+' cm':'-')+' / '+(merged.kilo!=null?merged.kilo+' kg':'-')+'</b></div>' +
+    '<div class="krn-info-line"><span class="icon">'+SVG_ICONS.foot+'</span>Dominant Ayak <b>'+(p.dominantAyak?escapeHtml(p.dominantAyak):'-')+'</b></div>';
+  playerRow.innerHTML =
+    '<div class="krn-photo-wrap"><div class="krn-photo">'+photoInner+'</div><div class="krn-jersey-badge">'+(p.no!=null?p.no:'-')+'</div></div>' +
+    '<div class="krn-player-info"><p class="krn-player-name">'+(p.adSoyad?escapeHtml(p.adSoyad).toUpperCase():'İSİMSİZ OYUNCU')+'</p>'+infoLines+'</div>' +
+    '<div class="krn-overall">' +
+      '<div class="krn-overall-label">Genel Performans Notu</div>' +
+      donutRing100(score100, 100) +
+      '<div class="krn-overall-verdict" style="color:'+overallTier.color+';">'+overallTier.label+'</div>' +
     '</div>';
-  bodyEl.appendChild(bkCardKarne);
+  wrap.appendChild(playerRow);
 
   var catScoresKarne = {};
   ['fiz','psi','tek'].forEach(function(cat){
@@ -3089,39 +3189,103 @@ function renderDetailTabKarne(container, p){
       var s = scoreFor(t, raw);
       if(s!==null) scores.push(s);
     });
-    catScoresKarne[cat] = scores.length ? round1(scores.reduce(function(a,b){return a+b;},0)/scores.length) : null;
+    catScoresKarne[cat] = scores.length ? Math.round((scores.reduce(function(a,b){return a+b;},0)/scores.length)*5) : null;
   });
-  var catCardsKarne = el('<div style="margin:14px 0 4px;"></div>');
-  catCardsKarne.innerHTML = catScoreCardsHtml(catScoresKarne);
-  bodyEl.appendChild(catCardsKarne);
-
-  var CAT_TITLES = { fiz:'Fiziksel Göstergeler', psi:'Psikolojik Göstergeler', tek:'Teknik Göstergeler' };
-
+  var growthPct = playerGrowthPct3(p);
+  var CAT_TITLES = { fiz:'FİZİKSEL', psi:'PSİKOLOJİK', tek:'TEKNİK' };
+  var statRow = el('<div class="krn-stat-row"></div>');
+  var statHtml = '';
   ['fiz','psi','tek'].forEach(function(cat){
-    var catTests = tests.filter(function(t){ return t.cat===cat; });
-    if(catTests.length===0) return;
-
-    var secHead = el(
-      '<div class="osp-karne-sec-head">'+CAT_ICONS[cat]+'<span>'+CAT_TITLES[cat]+'</span><div class="line"></div></div>'
-    );
-    bodyEl.appendChild(secHead);
-
-    var grid = el('<div></div>');
-    catTests.forEach(function(t){
-      var raw = t.source==='input' ? num(p[t.key]) : merged[t.source];
-      var s = scoreFor(t, raw);
-      var valTxt = raw!==null ? (raw+' '+t.unit) : 'Veri yok';
-      grid.innerHTML += testGaugeHtml(t, s, valTxt);
-    });
-    bodyEl.appendChild(grid);
+    if(!(cat in catScoresKarne)) return;
+    var s = catScoresKarne[cat];
+    var t = karneTier(s);
+    statHtml += '<div class="krn-stat-item">' +
+      '<div class="krn-stat-icon">'+CAT_MINI_ICON[cat]+'</div>' +
+      '<div class="krn-stat-num">'+(s!==null?s:'-')+'<span>/100</span></div>' +
+      '<div class="krn-stat-label">'+CAT_TITLES[cat]+'</div>' +
+      '<div class="krn-stat-verdict" style="color:'+t.color+';">'+t.label+'</div>' +
+    '</div>';
   });
+  statHtml += '<div class="krn-stat-item">' +
+    '<div class="krn-stat-icon">'+SVG_ICONS.trendUp+'</div>' +
+    '<div class="krn-stat-num" style="color:'+(growthPct===null?'#999':(growthPct>=0?'#2e7d32':'#e53935'))+';">'+(growthPct!==null?(growthPct>=0?'+':'')+growthPct+'%':'-')+'</div>' +
+    '<div class="krn-stat-label">GELİŞİM</div>' +
+    '<div class="krn-stat-verdict" style="color:#999; font-weight:600;">'+(growthPct!==null?'SON '+Math.min(3,(p.scoreHistory||[]).length)+' TESTE GÖRE':'Yeterli veri yok')+'</div>' +
+  '</div>';
+  statRow.innerHTML = statHtml;
+  wrap.appendChild(statRow);
 
-  bodyEl.appendChild(el('<div class="osp-karne-footer">'+new Date().toLocaleDateString('tr-TR')+'</div>'));
-  wrap.appendChild(bodyEl);
+  wrap.appendChild(el('<div class="krn-section-title"><span class="dot"></span>TEST SONUÇLARI<span class="dot"></span></div>'));
+  wrap.appendChild(el(
+    '<div class="krn-legend-row"><div class="krn-legend-spacer"></div><div class="krn-legend-labels"><span>Zayıf</span><span>Orta</span><span>İyi</span><span>Mükemmel</span></div><div class="krn-legend-tail"></div></div>'
+  ));
+  var testCard = el('<div class="krn-test-card"></div>');
+  var testsHtml = '';
+  tests.forEach(function(t){
+    var raw = t.source==='input' ? num(p[t.key]) : merged[t.source];
+    var s = scoreFor(t, raw);
+    var valTxt = raw!==null ? (raw+' '+t.unit) : 'Veri yok';
+    testsHtml += karneTestRowHtml(CAT_MINI_ICON[t.cat], t, s, valTxt);
+  });
+  testCard.innerHTML = testsHtml || '<p class="krn-empty-note">Bu takım için tanımlı test bulunmuyor.</p>';
+  wrap.appendChild(testCard);
+
+  var scored = [];
+  tests.forEach(function(t){
+    var raw = t.source==='input' ? num(p[t.key]) : merged[t.source];
+    var s = scoreFor(t, raw);
+    if(s!==null) scored.push({test:t, score:s});
+  });
+  var strengths = scored.filter(function(x){ return x.score>=13; }).sort(function(a,b){return b.score-a.score;}).slice(0,3);
+  var weaknesses = scored.filter(function(x){ return x.score<10; }).sort(function(a,b){return a.score-b.score;}).slice(0,3);
+
+  var twoCol = el('<div class="krn-two-col"></div>');
+  var strengthsHtml = '<div class="krn-box"><div class="krn-box-title">Güçlü Yönleri</div>';
+  if(strengths.length){
+    strengths.forEach(function(x){ strengthsHtml += '<div class="krn-bullet good"><span class="ic">'+SVG_ICONS.checkCircle.replace(/width="22" height="22"/,'width="15" height="15"')+'</span>'+escapeHtml(x.test.label)+' konusunda güçlü bir performans sergiliyor.</div>'; });
+  } else {
+    strengthsHtml += '<p class="krn-empty-note">Henüz yeterli test verisi yok.</p>';
+  }
+  strengthsHtml += '</div>';
+  var weakHtml = '<div class="krn-box"><div class="krn-box-title">Geliştirilmesi Gereken Alanlar</div>';
+  if(weaknesses.length){
+    weaknesses.forEach(function(x){ weakHtml += '<div class="krn-bullet warn"><span class="ic">'+SVG_ICONS.alertCircle+'</span>'+escapeHtml(x.test.label)+' alanında gelişime ihtiyaç var.</div>'; });
+  } else {
+    weakHtml += '<p class="krn-empty-note">Belirgin bir zayıf alan tespit edilmedi.</p>';
+  }
+  weakHtml += '</div>';
+  twoCol.innerHTML = strengthsHtml + weakHtml;
+  wrap.appendChild(twoCol);
+
+  var coachAvatarInner = team && team.coachPhoto ? '<img src="'+team.coachPhoto+'" alt="" style="width:100%; height:100%; object-fit:cover;">' : '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 20c0-4 3.6-6 8-6s8 2 8 6"></path></svg>';
+  var coachCard = el('<div class="krn-coach"></div>');
+  coachCard.innerHTML =
+    '<div class="krn-coach-avatar">'+coachAvatarInner+'</div>' +
+    '<div><div class="krn-box-title" style="margin-bottom:8px;">Antrenör Yorumu</div>' +
+    '<div class="krn-coach-text">'+(p.antrenorYorumu?escapeHtml(p.antrenorYorumu):'Henüz bir antrenör yorumu eklenmedi.')+'</div>' +
+    (team && team.antrenorAdi ? '<div class="krn-coach-name">— '+escapeHtml(team.antrenorAdi)+'</div>' : '') +
+    '</div>';
+  wrap.appendChild(coachCard);
+
+  wrap.appendChild(el('<div class="krn-footer">Performans Pusulası ile oluşturulmuştur · '+formatTrDate(new Date())+'</div>'));
 
   container.appendChild(wrap);
 
-  var dlRow = el('<div class="osp-fab-row" style="margin-top:14px;"><button class="osp-btn-primary"><i class="ti ti-download" aria-hidden="true" style="margin-right:6px; vertical-align:-2px;"></i>Karneyi İndir (PNG)</button></div>');
+  var editCard = el('<div class="krn-edit-card"></div>');
+  editCard.innerHTML =
+    '<label class="krn-edit-label">Antrenör Yorumu (karnede görünür)</label>' +
+    '<textarea class="krn-edit-textarea" id="osp-karne-yorum" placeholder="Oyuncu hakkında kısa bir değerlendirme yaz...">'+(p.antrenorYorumu?escapeHtml(p.antrenorYorumu):'')+'</textarea>' +
+    '<label class="krn-edit-label" style="margin-top:10px;">Antrenör Adı</label>' +
+    '<input type="text" class="krn-edit-input" id="osp-karne-antrenor-adi" placeholder="Ör. Ahmet Yılmaz" value="'+(team&&team.antrenorAdi?escapeHtml(team.antrenorAdi):'')+'">';
+  container.appendChild(editCard);
+  editCard.querySelector('#osp-karne-yorum').addEventListener('input', function(e){
+    updateField('antrenorYorumu', e.target.value);
+  });
+  editCard.querySelector('#osp-karne-antrenor-adi').addEventListener('input', function(e){
+    if(team){ team.antrenorAdi = e.target.value; save(); }
+  });
+
+  var dlRow = el('<div class="osp-fab-row" style="margin-top:14px;"><button class="osp-btn-primary"><i class="ti ti-download" aria-hidden="true" style="margin-right:6px; vertical-align:-2px;"></i>Karneyi İndir (A4 PNG)</button></div>');
   dlRow.querySelector('button').addEventListener('click', function(){ downloadKarne(p.adSoyad); });
   container.appendChild(dlRow);
 }

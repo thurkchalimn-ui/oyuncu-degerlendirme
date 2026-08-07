@@ -1433,7 +1433,7 @@ function fieldRow(label, key, value, opts){
     updateField(key, v);
     if(opts.onChange) opts.onChange(v);
   });
-  if(opts.stopwatch || opts.cameraTimer){
+  if(opts.stopwatch || opts.cameraTimer || opts.jumpCamera){
     var row = el('<div style="display:flex; gap:8px; align-items:center;"></div>');
     input.style.flex = '1';
     row.appendChild(input);
@@ -1456,6 +1456,16 @@ function fieldRow(label, key, value, opts){
         });
       });
       row.appendChild(camBtn);
+    }
+    if(opts.jumpCamera){
+      var jumpBtn = el('<button type="button" class="osp-stopwatch-launch" title="Kamera ile sıçrama ölç" aria-label="Kamera ile sıçrama ölç"><i class="ti ti-camera" aria-hidden="true"></i></button>');
+      jumpBtn.addEventListener('click', function(){
+        openJumpCamera(function(val){
+          input.value = val;
+          input.dispatchEvent(new Event('input'));
+        });
+      });
+      row.appendChild(jumpBtn);
     }
     wrap.appendChild(row);
   } else {
@@ -1717,6 +1727,160 @@ function openCameraTimer(unit, onConfirm){
     close();
   });
   overlay.addEventListener('click', function(e){ if(e.target===overlay) close(); });
+}
+
+function openJumpCamera(onConfirm){
+  var overlay = el('<div class="osp-stopwatch-overlay"></div>');
+  var modal = el('<div class="osp-camtimer-modal"></div>');
+  modal.innerHTML =
+    '<p class="osp-stopwatch-title"><i class="ti ti-camera" aria-hidden="true"></i> Kamera ile Sıçrama Ölçümü</p>' +
+    '<div class="osp-camtimer-video-wrap">' +
+      '<video id="osp-jc-video" autoplay playsinline muted></video>' +
+      '<div class="osp-camtimer-status" id="osp-jc-status">Kamera başlatılıyor…</div>' +
+    '</div>' +
+    '<p class="osp-camtimer-hint">Sporcuyu tam boy görecek şekilde telefonu sabit tut. "Kayda Başla" de, sıçramayı yaptır, sonra "Durdur"a bas. Ardından videoyu kare kare inceleyip ayakların yerden kesildiği ve yere değdiği anları işaretleyeceksin — uçuş süresinden yükseklik otomatik hesaplanır.</p>' +
+    '<div id="osp-jc-controls">' +
+      '<div class="osp-stopwatch-btns">' +
+        '<button type="button" class="osp-stopwatch-btn reset" id="osp-jc-cancel1">Vazgeç</button>' +
+        '<button type="button" class="osp-stopwatch-btn start" id="osp-jc-record">Kayda Başla</button>' +
+      '</div>' +
+    '</div>';
+  overlay.appendChild(modal);
+  document.body.appendChild(overlay);
+
+  var videoEl = modal.querySelector('#osp-jc-video');
+  var statusEl = modal.querySelector('#osp-jc-status');
+  var controlsWrap = modal.querySelector('#osp-jc-controls');
+  var recordBtn = modal.querySelector('#osp-jc-record');
+  var cancel1Btn = modal.querySelector('#osp-jc-cancel1');
+
+  var stream = null, recorder = null, chunks = [], objectUrl = null, recording = false;
+
+  function stopStream(){ if(stream){ stream.getTracks().forEach(function(tr){ tr.stop(); }); stream = null; } }
+  function closeJC(){ stopStream(); if(objectUrl) URL.revokeObjectURL(objectUrl); if(overlay.parentNode) document.body.removeChild(overlay); }
+  cancel1Btn.addEventListener('click', closeJC);
+  overlay.addEventListener('click', function(e){ if(e.target===overlay) closeJC(); });
+
+  navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio:false }).then(function(s){
+    stream = s;
+    videoEl.srcObject = s;
+    statusEl.textContent = 'Hazır. "Kayda Başla" ile sıçramayı kaydet.';
+  }).catch(function(){
+    statusEl.textContent = 'Kameraya erişilemedi. Tarayıcı/uygulama izinlerini kontrol et.';
+  });
+
+  recordBtn.addEventListener('click', function(){
+    if(!recording){
+      if(!stream || typeof MediaRecorder==='undefined'){ statusEl.textContent = 'Kamera hazır değil.'; return; }
+      chunks = [];
+      var mime = 'video/webm';
+      try {
+        if(MediaRecorder.isTypeSupported('video/mp4')) mime = 'video/mp4';
+        else if(MediaRecorder.isTypeSupported('video/webm;codecs=vp9')) mime = 'video/webm;codecs=vp9';
+      } catch(e){}
+      try { recorder = new MediaRecorder(stream, {mimeType:mime}); }
+      catch(e){ recorder = new MediaRecorder(stream); }
+      recorder.ondataavailable = function(e){ if(e.data && e.data.size>0) chunks.push(e.data); };
+      recorder.onstop = function(){ enterReview(new Blob(chunks, {type: recorder.mimeType || mime})); };
+      recorder.start();
+      recording = true;
+      recordBtn.textContent = 'Durdur';
+      statusEl.textContent = 'Kaydediliyor… sıçramayı yap, sonra Durdur\'a bas.';
+    } else {
+      recording = false;
+      recordBtn.disabled = true;
+      recorder.stop();
+    }
+  });
+
+  function enterReview(blob){
+    stopStream();
+    objectUrl = URL.createObjectURL(blob);
+    videoEl.srcObject = null;
+    videoEl.src = objectUrl;
+    videoEl.muted = true;
+    videoEl.controls = false;
+    statusEl.textContent = 'Videoyu incele: ayrılış anını işaretle.';
+
+    var t0 = null, t1 = null;
+    var FRAME = 1/30;
+
+    controlsWrap.innerHTML =
+      '<div class="osp-camtimer-manual-row" style="display:flex; gap:6px;">' +
+        '<button type="button" class="osp-camtimer-manual-btn" id="osp-jc-back" style="flex:1;">◀ Kare</button>' +
+        '<button type="button" class="osp-camtimer-manual-btn" id="osp-jc-play" style="flex:1;">Yavaş Oynat</button>' +
+        '<button type="button" class="osp-camtimer-manual-btn" id="osp-jc-fwd" style="flex:1;">Kare ▶</button>' +
+      '</div>' +
+      '<input type="range" id="osp-jc-seek" min="0" max="1" step="0.001" value="0" style="width:100%; margin-top:10px;">' +
+      '<div class="osp-camtimer-manual-row">' +
+        '<button type="button" class="osp-camtimer-manual-btn" id="osp-jc-mark-t0">Bu Kare: Ayrılış Anı</button>' +
+      '</div>' +
+      '<div class="osp-camtimer-manual-row">' +
+        '<button type="button" class="osp-camtimer-manual-btn" id="osp-jc-mark-t1" disabled>Bu Kare: İniş Anı</button>' +
+      '</div>' +
+      '<div class="osp-stopwatch-display" id="osp-jc-result" style="font-size:34px; margin-top:8px;">-</div>' +
+      '<div class="osp-stopwatch-actions">' +
+        '<button type="button" class="osp-stopwatch-cancel" id="osp-jc-cancel2">Vazgeç</button>' +
+        '<button type="button" class="osp-stopwatch-use" id="osp-jc-use" disabled>Bu Değeri Kullan</button>' +
+      '</div>';
+
+    var seek = controlsWrap.querySelector('#osp-jc-seek');
+    var backBtn = controlsWrap.querySelector('#osp-jc-back');
+    var fwdBtn = controlsWrap.querySelector('#osp-jc-fwd');
+    var playBtn = controlsWrap.querySelector('#osp-jc-play');
+    var markT0Btn = controlsWrap.querySelector('#osp-jc-mark-t0');
+    var markT1Btn = controlsWrap.querySelector('#osp-jc-mark-t1');
+    var resultEl = controlsWrap.querySelector('#osp-jc-result');
+    var useBtn = controlsWrap.querySelector('#osp-jc-use');
+    var cancel2Btn = controlsWrap.querySelector('#osp-jc-cancel2');
+    cancel2Btn.addEventListener('click', closeJC);
+
+    videoEl.addEventListener('loadedmetadata', function(){
+      seek.max = videoEl.duration || 1;
+    });
+    seek.addEventListener('input', function(){ videoEl.pause(); videoEl.currentTime = parseFloat(seek.value); });
+    videoEl.addEventListener('timeupdate', function(){ seek.value = videoEl.currentTime; });
+    backBtn.addEventListener('click', function(){ videoEl.pause(); videoEl.currentTime = Math.max(0, videoEl.currentTime - FRAME); });
+    fwdBtn.addEventListener('click', function(){ videoEl.pause(); videoEl.currentTime = Math.min(videoEl.duration||0, videoEl.currentTime + FRAME); });
+    playBtn.addEventListener('click', function(){
+      if(videoEl.paused){ videoEl.playbackRate = 0.15; videoEl.play(); playBtn.textContent = 'Durdur'; }
+      else { videoEl.pause(); playBtn.textContent = 'Yavaş Oynat'; }
+    });
+    videoEl.addEventListener('ended', function(){ playBtn.textContent = 'Yavaş Oynat'; });
+
+    function updateResult(){
+      if(t0!==null && t1!==null && t1>t0){
+        var flight = t1 - t0;
+        var heightCm = Math.round((9.81 * flight * flight / 8) * 100);
+        resultEl.textContent = heightCm + ' cm';
+        useBtn.disabled = false;
+        useBtn.dataset.val = heightCm;
+      } else {
+        resultEl.textContent = '-';
+        useBtn.disabled = true;
+      }
+    }
+
+    markT0Btn.addEventListener('click', function(){
+      t0 = videoEl.currentTime;
+      t1 = null;
+      markT0Btn.textContent = 'Ayrılış: '+t0.toFixed(2)+'sn (değiştir)';
+      markT1Btn.disabled = false;
+      updateResult();
+      statusEl.textContent = 'Şimdi ileri sar, iniş anını işaretle.';
+    });
+    markT1Btn.addEventListener('click', function(){
+      t1 = videoEl.currentTime;
+      markT1Btn.textContent = 'İniş: '+t1.toFixed(2)+'sn (değiştir)';
+      updateResult();
+      statusEl.textContent = t1>t0 ? 'Uçuş süresi hesaplandı.' : 'İniş anı ayrılıştan önce olamaz, tekrar işaretle.';
+    });
+    useBtn.addEventListener('click', function(){
+      var val = parseInt(useBtn.dataset.val, 10);
+      onConfirm(val);
+      closeJC();
+    });
+  }
 }
 
 var TEAM_ACCENTS = ['#d32f2f', '#1e88e5', '#2e7d32', '#f57c00'];
@@ -2494,7 +2658,8 @@ function renderDetailTabVeri(container, p){
     fields.forEach(function(f){
       var isTimed = (f.unit==='sn' || f.unit==='ms');
       var isSprint = (f.key==='sprint10' || f.key==='sprint20');
-      card.appendChild(fieldRow(f.label, f.key, p[f.key], {unit:f.unit, step:f.step, stopwatch:isTimed, cameraTimer:isSprint, stopwatchUnit:f.unit==='ms'?'ms':'sn'}));
+      var isJump = (f.key==='cmj');
+      card.appendChild(fieldRow(f.label, f.key, p[f.key], {unit:f.unit, step:f.step, stopwatch:isTimed, cameraTimer:isSprint, jumpCamera:isJump, stopwatchUnit:f.unit==='ms'?'ms':'sn'}));
     });
     sec.appendChild(card);
     container.appendChild(sec);

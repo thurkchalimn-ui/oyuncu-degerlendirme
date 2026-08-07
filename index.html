@@ -1433,7 +1433,7 @@ function fieldRow(label, key, value, opts){
     updateField(key, v);
     if(opts.onChange) opts.onChange(v);
   });
-  if(opts.stopwatch || opts.cameraTimer || opts.jumpCamera){
+  if(opts.stopwatch || opts.cameraTimer || opts.jumpCamera || opts.longJumpCamera){
     var row = el('<div style="display:flex; gap:8px; align-items:center;"></div>');
     input.style.flex = '1';
     row.appendChild(input);
@@ -1466,6 +1466,16 @@ function fieldRow(label, key, value, opts){
         });
       });
       row.appendChild(jumpBtn);
+    }
+    if(opts.longJumpCamera){
+      var ljBtn = el('<button type="button" class="osp-stopwatch-launch" title="Kamera ile mesafe ölç (referans gerekli)" aria-label="Kamera ile mesafe ölç"><i class="ti ti-camera" aria-hidden="true"></i></button>');
+      ljBtn.addEventListener('click', function(){
+        openLongJumpCamera(function(val){
+          input.value = val;
+          input.dispatchEvent(new Event('input'));
+        });
+      });
+      row.appendChild(ljBtn);
     }
     wrap.appendChild(row);
   } else {
@@ -1879,6 +1889,245 @@ function openJumpCamera(onConfirm){
       var val = parseInt(useBtn.dataset.val, 10);
       onConfirm(val);
       closeJC();
+    });
+  }
+}
+
+function openLongJumpCamera(onConfirm){
+  var overlay = el('<div class="osp-stopwatch-overlay"></div>');
+  var modal = el('<div class="osp-camtimer-modal"></div>');
+  modal.innerHTML =
+    '<p class="osp-stopwatch-title"><i class="ti ti-camera" aria-hidden="true"></i> Kamera ile Uzun Atlama Ölçümü</p>' +
+    '<div class="osp-camtimer-video-wrap">' +
+      '<video id="osp-lj-video" autoplay playsinline muted style="display:block;"></video>' +
+      '<canvas id="osp-lj-canvas" style="display:none; width:100%; height:100%;"></canvas>' +
+      '<div class="osp-camtimer-status" id="osp-lj-status">Kamera başlatılıyor…</div>' +
+    '</div>' +
+    '<p class="osp-camtimer-hint">Kamerayı, atlama yönüne <b>dik</b> (yandan) ve sabit konuma yerleştir. Atlama hattıyla aynı düzleme, <b>bilinen uzunlukta</b> bir referans nesne koy (ör. 1 metrelik çubuk/mezura, ya da uzunluğunu bildiğin bir mat). Kayıt bitince önce referansı, sonra kalkış ve iniş noktalarını video üzerinde dokunarak işaretleyeceksin.</p>' +
+    '<div id="osp-lj-controls">' +
+      '<div class="osp-stopwatch-btns">' +
+        '<button type="button" class="osp-stopwatch-btn reset" id="osp-lj-cancel1">Vazgeç</button>' +
+        '<button type="button" class="osp-stopwatch-btn start" id="osp-lj-record">Kayda Başla</button>' +
+      '</div>' +
+    '</div>';
+  overlay.appendChild(modal);
+  document.body.appendChild(overlay);
+
+  var videoEl = modal.querySelector('#osp-lj-video');
+  var canvasEl = modal.querySelector('#osp-lj-canvas');
+  var ctx2d = canvasEl.getContext('2d');
+  var statusEl = modal.querySelector('#osp-lj-status');
+  var controlsWrap = modal.querySelector('#osp-lj-controls');
+  var recordBtn = modal.querySelector('#osp-lj-record');
+  var cancel1Btn = modal.querySelector('#osp-lj-cancel1');
+
+  var stream = null, recorder = null, chunks = [], objectUrl = null, recording = false;
+
+  function stopStream(){ if(stream){ stream.getTracks().forEach(function(tr){ tr.stop(); }); stream = null; } }
+  function closeLJ(){ stopStream(); if(objectUrl) URL.revokeObjectURL(objectUrl); if(overlay.parentNode) document.body.removeChild(overlay); }
+  cancel1Btn.addEventListener('click', closeLJ);
+  overlay.addEventListener('click', function(e){ if(e.target===overlay) closeLJ(); });
+
+  navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio:false }).then(function(s){
+    stream = s;
+    videoEl.srcObject = s;
+    statusEl.textContent = 'Hazır. Referansı yerleştirip "Kayda Başla"ya bas.';
+  }).catch(function(){
+    statusEl.textContent = 'Kameraya erişilemedi. Tarayıcı/uygulama izinlerini kontrol et.';
+  });
+
+  recordBtn.addEventListener('click', function(){
+    if(!recording){
+      if(!stream || typeof MediaRecorder==='undefined'){ statusEl.textContent = 'Kamera hazır değil.'; return; }
+      chunks = [];
+      var mime = 'video/webm';
+      try {
+        if(MediaRecorder.isTypeSupported('video/mp4')) mime = 'video/mp4';
+        else if(MediaRecorder.isTypeSupported('video/webm;codecs=vp9')) mime = 'video/webm;codecs=vp9';
+      } catch(e){}
+      try { recorder = new MediaRecorder(stream, {mimeType:mime}); }
+      catch(e){ recorder = new MediaRecorder(stream); }
+      recorder.ondataavailable = function(e){ if(e.data && e.data.size>0) chunks.push(e.data); };
+      recorder.onstop = function(){ enterMark(new Blob(chunks, {type: recorder.mimeType || mime})); };
+      recorder.start();
+      recording = true;
+      recordBtn.textContent = 'Durdur';
+      statusEl.textContent = 'Kaydediliyor… atlamayı yaptır, sonra Durdur\'a bas.';
+    } else {
+      recording = false;
+      recordBtn.disabled = true;
+      recorder.stop();
+    }
+  });
+
+  function enterMark(blob){
+    stopStream();
+    objectUrl = URL.createObjectURL(blob);
+    videoEl.srcObject = null;
+    videoEl.src = objectUrl;
+    videoEl.muted = true;
+    videoEl.controls = false;
+
+    var steps = ['ref1','ref2','refLen','takeoff','landing','done'];
+    var stepIdx = 0;
+    var pts = {};
+    var refLenCm = null;
+    var FRAME = 1/30;
+
+    controlsWrap.innerHTML =
+      '<div class="osp-camtimer-manual-row" style="display:flex; gap:6px;">' +
+        '<button type="button" class="osp-camtimer-manual-btn" id="osp-lj-back" style="flex:1;">◀ Kare</button>' +
+        '<button type="button" class="osp-camtimer-manual-btn" id="osp-lj-freeze" style="flex:1;">Bu Kareyi Kullan</button>' +
+        '<button type="button" class="osp-camtimer-manual-btn" id="osp-lj-fwd" style="flex:1;">Kare ▶</button>' +
+      '</div>' +
+      '<input type="range" id="osp-lj-seek" min="0" max="1" step="0.001" value="0" style="width:100%; margin-top:10px;">' +
+      '<div id="osp-lj-reflen-wrap" style="display:none; margin-top:10px;">' +
+        '<label style="font-size:11.5px; color:#7a3b00; font-weight:600;">Referansın gerçek uzunluğu (cm)</label>' +
+        '<div style="display:flex; gap:8px; margin-top:6px;">' +
+          '<input type="number" id="osp-lj-reflen-input" placeholder="ör. 100" style="flex:1; padding:10px; border-radius:10px; border:1px solid #f2e2ab; font-size:14px;">' +
+          '<button type="button" class="osp-camtimer-manual-btn" id="osp-lj-reflen-ok" style="flex-shrink:0; width:auto; padding:0 14px;">Onayla</button>' +
+        '</div>' +
+      '</div>' +
+      '<div class="osp-camtimer-manual-row">' +
+        '<button type="button" class="osp-camtimer-manual-btn" id="osp-lj-undo">Son İşareti Geri Al</button>' +
+      '</div>' +
+      '<div class="osp-stopwatch-display" id="osp-lj-result" style="font-size:34px; margin-top:8px;">-</div>' +
+      '<div class="osp-stopwatch-actions">' +
+        '<button type="button" class="osp-stopwatch-cancel" id="osp-lj-cancel2">Vazgeç</button>' +
+        '<button type="button" class="osp-stopwatch-use" id="osp-lj-use" disabled>Bu Değeri Kullan</button>' +
+      '</div>';
+
+    var seek = controlsWrap.querySelector('#osp-lj-seek');
+    var backBtn = controlsWrap.querySelector('#osp-lj-back');
+    var fwdBtn = controlsWrap.querySelector('#osp-lj-fwd');
+    var freezeBtn = controlsWrap.querySelector('#osp-lj-freeze');
+    var undoBtn = controlsWrap.querySelector('#osp-lj-undo');
+    var reflenWrap = controlsWrap.querySelector('#osp-lj-reflen-wrap');
+    var reflenInput = controlsWrap.querySelector('#osp-lj-reflen-input');
+    var reflenOk = controlsWrap.querySelector('#osp-lj-reflen-ok');
+    var resultEl = controlsWrap.querySelector('#osp-lj-result');
+    var useBtn = controlsWrap.querySelector('#osp-lj-use');
+    var cancel2Btn = controlsWrap.querySelector('#osp-lj-cancel2');
+    cancel2Btn.addEventListener('click', closeLJ);
+
+    var stepPrompts = {
+      ref1: 'Referans nesnenin BİRİNCİ ucuna dokun.',
+      ref2: 'Referans nesnenin İKİNCİ ucuna dokun.',
+      refLen: 'Bu referansın gerçek uzunluğunu (cm) gir ve onayla.',
+      takeoff: 'Kalkış çizgisini (ayak ucu) işaretle.',
+      landing: 'İniş noktasını (topuğun yere değdiği yer) işaretle. Gerekirse ileri sar.',
+      done: 'Tüm noktalar işaretlendi.'
+    };
+
+    function setStep(idx){
+      stepIdx = idx;
+      var step = steps[stepIdx];
+      statusEl.textContent = stepPrompts[step] || '';
+      reflenWrap.style.display = step==='refLen' ? '' : 'none';
+      freezeBtn.style.display = (step==='refLen'||step==='done') ? 'none' : '';
+    }
+    setStep(0);
+
+    videoEl.addEventListener('loadedmetadata', function(){ seek.max = videoEl.duration || 1; drawFrame(); });
+    seek.addEventListener('input', function(){ videoEl.pause(); videoEl.currentTime = parseFloat(seek.value); });
+    videoEl.addEventListener('seeked', drawFrame);
+    backBtn.addEventListener('click', function(){ videoEl.pause(); videoEl.currentTime = Math.max(0, videoEl.currentTime - FRAME); });
+    fwdBtn.addEventListener('click', function(){ videoEl.pause(); videoEl.currentTime = Math.min(videoEl.duration||0, videoEl.currentTime + FRAME); });
+
+    function drawFrame(){
+      seek.value = videoEl.currentTime;
+      var vw = videoEl.videoWidth, vh = videoEl.videoHeight;
+      if(!vw || !vh) return;
+      canvasEl.width = vw; canvasEl.height = vh;
+      ctx2d.drawImage(videoEl, 0, 0, vw, vh);
+      redrawMarkers();
+    }
+    freezeBtn.addEventListener('click', function(){
+      videoEl.style.display = 'none';
+      canvasEl.style.display = 'block';
+      drawFrame();
+    });
+
+    function redrawMarkers(){
+      Object.keys(pts).forEach(function(k){
+        var pt = pts[k];
+        ctx2d.beginPath();
+        ctx2d.arc(pt.x, pt.y, 8, 0, Math.PI*2);
+        ctx2d.fillStyle = (k==='ref1'||k==='ref2') ? '#1e88e5' : (k==='takeoff' ? '#4caf50' : '#ff5252');
+        ctx2d.fill();
+        ctx2d.lineWidth = 2; ctx2d.strokeStyle = '#fff'; ctx2d.stroke();
+      });
+      if(pts.ref1 && pts.ref2){ drawLine(pts.ref1, pts.ref2, '#1e88e5'); }
+      if(pts.takeoff && pts.landing){ drawLine(pts.takeoff, pts.landing, '#ff5252'); }
+    }
+    function drawLine(a,b,color){
+      ctx2d.beginPath(); ctx2d.moveTo(a.x,a.y); ctx2d.lineTo(b.x,b.y);
+      ctx2d.strokeStyle = color; ctx2d.lineWidth = 3; ctx2d.stroke();
+    }
+
+    canvasEl.addEventListener('click', function(e){
+      var step = steps[stepIdx];
+      if(step!=='ref1' && step!=='ref2' && step!=='takeoff' && step!=='landing') return;
+      var rect = canvasEl.getBoundingClientRect();
+      var scaleX = canvasEl.width / rect.width;
+      var scaleY = canvasEl.height / rect.height;
+      var x = (e.clientX - rect.left) * scaleX;
+      var y = (e.clientY - rect.top) * scaleY;
+      pts[step] = {x:x, y:y};
+      redrawMarkers();
+      advance();
+    });
+
+    function dist(a,b){ return Math.sqrt(Math.pow(a.x-b.x,2)+Math.pow(a.y-b.y,2)); }
+
+    function advance(){
+      var step = steps[stepIdx];
+      if(step==='ref1'){ setStep(1); }
+      else if(step==='ref2'){ setStep(2); reflenInput.focus(); }
+      else if(step==='takeoff'){
+        setStep(4);
+        videoEl.style.display = '';
+        canvasEl.style.display = 'none';
+      }
+      else if(step==='landing'){
+        finalize();
+      }
+    }
+    reflenOk.addEventListener('click', function(){
+      var v = num(reflenInput.value);
+      if(!v || v<=0){ statusEl.textContent = 'Geçerli bir uzunluk gir (cm).'; return; }
+      refLenCm = v;
+      setStep(3);
+      videoEl.style.display = '';
+      canvasEl.style.display = 'none';
+    });
+    undoBtn.addEventListener('click', function(){
+      var order = ['ref1','ref2','refLen','takeoff','landing'];
+      for(var i=order.length-1;i>=0;i--){
+        var k = order[i];
+        if(k==='refLen'){ if(refLenCm!==null){ refLenCm=null; setStep(2); return; } continue; }
+        if(pts[k]){ delete pts[k]; setStep(order.indexOf(k)); redrawMarkers(); return; }
+      }
+    });
+
+    function finalize(){
+      var pxRef = dist(pts.ref1, pts.ref2);
+      var pxJump = dist(pts.takeoff, pts.landing);
+      var pxPerCm = pxRef / refLenCm;
+      var distCm = Math.round(pxJump / pxPerCm);
+      resultEl.textContent = distCm + ' cm';
+      useBtn.disabled = false;
+      useBtn.dataset.val = distCm;
+      setStep(5);
+      videoEl.style.display = 'none';
+      canvasEl.style.display = 'block';
+      drawFrame();
+    }
+
+    useBtn.addEventListener('click', function(){
+      var val = parseInt(useBtn.dataset.val, 10);
+      onConfirm(val);
+      closeLJ();
     });
   }
 }
@@ -2659,7 +2908,8 @@ function renderDetailTabVeri(container, p){
       var isTimed = (f.unit==='sn' || f.unit==='ms');
       var isSprint = (f.key==='sprint10' || f.key==='sprint20');
       var isJump = (f.key==='cmj');
-      card.appendChild(fieldRow(f.label, f.key, p[f.key], {unit:f.unit, step:f.step, stopwatch:isTimed, cameraTimer:isSprint, jumpCamera:isJump, stopwatchUnit:f.unit==='ms'?'ms':'sn'}));
+      var isLongJump = (f.key==='uzunAtlama');
+      card.appendChild(fieldRow(f.label, f.key, p[f.key], {unit:f.unit, step:f.step, stopwatch:isTimed, cameraTimer:isSprint, jumpCamera:isJump, longJumpCamera:isLongJump, stopwatchUnit:f.unit==='ms'?'ms':'sn'}));
     });
     sec.appendChild(card);
     container.appendChild(sec);

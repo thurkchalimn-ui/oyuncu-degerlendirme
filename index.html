@@ -3391,6 +3391,15 @@ function playerGrowthPct3(p){
   return round1(((newest-oldest)/oldest)*100);
 }
 
+function playerGrowthFromSessions(p, t){
+  var sessions = (p.testSessions||[]).slice().sort(function(a,b){ return a.date.localeCompare(b.date); });
+  if(sessions.length<2) return null;
+  var prev = sessions[sessions.length-2], last = sessions[sessions.length-1];
+  var scorePrev = sessionScore(t, prev.values), scoreLast = sessionScore(t, last.values);
+  if(scorePrev===null || scoreLast===null || !scorePrev) return null;
+  return { pct: round1(((scoreLast-scorePrev)/scorePrev)*100), fromDate: prev.date, toDate: last.date };
+}
+
 function karneTestRowHtml(catIcon, test, score, valTxt){
   var pct = score!==null ? clamp(score/20*100, 0, 100) : 0;
   var color = scoreColor(score);
@@ -3463,7 +3472,11 @@ function renderDetailTabKarne(container, p){
     });
     catScoresKarne[cat] = scores.length ? Math.round((scores.reduce(function(a,b){return a+b;},0)/scores.length)*5) : null;
   });
-  var growthPct = playerGrowthPct3(p);
+  var sessionGrowth = playerGrowthFromSessions(p, team);
+  var growthPct = sessionGrowth ? sessionGrowth.pct : playerGrowthPct3(p);
+  var growthSub = sessionGrowth
+    ? (formatTrDate(new Date(sessionGrowth.fromDate)) + ' → ' + formatTrDate(new Date(sessionGrowth.toDate)))
+    : (growthPct!==null ? 'SON '+Math.min(3,(p.scoreHistory||[]).length)+' TESTE GÖRE' : 'Yeterli veri yok');
   var CAT_TITLES = { fiz:'FİZİKSEL', psi:'PSİKOLOJİK', tek:'TEKNİK' };
   var statRow = el('<div class="krn-stat-row"></div>');
   var statHtml = '';
@@ -3482,7 +3495,7 @@ function renderDetailTabKarne(container, p){
     '<div class="krn-stat-icon">'+SVG_ICONS.trendUp+'</div>' +
     '<div class="krn-stat-num" style="color:'+(growthPct===null?'#999':(growthPct>=0?'#2e7d32':'#e53935'))+';">'+(growthPct!==null?(growthPct>=0?'+':'')+growthPct+'%':'-')+'</div>' +
     '<div class="krn-stat-label">GELİŞİM</div>' +
-    '<div class="krn-stat-verdict" style="color:#999; font-weight:600;">'+(growthPct!==null?'SON '+Math.min(3,(p.scoreHistory||[]).length)+' TESTE GÖRE':'Yeterli veri yok')+'</div>' +
+    '<div class="krn-stat-verdict" style="color:#999; font-weight:600; font-size:8.5px;">'+growthSub+'</div>' +
   '</div>';
   statRow.innerHTML = statHtml;
   wrap.appendChild(statRow);

@@ -2860,7 +2860,13 @@ function renderDetailTabInfo(container, p){
 
   var card = el('<div class="osp-card"></div>');
   card.appendChild(fieldRow('Ad Soyad', 'adSoyad', p.adSoyad, {type:'text', placeholder:'Oyuncu adı'}));
-  card.appendChild(fieldRow('Mevkii', 'mevkii', p.mevkii, {type:'text', placeholder:'Örn. Forvet, Orta Saha, Kaleci'}));
+  card.appendChild(fieldRow('Mevkii', 'mevkii', p.mevkii, {type:'select', options:[
+    {value:'', label:'Seçiniz'},
+    {value:'Kaleci', label:'Kaleci'},
+    {value:'Defans', label:'Defans'},
+    {value:'Orta Saha', label:'Orta Saha'},
+    {value:'Forvet', label:'Forvet'}
+  ]}));
   card.appendChild(fieldRow('Dominant Ayak', 'dominantAyak', p.dominantAyak, {type:'select', options:[
     {value:'', label:'Seçiniz'},
     {value:'Sağ', label:'Sağ'},

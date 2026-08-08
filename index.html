@@ -3089,7 +3089,32 @@ function renderDetailTabSonuc(container, p){
 function downloadKarne(playerName){
   var node = document.getElementById('osp-karne-capture');
   if(!node || !window.html2canvas){ alert('Karne oluşturulamadı, sayfayı yenileyip tekrar dene.'); return; }
-  html2canvas(node, { scale: 2, backgroundColor: '#ffffff', useCORS: true }).then(function(srcCanvas){
+  var fileBase = (playerName ? playerName.replace(/[^a-zA-Z0-9ığüşöçİĞÜŞÖÇ ]/g,'').trim().replace(/\s+/g,'-') : 'oyuncu') + '-karne';
+  var fileName = fileBase + '.png';
+
+  function fallbackSave(blob){
+    var url = URL.createObjectURL(blob);
+    var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    if(isIOS){
+      window.open(url, '_blank');
+      alert('Karne yeni sekmede açıldı. Kaydetmek için görsele uzun basıp "Fotoğraflara Kaydet" seçeneğini kullan.');
+      setTimeout(function(){ URL.revokeObjectURL(url); }, 60000);
+    } else {
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(function(){ URL.revokeObjectURL(url); }, 30000);
+    }
+  }
+
+  // Very tall cards (many test rows) can hit mobile canvas memory limits at high scale — back off automatically.
+  var estHeight = node.scrollHeight || 1000;
+  var captureScale = estHeight > 2600 ? 1.25 : (estHeight > 1800 ? 1.5 : 2);
+
+  html2canvas(node, { scale: captureScale, backgroundColor: '#ffffff', useCORS: true }).then(function(srcCanvas){
     var A4W = 2480, A4H = 3508; // A4 @ 300dpi, portrait
     var out = document.createElement('canvas');
     out.width = A4W; out.height = A4H;
@@ -3102,10 +3127,21 @@ function downloadKarne(playerName){
     var drawW = srcCanvas.width*scale, drawH = srcCanvas.height*scale;
     var dx = (A4W-drawW)/2, dy = margin;
     octx.drawImage(srcCanvas, 0, 0, srcCanvas.width, srcCanvas.height, dx, dy, drawW, drawH);
-    var link = document.createElement('a');
-    link.download = (playerName ? playerName.replace(/[^a-zA-Z0-9ığüşöçİĞÜŞÖÇ ]/g,'').trim().replace(/\s+/g,'-') : 'oyuncu') + '-karne.png';
-    link.href = out.toDataURL('image/png');
-    link.click();
+
+    out.toBlob(function(blob){
+      if(!blob){ alert('Karne indirilemedi (görsel oluşturulamadı). Tekrar dener misin?'); return; }
+      var file = null;
+      try { file = new File([blob], fileName, {type:'image/png'}); } catch(e){}
+
+      if(navigator.canShare && file && navigator.canShare({files:[file]})){
+        navigator.share({ files:[file], title:'Performans Karnesi' }).catch(function(err){
+          if(err && err.name==='AbortError') return;
+          fallbackSave(blob);
+        });
+        return;
+      }
+      fallbackSave(blob);
+    }, 'image/png');
   }).catch(function(){
     alert('Karne indirilemedi, tekrar dener misin?');
   });

@@ -1456,6 +1456,38 @@ function playerGrowth(p){
   return round1(last.score - first.score);
 }
 
+var SNAPSHOT_EXCLUDE = ['id','no','adSoyad','dogumTarihi','yas','photo','cinsiyet','babaBoy','anneBoy','mevkii','dominantAyak','scoreHistory','testSessions','updatedAt','antrenorYorumu'];
+function snapshotPlayerValues(p){
+  var out = {};
+  Object.keys(p).forEach(function(k){
+    if(SNAPSHOT_EXCLUDE.indexOf(k)===-1) out[k] = p[k];
+  });
+  return out;
+}
+
+function sessionScore(t, values){
+  var d = computeDerived(values);
+  var merged = Object.assign({}, values, d);
+  var scores = [];
+  activeTestsFor(t).forEach(function(test){
+    var raw = test.source==='input' ? num(values[test.key]) : merged[test.source];
+    var s = scoreFor(test, raw);
+    if(s!==null) scores.push(s);
+  });
+  if(!scores.length) return null;
+  return round1(scores.reduce(function(a,b){return a+b;},0)/scores.length);
+}
+
+function saveTestSession(p, dateStr){
+  if(!p.testSessions) p.testSessions = [];
+  var values = snapshotPlayerValues(p);
+  var existing = p.testSessions.filter(function(s){ return s.date===dateStr; })[0];
+  if(existing){ existing.values = values; }
+  else { p.testSessions.push({ id:'s'+Date.now(), date: dateStr, values: values }); }
+  p.testSessions.sort(function(a,b){ return a.date.localeCompare(b.date); });
+  save();
+}
+
 function exportData(){
   var blob = new Blob([JSON.stringify(state.teams, null, 2)], {type:'application/json'});
   var url = URL.createObjectURL(blob);
@@ -2989,8 +3021,173 @@ function renderDetailTabBio(container, p){
   updateBioDisplay();
 }
 
+function openSessionDetail(p, t, session, onDone){
+  var overlay = el('<div class="osp-stopwatch-overlay"></div>');
+  var modal = el('<div class="osp-camtimer-modal" style="text-align:left;"></div>');
+  modal.innerHTML = '<p class="osp-stopwatch-title" style="justify-content:flex-start;">'+SVG_ICONS.calendar+' '+formatTrDate(new Date(session.date))+' Tarihli Kayıt</p>';
+  var fieldsWrap = el('<div></div>');
+  var keys = selectedTestKeys(t);
+  var fields = RAW_FIELDS.filter(function(f){ return keys.indexOf(RAW_FIELD_TO_TEST[f.key])!==-1; });
+  fields.forEach(function(f){
+    var fw = el('<div class="osp-field" style="margin-bottom:10px;"></div>');
+    fw.innerHTML = '<label>'+f.label+' <span style="color:#c9a94a;">('+f.unit+')</span></label>';
+    var inp = el('<input type="number" inputmode="decimal" step="'+(f.step||'1')+'" placeholder="-">');
+    if(session.values[f.key]!=null) inp.value = session.values[f.key];
+    inp.addEventListener('input', function(){ session.values[f.key] = num(inp.value); });
+    fw.appendChild(inp);
+    fieldsWrap.appendChild(fw);
+  });
+  modal.appendChild(fieldsWrap);
+
+  var btnRow = el('<div class="osp-stopwatch-actions" style="margin-top:14px;"></div>');
+  var delBtn = el('<button type="button" class="osp-stopwatch-cancel" style="color:#d32f2f; border-color:#f7dcd8;">Kaydı Sil</button>');
+  var saveBtn = el('<button type="button" class="osp-stopwatch-use">Kaydet</button>');
+  btnRow.appendChild(delBtn);
+  btnRow.appendChild(saveBtn);
+  modal.appendChild(btnRow);
+
+  overlay.appendChild(modal);
+  document.body.appendChild(overlay);
+  function close(){ if(overlay.parentNode) document.body.removeChild(overlay); }
+  delBtn.addEventListener('click', function(){
+    if(confirm('Bu tarihli kaydı silmek istediğine emin misin?')){
+      p.testSessions = (p.testSessions||[]).filter(function(s){ return s.id!==session.id; });
+      save();
+      close();
+      onDone();
+    }
+  });
+  saveBtn.addEventListener('click', function(){
+    save();
+    close();
+    onDone();
+  });
+  overlay.addEventListener('click', function(e){ if(e.target===overlay) close(); });
+}
+
+function openCompareModal(p, t, sessions){
+  var overlay = el('<div class="osp-stopwatch-overlay"></div>');
+  var modal = el('<div class="osp-camtimer-modal" style="text-align:left; max-width:420px;"></div>');
+  var options = sessions.map(function(s){ return {value:s.id, label: formatTrDate(new Date(s.date))}; });
+  options.push({value:'current', label:'Güncel (şu anki veriler)'});
+
+  modal.innerHTML =
+    '<p class="osp-stopwatch-title" style="justify-content:flex-start;">'+SVG_ICONS.trendUp+' Test Karşılaştırması</p>' +
+    '<div style="display:flex; gap:8px; margin-bottom:14px;">' +
+      '<select id="osp-cmp-a" style="flex:1; padding:9px; border:1px solid #f2e2ab; border-radius:9px; font-size:12.5px;"></select>' +
+      '<select id="osp-cmp-b" style="flex:1; padding:9px; border:1px solid #f2e2ab; border-radius:9px; font-size:12.5px;"></select>' +
+    '</div>' +
+    '<div id="osp-cmp-result"></div>' +
+    '<div class="osp-stopwatch-actions" style="margin-top:14px;"><button type="button" class="osp-stopwatch-cancel" id="osp-cmp-close" style="width:100%;">Kapat</button></div>';
+  overlay.appendChild(modal);
+  document.body.appendChild(overlay);
+
+  var selA = modal.querySelector('#osp-cmp-a');
+  var selB = modal.querySelector('#osp-cmp-b');
+  options.forEach(function(o){
+    selA.appendChild(el('<option value="'+o.value+'">'+escapeHtml(o.label)+'</option>'));
+    selB.appendChild(el('<option value="'+o.value+'">'+escapeHtml(o.label)+'</option>'));
+  });
+  selA.value = options[0].value;
+  selB.value = 'current';
+
+  var resultWrap = modal.querySelector('#osp-cmp-result');
+
+  function getValuesFor(id){
+    if(id==='current') return snapshotPlayerValues(p);
+    var s = sessions.filter(function(ss){ return ss.id===id; })[0];
+    return s ? s.values : {};
+  }
+  function getLabelFor(id){
+    if(id==='current') return 'Güncel';
+    var s = sessions.filter(function(ss){ return ss.id===id; })[0];
+    return s ? formatTrDate(new Date(s.date)) : '-';
+  }
+
+  function renderCompare(){
+    var valuesA = getValuesFor(selA.value);
+    var valuesB = getValuesFor(selB.value);
+    var testsList = activeTestsFor(t);
+    var rows = '<div style="display:flex; font-size:9.5px; font-weight:700; color:#a37a00; text-transform:uppercase; padding:6px 0; border-bottom:1px solid #f2e2ab;">' +
+      '<div style="flex:1.5;">Test</div><div style="flex:1; text-align:right;">'+escapeHtml(getLabelFor(selA.value))+'</div><div style="flex:1; text-align:right;">'+escapeHtml(getLabelFor(selB.value))+'</div><div style="flex:0.8; text-align:right;">Fark</div>' +
+    '</div>';
+    testsList.forEach(function(test){
+      var dA = computeDerived(valuesA), mA = Object.assign({}, valuesA, dA);
+      var dB = computeDerived(valuesB), mB = Object.assign({}, valuesB, dB);
+      var va = test.source==='input' ? num(valuesA[test.key]) : mA[test.source];
+      var vb = test.source==='input' ? num(valuesB[test.key]) : mB[test.source];
+      var delta = (va!==null && va!==undefined && vb!==null && vb!==undefined) ? round1(vb-va) : null;
+      var better = delta===null ? null : (test.dir==='high' ? delta>0 : delta<0);
+      var deltaColor = delta===null ? '#999' : (delta===0 ? '#999' : (better ? '#2e7d32' : '#d32f2f'));
+      var deltaTxt = delta===null ? '-' : ((delta>0?'+':'')+delta);
+      rows += '<div style="display:flex; align-items:center; font-size:11px; padding:7px 0; border-bottom:1px solid #f8f2da;">' +
+        '<div style="flex:1.5; font-weight:600; color:#1a1a1a;">'+escapeHtml(test.label)+'</div>' +
+        '<div style="flex:1; text-align:right; color:#5a4000;">'+(va!==null&&va!==undefined?va:'-')+'</div>' +
+        '<div style="flex:1; text-align:right; color:#5a4000;">'+(vb!==null&&vb!==undefined?vb:'-')+'</div>' +
+        '<div style="flex:0.8; text-align:right; font-weight:700; color:'+deltaColor+';">'+deltaTxt+'</div>' +
+      '</div>';
+    });
+    resultWrap.innerHTML = rows;
+  }
+  renderCompare();
+  selA.addEventListener('change', renderCompare);
+  selB.addEventListener('change', renderCompare);
+
+  function close(){ if(overlay.parentNode) document.body.removeChild(overlay); }
+  modal.querySelector('#osp-cmp-close').addEventListener('click', close);
+  overlay.addEventListener('click', function(e){ if(e.target===overlay) close(); });
+}
+
+function renderTestHistoryCard(container, p, t){
+  var histCard = el('<div class="osp-card" style="margin-bottom:12px;"></div>');
+  var sessions = (p.testSessions||[]).slice().sort(function(a,b){ return b.date.localeCompare(a.date); });
+
+  histCard.appendChild(el('<p style="font-size:13px; font-weight:700; color:#1a1a1a; margin:0 0 10px;">Test Geçmişi</p>'));
+
+  var saveRow = el('<div style="display:flex; gap:8px;"></div>');
+  var dateInput = el('<input type="date" style="flex:1; padding:9px; border:1px solid #f2e2ab; border-radius:9px; font-size:13px;">');
+  dateInput.value = new Date().toISOString().slice(0,10);
+  var saveBtn = el('<button type="button" class="osp-btn-primary" style="flex-shrink:0; padding:0 14px; font-size:12px; width:auto;">Bu Ölçümü Kaydet</button>');
+  saveBtn.addEventListener('click', function(){
+    if(!dateInput.value){ alert('Lütfen bir tarih seç.'); return; }
+    saveTestSession(p, dateInput.value);
+    render();
+  });
+  saveRow.appendChild(dateInput);
+  saveRow.appendChild(saveBtn);
+  histCard.appendChild(saveRow);
+
+  if(sessions.length){
+    var listWrap = el('<div style="margin-top:10px;"></div>');
+    sessions.forEach(function(s){
+      var sc = sessionScore(t, s.values);
+      var row = el(
+        '<div style="display:flex; align-items:center; justify-content:space-between; padding:9px 0; border-top:1px solid #f6ecc7; cursor:pointer;">' +
+          '<span style="font-size:12.5px; font-weight:600; color:#5a4000;">'+formatTrDate(new Date(s.date))+'</span>' +
+          '<span style="display:flex; align-items:center; gap:8px;">' +
+            '<span style="font-size:12.5px; font-weight:700; color:'+scoreColor(sc)+';">'+(sc!==null?sc+'/20':'-')+'</span>' +
+            '<span style="color:#d32f2f;"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></span>' +
+          '</span>' +
+        '</div>'
+      );
+      row.addEventListener('click', function(){ openSessionDetail(p, t, s, render); });
+      listWrap.appendChild(row);
+    });
+    histCard.appendChild(listWrap);
+
+    var compareBtn = el('<button type="button" class="osp-stopwatch-cancel" style="width:100%; margin-top:12px; padding:11px;">İki Tarihi Karşılaştır</button>');
+    compareBtn.addEventListener('click', function(){ openCompareModal(p, t, sessions); });
+    histCard.appendChild(compareBtn);
+  } else {
+    histCard.appendChild(el('<p style="font-size:11.5px; color:#a37a00; margin-top:8px;">Henüz kaydedilmiş bir tarihli ölçüm yok. Aşağıdaki testleri doldurduktan sonra bugünün tarihiyle kaydedebilirsin; farklı bir tarihte tekrar test yaptığında yeni bir kayıt daha ekleyip karşılaştırabilirsin.</p>'));
+  }
+
+  container.appendChild(histCard);
+}
+
 function renderDetailTabVeri(container, p){
   var team = getTeam();
+  renderTestHistoryCard(container, p, team);
   var keys = selectedTestKeys(team);
   ['fiz','psi','tek'].forEach(function(cat){
     var fields = RAW_FIELDS.filter(function(f){ return f.cat===cat && keys.indexOf(RAW_FIELD_TO_TEST[f.key])!==-1; });

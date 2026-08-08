@@ -1503,7 +1503,7 @@ function fieldRow(label, key, value, opts){
     updateField(key, v);
     if(opts.onChange) opts.onChange(v);
   });
-  if(opts.stopwatch || opts.cameraTimer || opts.jumpCamera || opts.longJumpCamera){
+  if(opts.stopwatch || opts.cameraTimer || opts.jumpCamera || opts.longJumpCamera || opts.externalLink){
     var row = el('<div style="display:flex; gap:8px; align-items:center;"></div>');
     input.style.flex = '1';
     row.appendChild(input);
@@ -1546,6 +1546,13 @@ function fieldRow(label, key, value, opts){
         });
       });
       row.appendChild(ljBtn);
+    }
+    if(opts.externalLink){
+      var linkBtn = el('<button type="button" class="osp-stopwatch-launch" title="Çevrimiçi uygula" aria-label="Çevrimiçi uygula"><i class="ti ti-external-link" aria-hidden="true"></i></button>');
+      linkBtn.addEventListener('click', function(){
+        window.open(opts.externalLink, '_blank', 'noopener');
+      });
+      row.appendChild(linkBtn);
     }
     wrap.appendChild(row);
   } else {
@@ -2996,7 +3003,8 @@ function renderDetailTabVeri(container, p){
       var isSprint = (f.key==='sprint10' || f.key==='sprint20');
       var isJump = (f.key==='cmj');
       var isLongJump = (f.key==='uzunAtlama');
-      card.appendChild(fieldRow(f.label, f.key, p[f.key], {unit:f.unit, step:f.step, stopwatch:isTimed, cameraTimer:isSprint, jumpCamera:isJump, longJumpCamera:isLongJump, stopwatchUnit:f.unit==='ms'?'ms':'sn'}));
+      var stroopLink = (f.key==='stroop') ? 'https://strooptest.my.canva.site/' : null;
+      card.appendChild(fieldRow(f.label, f.key, p[f.key], {unit:f.unit, step:f.step, stopwatch:isTimed, cameraTimer:isSprint, jumpCamera:isJump, longJumpCamera:isLongJump, externalLink:stroopLink, stopwatchUnit:f.unit==='ms'?'ms':'sn'}));
     });
     sec.appendChild(card);
     container.appendChild(sec);

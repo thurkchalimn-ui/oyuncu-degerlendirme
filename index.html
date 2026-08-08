@@ -182,7 +182,8 @@
   .osp-norm-edit-grid input { width: 100%; font-size: 11px; padding: 6px 3px; border: 1px solid #e8d48a; border-radius: 6px; text-align: center; background: #ffffff; color: #1a1a1a; }
   .osp-norm-edit-grid input:focus { outline: none; border-color: #d32f2f; }
 
-  .krn-card { background: #ffffff; border-radius: 18px; padding: 22px; border: 1px solid #eee; }
+  .krn-scale-wrap { width: 100%; overflow: hidden; }
+  .krn-card { background: #ffffff; border-radius: 18px; padding: 22px; border: 1px solid #eee; width: 700px; box-sizing: border-box; transform-origin: top left; }
   .krn-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
   .krn-header-left { display: flex; align-items: center; gap: 12px; }
   .krn-logo { width: 52px; height: 52px; border-radius: 12px; object-fit: contain; flex-shrink: 0; }
@@ -220,7 +221,7 @@
   .krn-section-title { display: flex; align-items: center; justify-content: center; gap: 10px; font-family: 'Rajdhani', sans-serif; font-weight: 800; font-size: 15px; color: #1a1a1a; letter-spacing: 0.5px; margin: 22px 0 12px; text-transform: uppercase; }
   .krn-section-title .dot { width: 6px; height: 6px; border-radius: 50%; background: #d32f2f; flex-shrink: 0; }
   .krn-legend-row { display: flex; gap: 12px; margin-bottom: 10px; }
-  .krn-legend-spacer { width: 44px; flex-shrink: 0; }
+  .krn-legend-spacer { width: 174px; flex-shrink: 0; }
   .krn-legend-labels { flex: 1; display: flex; justify-content: space-between; font-size: 8.5px; font-weight: 700; letter-spacing: 0.2px; text-transform: uppercase; }
   .krn-legend-labels span:nth-child(1){ color:#e53935; } .krn-legend-labels span:nth-child(2){ color:#fb8c00; } .krn-legend-labels span:nth-child(3){ color:#43a047; } .krn-legend-labels span:nth-child(4){ color:#1b5e20; }
   .krn-legend-tail { width: 130px; flex-shrink: 0; }
@@ -3119,7 +3120,12 @@ function downloadKarne(playerName){
   var estHeight = node.scrollHeight || 1000;
   var captureScale = estHeight > 2600 ? 1.25 : (estHeight > 1800 ? 1.5 : 2);
 
+  var prevTransform = node.style.transform;
+  node.style.transform = 'none';
+  function restoreTransform(){ node.style.transform = prevTransform; }
+
   html2canvas(node, { scale: captureScale, backgroundColor: '#ffffff', useCORS: true }).then(function(srcCanvas){
+    restoreTransform();
     var A4W = 2480, A4H = 3508; // A4 @ 300dpi, portrait
     var out = document.createElement('canvas');
     out.width = A4W; out.height = A4H;
@@ -3148,6 +3154,7 @@ function downloadKarne(playerName){
       fallbackSave(blob);
     }, 'image/png');
   }).catch(function(){
+    restoreTransform();
     alert('Karne indirilemedi, tekrar dener misin?');
   });
 }
@@ -3316,7 +3323,20 @@ function renderDetailTabKarne(container, p){
 
   wrap.appendChild(el('<div class="krn-footer">Performans Pusulası ile oluşturulmuştur · '+formatTrDate(new Date())+'</div>'));
 
-  container.appendChild(wrap);
+  var scaleWrap = el('<div class="krn-scale-wrap"></div>');
+  scaleWrap.appendChild(wrap);
+  container.appendChild(scaleWrap);
+
+  function applyKarneScale(){
+    if(!scaleWrap.isConnected){ window.removeEventListener('resize', applyKarneScale); return; }
+    var containerWidth = scaleWrap.clientWidth;
+    if(!containerWidth) return;
+    var scale = containerWidth / 700;
+    wrap.style.transform = 'scale('+scale+')';
+    scaleWrap.style.height = Math.ceil(wrap.scrollHeight * scale) + 'px';
+  }
+  requestAnimationFrame(applyKarneScale);
+  window.addEventListener('resize', applyKarneScale);
 
   var editCard = el('<div class="krn-edit-card"></div>');
   editCard.innerHTML =

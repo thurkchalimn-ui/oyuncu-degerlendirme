@@ -3210,7 +3210,8 @@ function renderDetailTabVeri(container, p){
       var isJump = (f.key==='cmj');
       var isLongJump = (f.key==='uzunAtlama');
       var stroopLink = (f.key==='stroop') ? 'https://strooptest.my.canva.site/' : null;
-      card.appendChild(fieldRow(f.label, f.key, p[f.key], {unit:f.unit, step:f.step, stopwatch:isTimed, cameraTimer:isSprint, jumpCamera:isJump, longJumpCamera:isLongJump, externalLink:stroopLink, stopwatchUnit:f.unit==='ms'?'ms':'sn'}));
+      var gridLink = (f.key==='gridKons') ? 'https://strooptest.my.canva.site/10x5-kare-tasar-m' : null;
+      card.appendChild(fieldRow(f.label, f.key, p[f.key], {unit:f.unit, step:f.step, stopwatch:isTimed, cameraTimer:isSprint, jumpCamera:isJump, longJumpCamera:isLongJump, externalLink:stroopLink||gridLink, stopwatchUnit:f.unit==='ms'?'ms':'sn'}));
     });
     sec.appendChild(card);
     container.appendChild(sec);

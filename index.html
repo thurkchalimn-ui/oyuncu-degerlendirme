@@ -1280,12 +1280,21 @@ function openNewTeam(){
 }
 
 function renderNewTeam(){
-  document.getElementById('osp-back-btn').style.display = 'flex';
-  document.getElementById('osp-header-logo').style.display = 'none';
-  document.getElementById('osp-title').textContent = 'Yeni Takım';
-  document.getElementById('osp-subtitle').textContent = 'Ad, yaş ve testleri seç';
   var body = document.getElementById('osp-body');
   body.innerHTML = '';
+
+  var hero = el('<div class="osp-home-hero"></div>');
+  hero.innerHTML =
+    '<div class="osp-home-hero-top">' +
+      '<button class="osp-home-icon-btn" id="osp-nt-back-btn" aria-label="Geri" style="flex-shrink:0;"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"></path></svg></button>' +
+      '<div class="osp-home-logo" style="display:flex; align-items:center; justify-content:center; color:#d32f2f;">'+SVG_ICONS.shield+'</div>' +
+      '<div class="osp-home-title-block">' +
+        '<div class="osp-home-title-1" style="font-size:19px;">YENİ TAKIM</div>' +
+        '<div class="osp-home-subtitle" style="color:#ffcc00; font-weight:700; margin-top:2px;">Ad, yaş ve testleri seç</div>' +
+      '</div>' +
+    '</div>';
+  hero.querySelector('#osp-nt-back-btn').addEventListener('click', function(){ state.view = state.prevView || 'teams'; render(); });
+  body.appendChild(hero);
 
   var card = el('<div class="osp-card"></div>');
   var label = el('<label style="display:block; font-size:12px; color:#7a3b00; margin-bottom:4px; font-weight:600;">Takım Adı</label>');
@@ -4178,7 +4187,7 @@ function renderSync(){
 
 function render(){
   var showSecondary = (state.view==='teams');
-  document.getElementById('osp-header').style.display = (state.view==='home' || state.view==='teams' || state.view==='players' || state.view==='guide' || state.view==='detail' || state.view==='squad') ? 'none' : '';
+  document.getElementById('osp-header').style.display = (state.view==='home' || state.view==='teams' || state.view==='players' || state.view==='guide' || state.view==='detail' || state.view==='squad' || state.view==='newTeam') ? 'none' : '';
   document.getElementById('osp-guide-btn').style.display = showSecondary ? 'flex' : 'none';
   document.getElementById('osp-sync-btn').style.display = showSecondary ? 'flex' : 'none';
   Array.prototype.forEach.call(document.querySelectorAll('.osp-nav-item'), function(btn, idx){

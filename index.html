@@ -2877,12 +2877,17 @@ function renderDetailTabInfo(container, p){
   row1.appendChild(fieldRow('Forma No', 'no', p.no, {step:'1'}));
   var yasWrap = el('<div class="osp-field"></div>');
   yasWrap.appendChild(el('<label>Yaş</label>'));
-  yasWrap.appendChild(el('<input type="text" disabled style="background:#f3ead0; color:#7a3b00; font-weight:600;" value="'+(p.yas!=null?p.yas+' (doğum tarihinden)':'Doğum tarihi gir')+'">'));
+  yasWrap.appendChild(el('<input type="text" id="osp-yas-value" disabled style="background:#f3ead0; color:#7a3b00; font-weight:600;" value="'+(p.yas!=null?p.yas+' (doğum tarihinden)':'Doğum tarihi gir')+'">'));
   row1.appendChild(yasWrap);
   card.appendChild(row1);
   card.appendChild(fieldRow('Doğum Tarihi', 'dogumTarihi', p.dogumTarihi, {type:'date', onChange:function(v){
     var age = calcAge(v);
-    if(age!==null){ p.yas = age; updateField('yas', age); render(); }
+    if(age!==null){
+      p.yas = age;
+      updateField('yas', age);
+      var yasInput = document.getElementById('osp-yas-value');
+      if(yasInput) yasInput.value = age+' (doğum tarihinden)';
+    }
   }}));
   var row2 = el('<div class="osp-field-row"></div>');
   row2.appendChild(fieldRow('Boy', 'boy', p.boy, {unit:'cm', step:'1', onChange:function(){ updateVkiDisplay(); }}));

@@ -230,7 +230,7 @@
   .krn-row:last-child { border-bottom: none; }
   .krn-row-icon { width: 32px; height: 32px; border-radius: 9px; background: #fdecec; color: #d32f2f; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
   .krn-row-label { width: 118px; flex-shrink: 0; font-size: 11.5px; font-weight: 700; color: #1a1a1a; line-height: 1.25; }
-  .krn-row-bar-wrap { flex: 1; position: relative; height: 9px; border-radius: 5px; background: linear-gradient(to right, #e53935 0%, #e53935 25%, #fb8c00 25%, #fb8c00 50%, #43a047 50%, #43a047 75%, #1b5e20 75%, #1b5e20 100%); }
+  .krn-row-bar-wrap { flex: 1; position: relative; height: 9px; border-radius: 5px; background: #e8e4d8; overflow: hidden; }
   .krn-row-dot { position: absolute; top: 50%; width: 15px; height: 15px; border-radius: 50%; background: #fff; border: 3px solid; transform: translate(-50%,-50%); box-shadow: 0 1px 3px rgba(0,0,0,.3); }
   .krn-row-val { width: 64px; flex-shrink: 0; text-align: right; font-family: 'Rajdhani', sans-serif; font-weight: 800; font-size: 12.5px; }
   .krn-row-verdict { width: 56px; flex-shrink: 0; text-align: right; font-size: 10.5px; font-weight: 700; }
@@ -3178,15 +3178,19 @@ function playerGrowthPct3(p){
 }
 
 function karneTestRowHtml(catIcon, test, score, valTxt){
-  var pct = score!==null ? clamp(score/20*100, 0, 100) : null;
+  var pct = score!==null ? clamp(score/20*100, 0, 100) : 0;
   var color = scoreColor(score);
   var tier = score===null ? '-' : (score>=16?'Mükemmel':score>=13?'İyi':score>=10?'Orta':'Zayıf');
+  var barBg = score!==null
+    ? 'linear-gradient(to right, '+color+' 0%, '+color+' '+pct+'%, #e8e4d8 '+pct+'%, #e8e4d8 100%)'
+    : '#e8e4d8';
+  var textColor = score!==null ? color : '#bbb';
   return '<div class="krn-row">' +
     '<div class="krn-row-icon">'+catIcon+'</div>' +
     '<div class="krn-row-label">'+escapeHtml(test.label)+'</div>' +
-    '<div class="krn-row-bar-wrap">'+(pct!==null?'<div class="krn-row-dot" style="left:'+pct+'%; border-color:'+color+';"></div>':'')+'</div>' +
-    '<div class="krn-row-val" style="color:'+color+';">'+escapeHtml(valTxt)+'</div>' +
-    '<div class="krn-row-verdict" style="color:'+color+';">'+tier+'</div>' +
+    '<div class="krn-row-bar-wrap" style="background:'+barBg+';">'+(score!==null?'<div class="krn-row-dot" style="left:'+pct+'%; border-color:'+color+';"></div>':'')+'</div>' +
+    '<div class="krn-row-val" style="color:'+textColor+';">'+escapeHtml(valTxt)+'</div>' +
+    '<div class="krn-row-verdict" style="color:'+textColor+';">'+tier+'</div>' +
   '</div>';
 }
 

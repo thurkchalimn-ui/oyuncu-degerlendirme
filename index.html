@@ -798,6 +798,102 @@ function openVideoModal(url){
   document.getElementById('osp-video-close').addEventListener('click', closeVideoModal);
 }
 
+function haversineMeters(lat1, lon1, lat2, lon2){
+  var R = 6371000;
+  var toRad = function(v){ return v*Math.PI/180; };
+  var dLat = toRad(lat2-lat1), dLon = toRad(lon2-lon1);
+  var a = Math.sin(dLat/2)*Math.sin(dLat/2) + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)*Math.sin(dLon/2);
+  var c = 2*Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return R*c;
+}
+
+function openDistanceMeter(){
+  var overlay = el('<div class="osp-stopwatch-overlay"></div>');
+  var modal = el('<div class="osp-stopwatch-modal"></div>');
+  var pointA = null, pointB = null;
+  var watchId = null;
+  modal.innerHTML =
+    '<p class="osp-stopwatch-title">'+SVG_ICONS.ruler+' Mesafe Ölçer (GPS)</p>' +
+    '<div class="osp-stopwatch-display" id="osp-dist-val" style="font-size:36px;">- m</div>' +
+    '<div class="osp-stopwatch-unit" id="osp-dist-state">Başlangıç noktasına git ve işaretle</div>' +
+    '<div id="osp-dist-acc" style="font-size:11px; color:#a37a00; margin-top:6px;"></div>' +
+    '<div style="background:#fff8e1; margin:14px 0 0; padding:10px 12px; border-radius:10px; border:1px solid #ffcc00; text-align:left;">' +
+      '<div style="font-size:11px; color:#7a3b00; line-height:1.5;">⚠️ Telefon GPS sinyali kısa mesafelerde (10-20m) ±3-10m hata payı verebilir. Uzun mesafeler (30m+) için daha güvenilirdir. Hassas ölçüm için şerit metre önerilir.</div>' +
+    '</div>' +
+    '<div class="osp-stopwatch-btns">' +
+      '<button type="button" class="osp-stopwatch-btn reset" id="osp-dist-reset">Sıfırla</button>' +
+      '<button type="button" class="osp-stopwatch-btn start" id="osp-dist-a">Başlangıç</button>' +
+    '</div>' +
+    '<div class="osp-stopwatch-btns" style="margin-top:10px;">' +
+      '<button type="button" class="osp-stopwatch-btn start" id="osp-dist-b" disabled style="width:100%;">Bitiş Noktasını İşaretle</button>' +
+    '</div>' +
+    '<div class="osp-stopwatch-actions">' +
+      '<button type="button" class="osp-stopwatch-cancel" id="osp-dist-close">Kapat</button>' +
+    '</div>';
+  overlay.appendChild(modal);
+  document.body.appendChild(overlay);
+
+  var valEl = modal.querySelector('#osp-dist-val');
+  var stateEl = modal.querySelector('#osp-dist-state');
+  var accEl = modal.querySelector('#osp-dist-acc');
+  var btnA = modal.querySelector('#osp-dist-a');
+  var btnB = modal.querySelector('#osp-dist-b');
+  var resetBtn = modal.querySelector('#osp-dist-reset');
+  var closeBtn = modal.querySelector('#osp-dist-close');
+
+  function closeMeter(){
+    if(watchId!==null && navigator.geolocation) navigator.geolocation.clearWatch(watchId);
+    overlay.remove();
+  }
+  closeBtn.addEventListener('click', closeMeter);
+  overlay.addEventListener('click', function(e){ if(e.target===overlay) closeMeter(); });
+
+  if(!navigator.geolocation){
+    stateEl.textContent = 'Bu cihaz/tarayıcı konum erişimini desteklemiyor.';
+    btnA.disabled = true;
+  } else {
+    watchId = navigator.geolocation.watchPosition(function(pos){
+      accEl.textContent = 'GPS doğruluğu: ±'+Math.round(pos.coords.accuracy)+' m';
+    }, function(){
+      accEl.textContent = 'Konum alınamıyor — izin verildiğinden emin ol.';
+    }, { enableHighAccuracy:true, maximumAge:1000 });
+  }
+
+  btnA.addEventListener('click', function(){
+    if(!navigator.geolocation) return;
+    stateEl.textContent = 'Konum alınıyor...';
+    navigator.geolocation.getCurrentPosition(function(pos){
+      pointA = { lat: pos.coords.latitude, lon: pos.coords.longitude };
+      stateEl.textContent = 'Başlangıç işaretlendi. Şimdi bitiş noktasına yürü.';
+      btnA.textContent = '✓ İşaretlendi';
+      btnB.disabled = false;
+    }, function(){
+      stateEl.textContent = 'Konum alınamadı, tekrar dene.';
+    }, { enableHighAccuracy:true, timeout:8000 });
+  });
+
+  btnB.addEventListener('click', function(){
+    if(!navigator.geolocation || !pointA) return;
+    stateEl.textContent = 'Konum alınıyor...';
+    navigator.geolocation.getCurrentPosition(function(pos){
+      pointB = { lat: pos.coords.latitude, lon: pos.coords.longitude };
+      var dist = haversineMeters(pointA.lat, pointA.lon, pointB.lat, pointB.lon);
+      valEl.textContent = dist.toFixed(1)+' m';
+      stateEl.textContent = 'Ölçüm tamamlandı';
+    }, function(){
+      stateEl.textContent = 'Konum alınamadı, tekrar dene.';
+    }, { enableHighAccuracy:true, timeout:8000 });
+  });
+
+  resetBtn.addEventListener('click', function(){
+    pointA = null; pointB = null;
+    valEl.textContent = '- m';
+    stateEl.textContent = 'Başlangıç noktasına git ve işaretle';
+    btnA.textContent = 'Başlangıç';
+    btnB.disabled = true;
+  });
+}
+
 function closeVideoModal(){
   var existing = document.getElementById('osp-video-overlay');
   if(existing) existing.remove();
@@ -3773,6 +3869,10 @@ function renderGuideAciklama(container){
 }
 
 function renderGuideProtokoller(container){
+  var distBtn = el('<button type="button" style="width:100%; display:flex; align-items:center; justify-content:center; gap:7px; background:#fff8e1; border:1px solid #ffcc00; color:#7a3b00; font-size:12.5px; font-weight:700; padding:11px; border-radius:10px; cursor:pointer; margin-bottom:16px;">'+SVG_ICONS.ruler+'Parkur Mesafesi Ölç (GPS)</button>');
+  distBtn.addEventListener('click', openDistanceMeter);
+  container.appendChild(distBtn);
+
   PROTOCOL_CATS.forEach(function(pc){
     var items = PROTOCOLS.filter(function(pr){ return pr.cat===pc.key; });
     if(!items.length) return;

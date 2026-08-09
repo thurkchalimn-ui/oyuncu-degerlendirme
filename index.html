@@ -803,101 +803,166 @@ function openVideoModal(url){
   document.getElementById('osp-video-close').addEventListener('click', closeVideoModal);
 }
 
-function haversineMeters(lat1, lon1, lat2, lon2){
-  var R = 6371000;
-  var toRad = function(v){ return v*Math.PI/180; };
-  var dLat = toRad(lat2-lat1), dLon = toRad(lon2-lon1);
-  var a = Math.sin(dLat/2)*Math.sin(dLat/2) + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)*Math.sin(dLon/2);
-  var c = 2*Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-  return R*c;
-}
-
-function openDistanceMeter(){
+function openPointDistanceMeasurer(){
   var overlay = el('<div class="osp-stopwatch-overlay"></div>');
-  var modal = el('<div class="osp-stopwatch-modal"></div>');
-  var pointA = null, pointB = null;
-  var watchId = null;
+  var modal = el('<div class="osp-stopwatch-modal" style="max-width:380px;"></div>');
+  var camStream = null;
+  var photoTaken = false;
+  var naturalW = 0, naturalH = 0;
+  var stage = 'calibDist';
+  var calibKnownMeters = null;
+  var calibP1 = null, calibP2 = null;
+  var measureP1 = null, measureP2 = null;
+
   modal.innerHTML =
-    '<p class="osp-stopwatch-title">'+SVG_ICONS.ruler+' Mesafe Ölçer (GPS)</p>' +
-    '<div class="osp-stopwatch-display" id="osp-dist-val" style="font-size:36px;">- m</div>' +
-    '<div class="osp-stopwatch-unit" id="osp-dist-state">Başlangıç noktasına git ve işaretle</div>' +
-    '<div id="osp-dist-acc" style="font-size:11px; color:#a37a00; margin-top:6px;"></div>' +
-    '<div style="background:#fff8e1; margin:14px 0 0; padding:10px 12px; border-radius:10px; border:1px solid #ffcc00; text-align:left;">' +
-      '<div style="font-size:11px; color:#7a3b00; line-height:1.5;">⚠️ Telefon GPS sinyali kısa mesafelerde (10-20m) ±3-10m hata payı verebilir. Uzun mesafeler (30m+) için daha güvenilirdir. Hassas ölçüm için şerit metre önerilir.</div>' +
+    '<p class="osp-stopwatch-title">'+SVG_ICONS.ruler+' Parkur Mesafesi Ölç</p>' +
+    '<div id="osp-pdm-camwrap" style="position:relative; width:100%; border-radius:10px; overflow:hidden; background:#000;">' +
+      '<video id="osp-pdm-video" autoplay playsinline muted style="width:100%; display:block;"></video>' +
+      '<canvas id="osp-pdm-canvas" style="width:100%; display:none;"></canvas>' +
     '</div>' +
-    '<div class="osp-stopwatch-btns">' +
-      '<button type="button" class="osp-stopwatch-btn reset" id="osp-dist-reset">Sıfırla</button>' +
-      '<button type="button" class="osp-stopwatch-btn start" id="osp-dist-a">Başlangıç</button>' +
+    '<div class="osp-stopwatch-unit" id="osp-pdm-state" style="margin-top:10px;">Kamerayı bilinen bir mesafeyi (koni arası, çizgi vb.) görecek şekilde tut ve fotoğraf çek.</div>' +
+    '<div id="osp-pdm-calib-input" style="display:none; margin-top:10px;">' +
+      '<label style="display:block; font-size:11px; color:#7a3b00; font-weight:600; margin-bottom:5px;">Bu iki noktanın arasındaki bilinen gerçek mesafe (metre)</label>' +
+      '<input type="number" inputmode="decimal" step="0.1" id="osp-pdm-known" placeholder="örn. 5" style="width:100%; padding:9px; border-radius:8px; border:1px solid #e8d48a; font-size:14px;">' +
     '</div>' +
-    '<div class="osp-stopwatch-btns" style="margin-top:10px;">' +
-      '<button type="button" class="osp-stopwatch-btn start" id="osp-dist-b" disabled style="width:100%;">Bitiş Noktasını İşaretle</button>' +
+    '<div id="osp-pdm-result" style="display:none; text-align:center; margin-top:10px;">' +
+      '<div class="osp-stopwatch-display" id="osp-pdm-val">- m</div>' +
+    '</div>' +
+    '<div class="osp-stopwatch-btns" id="osp-pdm-btnrow">' +
+      '<button type="button" class="osp-stopwatch-btn reset" id="osp-pdm-retake" style="display:none;">Yeniden Çek</button>' +
+      '<button type="button" class="osp-stopwatch-btn start" id="osp-pdm-shoot">Fotoğraf Çek</button>' +
     '</div>' +
     '<div class="osp-stopwatch-actions">' +
-      '<button type="button" class="osp-stopwatch-cancel" id="osp-dist-close">Kapat</button>' +
+      '<button type="button" class="osp-stopwatch-cancel" id="osp-pdm-close">Kapat</button>' +
     '</div>';
   overlay.appendChild(modal);
   document.body.appendChild(overlay);
 
-  var valEl = modal.querySelector('#osp-dist-val');
-  var stateEl = modal.querySelector('#osp-dist-state');
-  var accEl = modal.querySelector('#osp-dist-acc');
-  var btnA = modal.querySelector('#osp-dist-a');
-  var btnB = modal.querySelector('#osp-dist-b');
-  var resetBtn = modal.querySelector('#osp-dist-reset');
-  var closeBtn = modal.querySelector('#osp-dist-close');
+  var videoEl = modal.querySelector('#osp-pdm-video');
+  var canvasEl = modal.querySelector('#osp-pdm-canvas');
+  var stateEl = modal.querySelector('#osp-pdm-state');
+  var shootBtn = modal.querySelector('#osp-pdm-shoot');
+  var retakeBtn = modal.querySelector('#osp-pdm-retake');
+  var closeBtn = modal.querySelector('#osp-pdm-close');
+  var calibInputWrap = modal.querySelector('#osp-pdm-calib-input');
+  var knownInput = modal.querySelector('#osp-pdm-known');
+  var resultWrap = modal.querySelector('#osp-pdm-result');
+  var valEl = modal.querySelector('#osp-pdm-val');
+  var ctx = canvasEl.getContext('2d');
+  var photoImg = null;
 
-  function closeMeter(){
-    if(watchId!==null && navigator.geolocation) navigator.geolocation.clearWatch(watchId);
+  function closeModal(){
+    if(camStream){ camStream.getTracks().forEach(function(t){ t.stop(); }); camStream=null; }
     overlay.remove();
   }
-  closeBtn.addEventListener('click', closeMeter);
-  overlay.addEventListener('click', function(e){ if(e.target===overlay) closeMeter(); });
+  closeBtn.addEventListener('click', closeModal);
+  overlay.addEventListener('click', function(e){ if(e.target===overlay) closeModal(); });
 
-  if(!navigator.geolocation){
-    stateEl.textContent = 'Bu cihaz/tarayıcı konum erişimini desteklemiyor.';
-    btnA.disabled = true;
+  if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia){
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio:false })
+      .then(function(stream){ camStream = stream; videoEl.srcObject = stream; })
+      .catch(function(){ stateEl.textContent = 'Kameraya erişilemedi: tarayıcı izni gerekiyor.'; });
   } else {
-    watchId = navigator.geolocation.watchPosition(function(pos){
-      accEl.textContent = 'GPS doğruluğu: ±'+Math.round(pos.coords.accuracy)+' m';
-    }, function(){
-      accEl.textContent = 'Konum alınamıyor — izin verildiğinden emin ol.';
-    }, { enableHighAccuracy:true, maximumAge:1000 });
+    stateEl.textContent = 'Bu cihaz/tarayıcı kamera erişimini desteklemiyor.';
+    shootBtn.disabled = true;
   }
 
-  btnA.addEventListener('click', function(){
-    if(!navigator.geolocation) return;
-    stateEl.textContent = 'Konum alınıyor...';
-    navigator.geolocation.getCurrentPosition(function(pos){
-      pointA = { lat: pos.coords.latitude, lon: pos.coords.longitude };
-      stateEl.textContent = 'Başlangıç işaretlendi. Şimdi bitiş noktasına yürü.';
-      btnA.textContent = '✓ İşaretlendi';
-      btnB.disabled = false;
-    }, function(){
-      stateEl.textContent = 'Konum alınamadı, tekrar dene.';
-    }, { enableHighAccuracy:true, timeout:8000 });
+  function redraw(){
+    ctx.drawImage(photoImg, 0, 0, naturalW, naturalH);
+    function dot(p, color){
+      if(!p) return;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, naturalW*0.012, 0, 2*Math.PI);
+      ctx.fillStyle = color;
+      ctx.fill();
+      ctx.lineWidth = naturalW*0.004;
+      ctx.strokeStyle = '#fff';
+      ctx.stroke();
+    }
+    function line(p1, p2, color){
+      if(!p1 || !p2) return;
+      ctx.beginPath();
+      ctx.moveTo(p1.x,p1.y);
+      ctx.lineTo(p2.x,p2.y);
+      ctx.strokeStyle = color;
+      ctx.lineWidth = naturalW*0.006;
+      ctx.stroke();
+    }
+    line(calibP1, calibP2, '#2e7d32');
+    dot(calibP1, '#2e7d32'); dot(calibP2, '#2e7d32');
+    line(measureP1, measureP2, '#d32f2f');
+    dot(measureP1, '#d32f2f'); dot(measureP2, '#d32f2f');
+  }
+
+  shootBtn.addEventListener('click', function(){
+    if(!photoTaken){
+      if(!videoEl.videoWidth) return;
+      naturalW = videoEl.videoWidth; naturalH = videoEl.videoHeight;
+      canvasEl.width = naturalW; canvasEl.height = naturalH;
+      ctx.drawImage(videoEl, 0, 0, naturalW, naturalH);
+      photoImg = new Image();
+      photoImg.onload = function(){};
+      photoImg.src = canvasEl.toDataURL('image/jpeg', 0.9);
+      videoEl.style.display = 'none';
+      canvasEl.style.display = 'block';
+      photoTaken = true;
+      shootBtn.style.display = 'none';
+      retakeBtn.style.display = 'block';
+      calibInputWrap.style.display = 'block';
+      stateEl.textContent = 'Önce bildiğin bir mesafenin (örn. 5m koni arası) İKİ ucuna dokun.';
+      stage = 'calibP1';
+    }
   });
 
-  btnB.addEventListener('click', function(){
-    if(!navigator.geolocation || !pointA) return;
-    stateEl.textContent = 'Konum alınıyor...';
-    navigator.geolocation.getCurrentPosition(function(pos){
-      pointB = { lat: pos.coords.latitude, lon: pos.coords.longitude };
-      var dist = haversineMeters(pointA.lat, pointA.lon, pointB.lat, pointB.lon);
-      valEl.textContent = dist.toFixed(1)+' m';
-      stateEl.textContent = 'Ölçüm tamamlandı';
-    }, function(){
-      stateEl.textContent = 'Konum alınamadı, tekrar dene.';
-    }, { enableHighAccuracy:true, timeout:8000 });
+  retakeBtn.addEventListener('click', function(){
+    photoTaken = false;
+    calibP1=null; calibP2=null; measureP1=null; measureP2=null; calibKnownMeters=null;
+    videoEl.style.display = 'block';
+    canvasEl.style.display = 'none';
+    shootBtn.style.display = 'block';
+    retakeBtn.style.display = 'none';
+    calibInputWrap.style.display = 'none';
+    resultWrap.style.display = 'none';
+    stateEl.textContent = 'Kamerayı bilinen bir mesafeyi (koni arası, çizgi vb.) görecek şekilde tut ve fotoğraf çek.';
+    stage = 'calibDist';
   });
 
-  resetBtn.addEventListener('click', function(){
-    pointA = null; pointB = null;
-    valEl.textContent = '- m';
-    stateEl.textContent = 'Başlangıç noktasına git ve işaretle';
-    btnA.textContent = 'Başlangıç';
-    btnB.disabled = true;
+  canvasEl.addEventListener('click', function(e){
+    if(!photoTaken) return;
+    var rect = canvasEl.getBoundingClientRect();
+    var scaleX = naturalW / rect.width;
+    var scaleY = naturalH / rect.height;
+    var p = { x: (e.clientX-rect.left)*scaleX, y: (e.clientY-rect.top)*scaleY };
+
+    if(stage==='calibP1'){ calibP1 = p; stage='calibP2'; stateEl.textContent = 'Şimdi bilinen mesafenin İKİNCİ ucuna dokun.'; }
+    else if(stage==='calibP2'){
+      calibP2 = p; stage='calibKnown';
+      stateEl.textContent = 'Yukarıya bu iki nokta arası gerçek mesafeyi (metre) yaz.';
+    }
+    else if(stage==='measureP1'){ measureP1 = p; stage='measureP2'; stateEl.textContent = 'Şimdi ölçmek istediğin mesafenin İKİNCİ noktasına dokun.'; }
+    else if(stage==='measureP2'){
+      measureP2 = p;
+      var calibPx = Math.hypot(calibP2.x-calibP1.x, calibP2.y-calibP1.y);
+      var measurePx = Math.hypot(measureP2.x-measureP1.x, measureP2.y-measureP1.y);
+      var result = (measurePx/calibPx)*calibKnownMeters;
+      valEl.textContent = result.toFixed(2)+' m';
+      resultWrap.style.display = 'block';
+      stateEl.textContent = 'Ölçüm tamamlandı (kalibrasyona göre tahmini sonuç).';
+      stage = 'done';
+    }
+    redraw();
+  });
+
+  knownInput.addEventListener('input', function(){
+    var v = parseFloat(knownInput.value);
+    if(v>0){
+      calibKnownMeters = v;
+      stage = 'measureP1';
+      stateEl.textContent = 'Şimdi ölçmek istediğin mesafenin İLK noktasına dokun.';
+    }
   });
 }
+
 
 function closeVideoModal(){
   var existing = document.getElementById('osp-video-overlay');
@@ -4094,8 +4159,8 @@ function protoField(pr, field, age){
 }
 
 function renderGuideProtokoller(container){
-  var distBtn = el('<button type="button" style="width:100%; display:flex; align-items:center; justify-content:center; gap:7px; background:#fff8e1; border:1px solid #ffcc00; color:#7a3b00; font-size:12.5px; font-weight:700; padding:11px; border-radius:10px; cursor:pointer; margin-bottom:16px;">'+SVG_ICONS.ruler+'Parkur Mesafesi Ölç (GPS)</button>');
-  distBtn.addEventListener('click', openDistanceMeter);
+  var distBtn = el('<button type="button" style="width:100%; display:flex; align-items:center; justify-content:center; gap:7px; background:#fff8e1; border:1px solid #ffcc00; color:#7a3b00; font-size:12.5px; font-weight:700; padding:11px; border-radius:10px; cursor:pointer; margin-bottom:16px;">'+SVG_ICONS.ruler+'Parkur Mesafesi Ölç (Kamera)</button>');
+  distBtn.addEventListener('click', openPointDistanceMeasurer);
   container.appendChild(distBtn);
 
   var ageTabs = el('<div class="osp-tabs" style="margin-bottom:16px;"></div>');

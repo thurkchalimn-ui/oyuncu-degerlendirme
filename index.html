@@ -807,30 +807,30 @@ function openPointDistanceMeasurer(){
   var overlay = el('<div class="osp-stopwatch-overlay"></div>');
   var modal = el('<div class="osp-stopwatch-modal" style="max-width:380px;"></div>');
   var camStream = null;
-  var photoTaken = false;
-  var naturalW = 0, naturalH = 0;
-  var stage = 'calibDist';
-  var calibKnownMeters = null;
-  var calibP1 = null, calibP2 = null;
-  var measureP1 = null, measureP2 = null;
+  var calibrated = false;
+  var calibScale = null;
+  var dragging = false;
+  var dragP1 = null, dragP2 = null;
+  var pendingCalibP1 = null, pendingCalibP2 = null;
+  var lastMeasureP1 = null, lastMeasureP2 = null;
 
   modal.innerHTML =
     '<p class="osp-stopwatch-title">'+SVG_ICONS.ruler+' Parkur Mesafesi Ölç</p>' +
     '<div id="osp-pdm-camwrap" style="position:relative; width:100%; border-radius:10px; overflow:hidden; background:#000;">' +
       '<video id="osp-pdm-video" autoplay playsinline muted style="width:100%; display:block;"></video>' +
-      '<canvas id="osp-pdm-canvas" style="width:100%; display:none;"></canvas>' +
+      '<canvas id="osp-pdm-canvas" style="position:absolute; inset:0; width:100%; height:100%; touch-action:none;"></canvas>' +
     '</div>' +
-    '<div class="osp-stopwatch-unit" id="osp-pdm-state" style="margin-top:10px;">Kamerayı bilinen bir mesafeyi (koni arası, çizgi vb.) görecek şekilde tut ve fotoğraf çek.</div>' +
+    '<div class="osp-stopwatch-unit" id="osp-pdm-state" style="margin-top:10px;">1) Bildiğin bir mesafenin (örn. 5m koni arası) BAŞLANGIÇ noktasına dokun, parmağını kaldırmadan diğer uca kaydır, bırak.</div>' +
     '<div id="osp-pdm-calib-input" style="display:none; margin-top:10px;">' +
-      '<label style="display:block; font-size:11px; color:#7a3b00; font-weight:600; margin-bottom:5px;">Bu iki noktanın arasındaki bilinen gerçek mesafe (metre)</label>' +
-      '<input type="number" inputmode="decimal" step="0.1" id="osp-pdm-known" placeholder="örn. 5" style="width:100%; padding:9px; border-radius:8px; border:1px solid #e8d48a; font-size:14px;">' +
+      '<label style="display:block; font-size:11px; color:#7a3b00; font-weight:600; margin-bottom:5px;">Çizdiğin çizginin gerçek mesafesi (metre)</label>' +
+      '<div style="display:flex; gap:8px;">' +
+        '<input type="number" inputmode="decimal" step="0.1" id="osp-pdm-known" placeholder="örn. 5" style="flex:1; padding:9px; border-radius:8px; border:1px solid #e8d48a; font-size:14px;">' +
+        '<button type="button" id="osp-pdm-confirm-calib" class="osp-stopwatch-btn start" style="width:auto; padding:0 16px;">Onayla</button>' +
+      '</div>' +
     '</div>' +
-    '<div id="osp-pdm-result" style="display:none; text-align:center; margin-top:10px;">' +
-      '<div class="osp-stopwatch-display" id="osp-pdm-val">- m</div>' +
-    '</div>' +
-    '<div class="osp-stopwatch-btns" id="osp-pdm-btnrow">' +
-      '<button type="button" class="osp-stopwatch-btn reset" id="osp-pdm-retake" style="display:none;">Yeniden Çek</button>' +
-      '<button type="button" class="osp-stopwatch-btn start" id="osp-pdm-shoot">Fotoğraf Çek</button>' +
+    '<div class="osp-stopwatch-display" id="osp-pdm-val" style="display:none; margin-top:10px;">- m</div>' +
+    '<div class="osp-stopwatch-btns">' +
+      '<button type="button" class="osp-stopwatch-btn reset" id="osp-pdm-recalib" style="display:none;">Yeniden Kalibre Et</button>' +
     '</div>' +
     '<div class="osp-stopwatch-actions">' +
       '<button type="button" class="osp-stopwatch-cancel" id="osp-pdm-close">Kapat</button>' +
@@ -841,15 +841,13 @@ function openPointDistanceMeasurer(){
   var videoEl = modal.querySelector('#osp-pdm-video');
   var canvasEl = modal.querySelector('#osp-pdm-canvas');
   var stateEl = modal.querySelector('#osp-pdm-state');
-  var shootBtn = modal.querySelector('#osp-pdm-shoot');
-  var retakeBtn = modal.querySelector('#osp-pdm-retake');
   var closeBtn = modal.querySelector('#osp-pdm-close');
   var calibInputWrap = modal.querySelector('#osp-pdm-calib-input');
   var knownInput = modal.querySelector('#osp-pdm-known');
-  var resultWrap = modal.querySelector('#osp-pdm-result');
+  var confirmCalibBtn = modal.querySelector('#osp-pdm-confirm-calib');
   var valEl = modal.querySelector('#osp-pdm-val');
+  var recalibBtn = modal.querySelector('#osp-pdm-recalib');
   var ctx = canvasEl.getContext('2d');
-  var photoImg = null;
 
   function closeModal(){
     if(camStream){ camStream.getTracks().forEach(function(t){ t.stop(); }); camStream=null; }
@@ -860,108 +858,123 @@ function openPointDistanceMeasurer(){
 
   if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia){
     navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio:false })
-      .then(function(stream){ camStream = stream; videoEl.srcObject = stream; })
+      .then(function(stream){
+        camStream = stream; videoEl.srcObject = stream;
+        videoEl.addEventListener('loadedmetadata', sizeCanvas);
+      })
       .catch(function(){ stateEl.textContent = 'Kameraya erişilemedi: tarayıcı izni gerekiyor.'; });
   } else {
     stateEl.textContent = 'Bu cihaz/tarayıcı kamera erişimini desteklemiyor.';
-    shootBtn.disabled = true;
   }
 
-  function redraw(){
-    ctx.drawImage(photoImg, 0, 0, naturalW, naturalH);
-    function dot(p, color){
-      if(!p) return;
+  function sizeCanvas(){
+    canvasEl.width = videoEl.clientWidth;
+    canvasEl.height = videoEl.clientHeight;
+  }
+  window.addEventListener('resize', sizeCanvas);
+
+  function getPos(e){
+    var rect = canvasEl.getBoundingClientRect();
+    var clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    var clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    return { x: clientX-rect.left, y: clientY-rect.top };
+  }
+
+  function drawLine(p1, p2, color, label){
+    ctx.clearRect(0,0,canvasEl.width,canvasEl.height);
+    if(!p1 || !p2) return;
+    ctx.beginPath();
+    ctx.moveTo(p1.x,p1.y);
+    ctx.lineTo(p2.x,p2.y);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 4;
+    ctx.stroke();
+    [p1,p2].forEach(function(p){
       ctx.beginPath();
-      ctx.arc(p.x, p.y, naturalW*0.012, 0, 2*Math.PI);
+      ctx.arc(p.x,p.y,8,0,2*Math.PI);
       ctx.fillStyle = color;
       ctx.fill();
-      ctx.lineWidth = naturalW*0.004;
-      ctx.strokeStyle = '#fff';
-      ctx.stroke();
+      ctx.lineWidth = 2; ctx.strokeStyle = '#fff'; ctx.stroke();
+    });
+    if(label){
+      var mx = (p1.x+p2.x)/2, my = (p1.y+p2.y)/2;
+      ctx.font = 'bold 15px sans-serif';
+      var tw = ctx.measureText(label).width;
+      ctx.fillStyle = 'rgba(0,0,0,0.7)';
+      ctx.fillRect(mx-tw/2-6, my-24, tw+12, 22);
+      ctx.fillStyle = '#ffcc00';
+      ctx.textAlign = 'center';
+      ctx.fillText(label, mx, my-8);
+      ctx.textAlign = 'left';
     }
-    function line(p1, p2, color){
-      if(!p1 || !p2) return;
-      ctx.beginPath();
-      ctx.moveTo(p1.x,p1.y);
-      ctx.lineTo(p2.x,p2.y);
-      ctx.strokeStyle = color;
-      ctx.lineWidth = naturalW*0.006;
-      ctx.stroke();
-    }
-    line(calibP1, calibP2, '#2e7d32');
-    dot(calibP1, '#2e7d32'); dot(calibP2, '#2e7d32');
-    line(measureP1, measureP2, '#d32f2f');
-    dot(measureP1, '#d32f2f'); dot(measureP2, '#d32f2f');
   }
 
-  shootBtn.addEventListener('click', function(){
-    if(!photoTaken){
-      if(!videoEl.videoWidth) return;
-      naturalW = videoEl.videoWidth; naturalH = videoEl.videoHeight;
-      canvasEl.width = naturalW; canvasEl.height = naturalH;
-      ctx.drawImage(videoEl, 0, 0, naturalW, naturalH);
-      photoImg = new Image();
-      photoImg.onload = function(){};
-      photoImg.src = canvasEl.toDataURL('image/jpeg', 0.9);
-      videoEl.style.display = 'none';
-      canvasEl.style.display = 'block';
-      photoTaken = true;
-      shootBtn.style.display = 'none';
-      retakeBtn.style.display = 'block';
+  function onStart(e){
+    e.preventDefault();
+    dragging = true;
+    dragP1 = getPos(e);
+    dragP2 = dragP1;
+    drawLine(dragP1, dragP2, calibrated ? '#d32f2f' : '#2e7d32');
+  }
+  function onMove(e){
+    if(!dragging) return;
+    e.preventDefault();
+    dragP2 = getPos(e);
+    var pixelDist = Math.hypot(dragP2.x-dragP1.x, dragP2.y-dragP1.y);
+    var label;
+    if(calibrated){
+      label = (pixelDist*calibScale).toFixed(2)+' m';
+    } else {
+      label = pixelDist.toFixed(0)+' px';
+    }
+    drawLine(dragP1, dragP2, calibrated ? '#d32f2f' : '#2e7d32', label);
+  }
+  function onEnd(e){
+    if(!dragging) return;
+    dragging = false;
+    var pixelDist = Math.hypot(dragP2.x-dragP1.x, dragP2.y-dragP1.y);
+    if(pixelDist<10) return;
+    if(!calibrated){
+      pendingCalibP1 = dragP1; pendingCalibP2 = dragP2;
       calibInputWrap.style.display = 'block';
-      stateEl.textContent = 'Önce bildiğin bir mesafenin (örn. 5m koni arası) İKİ ucuna dokun.';
-      stage = 'calibP1';
+      stateEl.textContent = 'Şimdi çizdiğin çizginin gerçek mesafesini yaz ve Onayla\'ya bas.';
+      knownInput.focus();
+    } else {
+      lastMeasureP1 = dragP1; lastMeasureP2 = dragP2;
+      var meters = pixelDist*calibScale;
+      valEl.textContent = meters.toFixed(2)+' m';
+      valEl.style.display = 'block';
+      stateEl.textContent = 'Ölçüm tamamlandı. Yeni bir ölçüm için tekrar çekebilirsin.';
     }
-  });
+  }
 
-  retakeBtn.addEventListener('click', function(){
-    photoTaken = false;
-    calibP1=null; calibP2=null; measureP1=null; measureP2=null; calibKnownMeters=null;
-    videoEl.style.display = 'block';
-    canvasEl.style.display = 'none';
-    shootBtn.style.display = 'block';
-    retakeBtn.style.display = 'none';
-    calibInputWrap.style.display = 'none';
-    resultWrap.style.display = 'none';
-    stateEl.textContent = 'Kamerayı bilinen bir mesafeyi (koni arası, çizgi vb.) görecek şekilde tut ve fotoğraf çek.';
-    stage = 'calibDist';
-  });
+  canvasEl.addEventListener('mousedown', onStart);
+  canvasEl.addEventListener('mousemove', onMove);
+  window.addEventListener('mouseup', onEnd);
+  canvasEl.addEventListener('touchstart', onStart, {passive:false});
+  canvasEl.addEventListener('touchmove', onMove, {passive:false});
+  canvasEl.addEventListener('touchend', onEnd);
 
-  canvasEl.addEventListener('click', function(e){
-    if(!photoTaken) return;
-    var rect = canvasEl.getBoundingClientRect();
-    var scaleX = naturalW / rect.width;
-    var scaleY = naturalH / rect.height;
-    var p = { x: (e.clientX-rect.left)*scaleX, y: (e.clientY-rect.top)*scaleY };
-
-    if(stage==='calibP1'){ calibP1 = p; stage='calibP2'; stateEl.textContent = 'Şimdi bilinen mesafenin İKİNCİ ucuna dokun.'; }
-    else if(stage==='calibP2'){
-      calibP2 = p; stage='calibKnown';
-      stateEl.textContent = 'Yukarıya bu iki nokta arası gerçek mesafeyi (metre) yaz.';
-    }
-    else if(stage==='measureP1'){ measureP1 = p; stage='measureP2'; stateEl.textContent = 'Şimdi ölçmek istediğin mesafenin İKİNCİ noktasına dokun.'; }
-    else if(stage==='measureP2'){
-      measureP2 = p;
-      var calibPx = Math.hypot(calibP2.x-calibP1.x, calibP2.y-calibP1.y);
-      var measurePx = Math.hypot(measureP2.x-measureP1.x, measureP2.y-measureP1.y);
-      var result = (measurePx/calibPx)*calibKnownMeters;
-      valEl.textContent = result.toFixed(2)+' m';
-      resultWrap.style.display = 'block';
-      stateEl.textContent = 'Ölçüm tamamlandı (kalibrasyona göre tahmini sonuç).';
-      stage = 'done';
-    }
-    redraw();
-  });
-
-  knownInput.addEventListener('input', function(){
+  confirmCalibBtn.addEventListener('click', function(){
     var v = parseFloat(knownInput.value);
-    if(v>0){
-      calibKnownMeters = v;
-      stage = 'measureP1';
-      stateEl.textContent = 'Şimdi ölçmek istediğin mesafenin İLK noktasına dokun.';
-    }
+    if(!(v>0)) { knownInput.focus(); return; }
+    var pixelDist = Math.hypot(pendingCalibP2.x-pendingCalibP1.x, pendingCalibP2.y-pendingCalibP1.y);
+    calibScale = v/pixelDist;
+    calibrated = true;
+    calibInputWrap.style.display = 'none';
+    recalibBtn.style.display = 'block';
+    stateEl.textContent = 'Kalibrasyon tamam. Şimdi ölçmek istediğin mesafeyi başlangıç noktasından çekip uzat.';
+  });
+
+  recalibBtn.addEventListener('click', function(){
+    calibrated = false; calibScale = null;
+    valEl.style.display = 'none';
+    recalibBtn.style.display = 'none';
+    ctx.clearRect(0,0,canvasEl.width,canvasEl.height);
+    stateEl.textContent = 'Bildiğin bir mesafenin BAŞLANGIÇ noktasına dokun, kaydır, bırak.';
   });
 }
+
 
 
 function closeVideoModal(){

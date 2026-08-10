@@ -802,6 +802,103 @@ function openVideoModal(url){
   document.getElementById('osp-video-close').addEventListener('click', closeVideoModal);
 }
 
+function openShotSpeedAnalyzer(onSave){
+  var overlay = el('<div class="osp-stopwatch-overlay"></div>');
+  var modal = el('<div class="osp-stopwatch-modal" style="max-width:400px; text-align:left;"></div>');
+  var t1 = null, t2 = null;
+  var distance = null;
+
+  modal.innerHTML =
+    '<p class="osp-stopwatch-title">'+SVG_ICONS.clock+' Şut Hızı Ölçer (Video Analiz)</p>' +
+    '<p style="font-size:11.5px; color:#7a3b00; line-height:1.5; margin:6px 0 10px;">Önce şutu telefonunla videoya çek (mümkünse yavaş çekim modunda — daha hassas sonuç verir), sonra o videoyu buradan seç.</p>' +
+    '<input type="file" accept="video/*" id="osp-ssa-file" style="width:100%; margin-bottom:10px; font-size:12px;">' +
+    '<div id="osp-ssa-area" style="display:none;">' +
+      '<video id="osp-ssa-video" style="width:100%; border-radius:9px; background:#000;" controls></video>' +
+      '<div style="display:flex; gap:6px; justify-content:center; margin-top:8px;">' +
+        '<button type="button" class="osp-stopwatch-btn reset" id="osp-ssa-back" style="width:auto; padding:0 14px;">◀ 0.03sn</button>' +
+        '<button type="button" class="osp-stopwatch-btn reset" id="osp-ssa-fwd" style="width:auto; padding:0 14px;">0.03sn ▶</button>' +
+      '</div>' +
+      '<div class="osp-stopwatch-unit" id="osp-ssa-time" style="margin-top:6px;">0.000 sn</div>' +
+      '<div class="osp-stopwatch-btns">' +
+        '<button type="button" class="osp-stopwatch-btn start" id="osp-ssa-t1">Vuruş Anını İşaretle</button>' +
+        '<button type="button" class="osp-stopwatch-btn start" id="osp-ssa-t2">Hedef Anını İşaretle</button>' +
+      '</div>' +
+      '<div id="osp-ssa-marks" style="font-size:11px; color:#7a3b00; margin-top:6px;"></div>' +
+      '<div style="margin-top:10px;">' +
+        '<label style="display:block; font-size:11px; color:#7a3b00; font-weight:600; margin-bottom:5px;">İki nokta arası gerçek mesafe (metre) — örn. şutörden kale çizgisine kadar</label>' +
+        '<input type="number" inputmode="decimal" step="0.1" id="osp-ssa-dist" placeholder="örn. 11" style="width:100%; padding:9px; border-radius:8px; border:1px solid #e8d48a; font-size:14px;">' +
+      '</div>' +
+      '<div class="osp-stopwatch-display" id="osp-ssa-result" style="display:none; margin-top:10px;">- km/sa</div>' +
+    '</div>' +
+    '<div class="osp-stopwatch-actions">' +
+      '<button type="button" class="osp-stopwatch-cancel" id="osp-ssa-close">Kapat</button>' +
+      '<button type="button" class="osp-stopwatch-use" id="osp-ssa-save" style="display:none;">Kaydet</button>' +
+    '</div>';
+  overlay.appendChild(modal);
+  document.body.appendChild(overlay);
+
+  var fileInput = modal.querySelector('#osp-ssa-file');
+  var area = modal.querySelector('#osp-ssa-area');
+  var videoEl = modal.querySelector('#osp-ssa-video');
+  var backBtn = modal.querySelector('#osp-ssa-back');
+  var fwdBtn = modal.querySelector('#osp-ssa-fwd');
+  var timeEl = modal.querySelector('#osp-ssa-time');
+  var t1Btn = modal.querySelector('#osp-ssa-t1');
+  var t2Btn = modal.querySelector('#osp-ssa-t2');
+  var marksEl = modal.querySelector('#osp-ssa-marks');
+  var distInput = modal.querySelector('#osp-ssa-dist');
+  var resultEl = modal.querySelector('#osp-ssa-result');
+  var closeBtn = modal.querySelector('#osp-ssa-close');
+  var saveBtn = modal.querySelector('#osp-ssa-save');
+  var speedKmh = null;
+
+  function closeModal(){
+    if(videoEl.src) URL.revokeObjectURL(videoEl.src);
+    overlay.remove();
+  }
+  closeBtn.addEventListener('click', closeModal);
+  overlay.addEventListener('click', function(e){ if(e.target===overlay) closeModal(); });
+
+  fileInput.addEventListener('change', function(){
+    if(!fileInput.files || !fileInput.files[0]) return;
+    var url = URL.createObjectURL(fileInput.files[0]);
+    videoEl.src = url;
+    area.style.display = 'block';
+    fileInput.style.display = 'none';
+  });
+
+  videoEl.addEventListener('timeupdate', function(){ timeEl.textContent = videoEl.currentTime.toFixed(3)+' sn'; });
+  videoEl.addEventListener('loadedmetadata', function(){ videoEl.pause(); });
+
+  backBtn.addEventListener('click', function(){ videoEl.pause(); videoEl.currentTime = Math.max(0, videoEl.currentTime-0.033); });
+  fwdBtn.addEventListener('click', function(){ videoEl.pause(); videoEl.currentTime = Math.min(videoEl.duration, videoEl.currentTime+0.033); });
+
+  function updateMarks(){
+    marksEl.innerHTML = 'Vuruş anı: '+(t1!==null?t1.toFixed(3)+' sn':'—')+' &nbsp;|&nbsp; Hedef anı: '+(t2!==null?t2.toFixed(3)+' sn':'—');
+    tryCompute();
+  }
+  t1Btn.addEventListener('click', function(){ t1 = videoEl.currentTime; updateMarks(); });
+  t2Btn.addEventListener('click', function(){ t2 = videoEl.currentTime; updateMarks(); });
+
+  function tryCompute(){
+    var d = parseFloat(distInput.value);
+    if(t1!==null && t2!==null && t2>t1 && d>0){
+      var dt = t2-t1;
+      var mps = d/dt;
+      speedKmh = mps*3.6;
+      resultEl.textContent = speedKmh.toFixed(1)+' km/sa';
+      resultEl.style.display = 'block';
+      saveBtn.style.display = 'block';
+    }
+  }
+  distInput.addEventListener('input', tryCompute);
+
+  saveBtn.addEventListener('click', function(){
+    if(speedKmh!==null){ onSave(round1(speedKmh)); }
+    closeModal();
+  });
+}
+
 function openPointDistanceMeasurer(){
   var overlay = el('<div class="osp-stopwatch-overlay"></div>');
   var modal = el('<div class="osp-stopwatch-modal" style="max-width:380px;"></div>');
@@ -4285,9 +4382,13 @@ function protoField(pr, field, age){
 }
 
 function renderGuideProtokoller(container){
-  var distBtn = el('<button type="button" style="width:100%; display:flex; align-items:center; justify-content:center; gap:7px; background:#fff8e1; border:1px solid #ffcc00; color:#7a3b00; font-size:12.5px; font-weight:700; padding:11px; border-radius:10px; cursor:pointer; margin-bottom:16px;">'+SVG_ICONS.ruler+'Parkur Mesafesi Ölç (Kamera)</button>');
+  var distBtn = el('<button type="button" style="width:100%; display:flex; align-items:center; justify-content:center; gap:7px; background:#fff8e1; border:1px solid #ffcc00; color:#7a3b00; font-size:12.5px; font-weight:700; padding:11px; border-radius:10px; cursor:pointer; margin-bottom:10px;">'+SVG_ICONS.ruler+'Parkur Mesafesi Ölç (Kamera)</button>');
   distBtn.addEventListener('click', openPointDistanceMeasurer);
   container.appendChild(distBtn);
+
+  var speedBtn = el('<button type="button" style="width:100%; display:flex; align-items:center; justify-content:center; gap:7px; background:#fff8e1; border:1px solid #ffcc00; color:#7a3b00; font-size:12.5px; font-weight:700; padding:11px; border-radius:10px; cursor:pointer; margin-bottom:16px;">'+SVG_ICONS.clock+'Şut/Top Hızı Ölç (Video Analiz)</button>');
+  speedBtn.addEventListener('click', function(){ openShotSpeedAnalyzer(function(kmh){ alert('Hesaplanan hız: '+kmh+' km/sa'); }); });
+  container.appendChild(speedBtn);
 
   var ageTabs = el('<div class="osp-tabs" style="margin-bottom:16px;"></div>');
   AGE_GROUPS.forEach(function(ag){

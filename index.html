@@ -3335,6 +3335,77 @@ function renderPlayers(){
   }
 }
 
+var editTestsDraft = { teamId: null, selectedTests: [] };
+function openEditTeamTests(){
+  var t = getTeam(); if(!t) return;
+  editTestsDraft = { teamId: t.id, selectedTests: (t.selectedTests || ALL_TEST_KEYS.slice()).slice() };
+  state.prevView = state.view;
+  state.view = 'editTeamTests';
+  render();
+}
+
+function renderEditTeamTests(){
+  var t = state.teams.find(function(x){ return x.id===editTestsDraft.teamId; });
+  if(!t){ state.view='teams'; render(); return; }
+
+  document.getElementById('osp-header').style.display = '';
+  document.getElementById('osp-back-btn').style.display = 'flex';
+  document.getElementById('osp-header-logo').style.display = 'none';
+  document.getElementById('osp-title').textContent = 'Testleri Düzenle';
+  document.getElementById('osp-subtitle').textContent = t.name+' · '+ageOf(t)+' Yaş';
+  var body = document.getElementById('osp-body');
+  body.innerHTML = '';
+
+  var testsSec = el('<div class="osp-section"></div>');
+  var testsHead = el('<div style="display:flex; align-items:center; justify-content:space-between; margin:0 4px 8px;"><p class="osp-section-title" style="margin:0;">Uygulanacak Testler</p></div>');
+  var quickRow = el('<div style="display:flex; gap:8px;"></div>');
+  var selAllBtn = el('<button class="osp-btn-ghost" style="font-size:11px; padding:5px 10px;">Tümünü seç</button>');
+  var selNoneBtn = el('<button class="osp-btn-ghost" style="font-size:11px; padding:5px 10px;">Temizle</button>');
+  selAllBtn.addEventListener('click', function(){ editTestsDraft.selectedTests = ALL_TEST_KEYS.slice(); render(); });
+  selNoneBtn.addEventListener('click', function(){ editTestsDraft.selectedTests = []; render(); });
+  quickRow.appendChild(selAllBtn);
+  quickRow.appendChild(selNoneBtn);
+  testsHead.appendChild(quickRow);
+  testsSec.appendChild(testsHead);
+
+  var refTests = TESTS_BY_AGE[ageOf(t)];
+  ['fiz','psi','tek'].forEach(function(cat){
+    var catCard = el('<div class="osp-card" style="margin-bottom:10px;"></div>');
+    catCard.appendChild(el('<p style="font-size:11px; font-weight:700; color:#d32f2f; text-transform:uppercase; letter-spacing:0.6px; margin:0 0 6px;">'+catIconHtml(cat)+CAT_LABELS[cat]+'</p>'));
+    refTests.filter(function(x){ return x.cat===cat; }).forEach(function(x){
+      var row = el(
+        '<div class="osp-check-row">' +
+          '<input type="checkbox" id="chk-edit-'+x.key+'">' +
+          '<label for="chk-edit-'+x.key+'">'+x.label+'</label>' +
+        '</div>'
+      );
+      var chk = row.querySelector('input');
+      chk.checked = editTestsDraft.selectedTests.indexOf(x.key)!==-1;
+      chk.addEventListener('change', function(){
+        var idx = editTestsDraft.selectedTests.indexOf(x.key);
+        if(chk.checked && idx===-1) editTestsDraft.selectedTests.push(x.key);
+        else if(!chk.checked && idx!==-1) editTestsDraft.selectedTests.splice(idx,1);
+      });
+      catCard.appendChild(row);
+    });
+    testsSec.appendChild(catCard);
+  });
+  body.appendChild(testsSec);
+
+  var note = el('<p style="font-size:11.5px; color:#a37a00; margin:0 4px 12px;">Not: Bir testi kaldırırsan, o teste ait daha önce girilmiş veriler silinmez, sadece oyuncu ekranlarında gizlenir. Tekrar eklersen veriler geri görünür.</p>');
+  body.appendChild(note);
+
+  var saveBtn = el('<div class="osp-fab-row"><button class="osp-btn-primary">Kaydet</button></div>');
+  saveBtn.querySelector('button').addEventListener('click', function(){
+    if(editTestsDraft.selectedTests.length===0){ alert('En az bir test seçmelisin.'); return; }
+    t.selectedTests = editTestsDraft.selectedTests.slice();
+    save();
+    state.view = state.prevView || 'squad';
+    render();
+  });
+  body.appendChild(saveBtn);
+}
+
 function renderSquad(){
   var t = getTeam();
   if(!t){ state.view='teams'; render(); return; }
@@ -3406,6 +3477,10 @@ function renderSquad(){
   var addBtn = el('<div class="osp-fab-row"><button class="osp-btn-primary"><i class="ti ti-plus" aria-hidden="true" style="margin-right:6px; vertical-align:-2px;"></i>Kadro ekle</button></div>');
   addBtn.querySelector('button').addEventListener('click', addPlayer);
   body.appendChild(addBtn);
+
+  var editTestsBtn = el('<button class="osp-btn-ghost" style="width:100%; margin-top:10px; display:flex; align-items:center; justify-content:center; gap:6px; padding:11px;">'+SVG_ICONS.clipboard+'Testleri Düzenle</button>');
+  editTestsBtn.addEventListener('click', openEditTeamTests);
+  body.appendChild(editTestsBtn);
 
   var delBtn = el('<button class="osp-delete-btn"><i class="ti ti-trash" aria-hidden="true" style="margin-right:5px; vertical-align:-2px;"></i>Takımı sil</button>');
   delBtn.addEventListener('click', function(){
@@ -4870,6 +4945,7 @@ function render(){
   else if(state.view==='teams') renderTeams();
   else if(state.view==='newTeam') renderNewTeam();
   else if(state.view==='squad') renderSquad();
+  else if(state.view==='editTeamTests') renderEditTeamTests();
   else if(state.view==='players') renderPlayers();
   else if(state.view==='guide') renderGuide();
   else if(state.view==='sync') renderSync();
@@ -4904,6 +4980,7 @@ document.getElementById('osp-sync-btn').addEventListener('click', function(){
 
 document.getElementById('osp-back-btn').addEventListener('click', function(){
   if(state.view==='detail'){ state.view = 'squad'; }
+  else if(state.view==='editTeamTests'){ state.view = state.prevView || 'squad'; }
   else if(state.view==='squad' || state.view==='guide' || state.view==='sync' || state.view==='players'){ state.view = state.prevView || 'home'; }
   else { state.view = 'home'; }
   render();

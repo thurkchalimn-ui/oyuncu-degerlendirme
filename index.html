@@ -696,7 +696,7 @@ var RAW_FIELDS = [
   { key:'decision', label:'Karar Verme Testi', unit:'doğru/10', step:'1', cat:'psi' }
 ];
 
-var state = { view:'home', teams:[], norms:null, normsEditMode:false, currentTeamId:null, currentPlayerId:null, tab:'bilgi', guideTab:'aciklama', guideNormAge:'9-10', guideProtoAge:'9-10', prevView:'home', teamSearchQuery:'', playerSearchQuery:'', teamCompareMetric:'performans', teamSortMode:'name', teamViewMode:'list', playerSortMode:'name', playerViewMode:'list', playerTeamFilter:null };
+var state = { view:'home', teams:[], norms:null, normsEditMode:false, currentTeamId:null, currentPlayerId:null, tab:'bilgi', guideTab:'aciklama', guideNormAge:'9-10', guideProtoAge:'9-10', prevView:'home', teamSearchQuery:'', playerSearchQuery:'', teamCompareMetric:'performans', teamSortMode:'name', teamViewMode:'list', playerSortMode:'name', playerViewMode:'list', playerTeamFilter:null, playerCompareMetric:'genel' };
 var normsEditDraft = null;
 var expandedProtocols = {};
 var SYNC_CONFIG_KEY = 'osp-sync-config-v1';
@@ -3306,31 +3306,65 @@ function renderPlayers(){
     pCompareCard.innerHTML =
       '<div class="osp-tm-compare-head">' +
         '<div class="osp-tm-compare-title">'+SVG_ICONS.trendUp+'OYUNCU PERFORMANS KARŞILAŞTIRMASI</div>' +
+        '<select class="osp-tm-compare-select" id="osp-pl-compare-select">' +
+          '<option value="genel">Genel Performans</option>' +
+          '<option value="fiz">Fiziksel</option>' +
+          '<option value="tek">Teknik</option>' +
+          '<option value="psi">Psikolojik</option>' +
+        '</select>' +
       '</div>' +
       '<div id="osp-pl-compare-body"></div>';
     body.appendChild(pCompareCard);
+    var pCompareSelect = pCompareCard.querySelector('#osp-pl-compare-select');
+    pCompareSelect.value = state.playerCompareMetric || 'genel';
     var pCompareBody = pCompareCard.querySelector('#osp-pl-compare-body');
 
-    var pRows = baseList.map(function(entry){
-      var s = overallScore(entry.p, entry.t);
-      var score100 = s!==null ? Math.round(s*5) : null;
-      var idx = state.teams.indexOf(entry.t);
-      return { name: entry.p.adSoyad || 'İsimsiz oyuncu', accent: TEAM_ACCENTS[idx % TEAM_ACCENTS.length], val: score100 };
-    }).filter(function(r){ return r.val!==null; });
-    pRows.sort(function(a,b){ return b.val-a.val; });
+    function categoryScore100(p, t, cat){
+      var tests = activeTestsFor(t).filter(function(x){ return x.cat===cat; });
+      if(tests.length===0) return null;
+      var d = computeDerived(p);
+      var merged = Object.assign({}, p, d);
+      var scores = [];
+      tests.forEach(function(x){
+        var raw = x.source==='input' ? num(p[x.key]) : merged[x.source];
+        var s = scoreFor(x, raw);
+        if(s!==null) scores.push(s);
+      });
+      if(scores.length===0) return null;
+      var avg = scores.reduce(function(a,b){return a+b;},0)/scores.length;
+      return Math.round(avg*5);
+    }
 
-    pRows.forEach(function(r){
-      var pct = Math.min(100, r.val);
-      var row = el(
-        '<div class="osp-tm-compare-row">' +
-          '<div class="osp-tm-compare-label" title="'+escapeHtml(r.name)+'">'+escapeHtml(r.name)+'</div>' +
-          '<div class="osp-tm-compare-track"><div class="osp-tm-compare-fill" style="width:'+pct+'%; background:'+r.accent+';"></div></div>' +
-          '<div class="osp-tm-compare-val">'+r.val+'</div>' +
-        '</div>'
-      );
-      pCompareBody.appendChild(row);
-    });
-    pCompareBody.appendChild(el('<div class="osp-tm-compare-axis"><span>0</span><span>20</span><span>40</span><span>60</span><span>80</span><span>100</span></div>'));
+    function renderPlayerCompare(){
+      pCompareBody.innerHTML = '';
+      var metric = state.playerCompareMetric || 'genel';
+      var rows = baseList.map(function(entry){
+        var val = metric==='genel' ? (function(){ var s = overallScore(entry.p, entry.t); return s!==null ? Math.round(s*5) : null; })() : categoryScore100(entry.p, entry.t, metric);
+        var idx = state.teams.indexOf(entry.t);
+        return { name: entry.p.adSoyad || 'İsimsiz oyuncu', accent: TEAM_ACCENTS[idx % TEAM_ACCENTS.length], val: val };
+      }).filter(function(r){ return r.val!==null; });
+      rows.sort(function(a,b){ return b.val-a.val; });
+
+      if(rows.length===0){
+        pCompareBody.appendChild(el('<p style="font-size:11.5px; color:#a37a00; text-align:center; padding:8px 0;">Bu kategoride veri girilmiş oyuncu yok.</p>'));
+        return;
+      }
+
+      rows.forEach(function(r){
+        var pct = Math.min(100, r.val);
+        var row = el(
+          '<div class="osp-tm-compare-row">' +
+            '<div class="osp-tm-compare-label" title="'+escapeHtml(r.name)+'">'+escapeHtml(r.name)+'</div>' +
+            '<div class="osp-tm-compare-track"><div class="osp-tm-compare-fill" style="width:'+pct+'%; background:'+r.accent+';"></div></div>' +
+            '<div class="osp-tm-compare-val">'+r.val+'</div>' +
+          '</div>'
+        );
+        pCompareBody.appendChild(row);
+      });
+      pCompareBody.appendChild(el('<div class="osp-tm-compare-axis"><span>0</span><span>20</span><span>40</span><span>60</span><span>80</span><span>100</span></div>'));
+    }
+    renderPlayerCompare();
+    pCompareSelect.addEventListener('change', function(){ state.playerCompareMetric = pCompareSelect.value; renderPlayerCompare(); });
   }
 }
 

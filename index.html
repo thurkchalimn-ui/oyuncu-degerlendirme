@@ -2886,6 +2886,32 @@ function renderHome(){
   }
 }
 
+function testOptionsHtml(){
+  var refTests = TESTS_BY_AGE['13-14'];
+  var html = '';
+  ['fiz','tek','psi'].forEach(function(cat){
+    var items = refTests.filter(function(t){ return t.cat===cat; });
+    if(items.length===0) return;
+    html += '<optgroup label="'+CAT_LABELS[cat]+'">';
+    items.forEach(function(t){
+      html += '<option value="test:'+t.key+'">'+t.label+'</option>';
+    });
+    html += '</optgroup>';
+  });
+  return html;
+}
+
+function testScore100For(p, t, testKey){
+  var refTests = TESTS_BY_AGE[ageOf(t)];
+  var testDef = refTests.filter(function(x){ return x.key===testKey; })[0];
+  if(!testDef) return null;
+  var d = computeDerived(p);
+  var merged = Object.assign({}, p, d);
+  var raw = testDef.source==='input' ? num(p[testDef.key]) : merged[testDef.source];
+  var s = scoreFor(testDef, raw);
+  return s!==null ? Math.round(s*5) : null;
+}
+
 function renderTeams(){
   document.getElementById('osp-header').style.display = 'none';
   var body = document.getElementById('osp-body');
@@ -3050,6 +3076,7 @@ function renderTeams(){
           '<option value="performans">Ortalama Performans</option>' +
           '<option value="oyuncu">Oyuncu Sayısı</option>' +
           '<option value="test">Test Sayısı</option>' +
+          testOptionsHtml() +
         '</select>' +
       '</div>' +
       '<div id="osp-tm-compare-body"></div>';
@@ -3058,16 +3085,24 @@ function renderTeams(){
     compareSelect.value = state.teamCompareMetric;
     var compareBody = compareCard.querySelector('#osp-tm-compare-body');
 
+    function teamAvgForTest(t, testKey){
+      var scores = [];
+      t.players.forEach(function(p){ var s = testScore100For(p, t, testKey); if(s!==null) scores.push(s); });
+      if(scores.length===0) return null;
+      return Math.round(scores.reduce(function(a,b){return a+b;},0)/scores.length);
+    }
     function renderCompare(){
       compareBody.innerHTML = '';
       var metric = state.teamCompareMetric;
+      var isTest = metric.indexOf('test:')===0;
+      var testKey = isTest ? metric.slice(5) : null;
       var rows = state.teams.map(function(t){
         var idx = state.teams.indexOf(t);
-        var val = metric==='performans' ? teamAvgScore100(t) : (metric==='oyuncu' ? t.players.length : t.selectedTests.length);
+        var val = isTest ? teamAvgForTest(t, testKey) : (metric==='performans' ? teamAvgScore100(t) : (metric==='oyuncu' ? t.players.length : t.selectedTests.length));
         return { t:t, accent: TEAM_ACCENTS[idx % TEAM_ACCENTS.length], val: val };
       }).filter(function(r){ return r.val!==null; });
       rows.sort(function(a,b){ return b.val-a.val; });
-      var maxVal = metric==='performans' ? 100 : Math.max.apply(null, rows.map(function(r){return r.val;}).concat([1]));
+      var maxVal = (metric==='performans' || isTest) ? 100 : Math.max.apply(null, rows.map(function(r){return r.val;}).concat([1]));
       rows.forEach(function(r){
         var pct = maxVal>0 ? Math.min(100, (r.val/maxVal)*100) : 0;
         var row = el(
@@ -3079,7 +3114,7 @@ function renderTeams(){
         );
         compareBody.appendChild(row);
       });
-      if(metric==='performans'){
+      if(metric==='performans' || isTest){
         compareBody.appendChild(el('<div class="osp-tm-compare-axis"><span>0</span><span>20</span><span>40</span><span>60</span><span>80</span><span>100</span></div>'));
       }
     }
@@ -3308,9 +3343,10 @@ function renderPlayers(){
         '<div class="osp-tm-compare-title">'+SVG_ICONS.trendUp+'OYUNCU PERFORMANS KARŞILAŞTIRMASI</div>' +
         '<select class="osp-tm-compare-select" id="osp-pl-compare-select">' +
           '<option value="genel">Genel Performans</option>' +
-          '<option value="fiz">Fiziksel</option>' +
-          '<option value="tek">Teknik</option>' +
-          '<option value="psi">Psikolojik</option>' +
+          '<option value="fiz">Fiziksel (ortalama)</option>' +
+          '<option value="tek">Teknik (ortalama)</option>' +
+          '<option value="psi">Psikolojik (ortalama)</option>' +
+          testOptionsHtml() +
         '</select>' +
       '</div>' +
       '<div id="osp-pl-compare-body"></div>';
@@ -3338,8 +3374,13 @@ function renderPlayers(){
     function renderPlayerCompare(){
       pCompareBody.innerHTML = '';
       var metric = state.playerCompareMetric || 'genel';
+      var isTest = metric.indexOf('test:')===0;
+      var testKey = isTest ? metric.slice(5) : null;
       var rows = baseList.map(function(entry){
-        var val = metric==='genel' ? (function(){ var s = overallScore(entry.p, entry.t); return s!==null ? Math.round(s*5) : null; })() : categoryScore100(entry.p, entry.t, metric);
+        var val;
+        if(isTest) val = testScore100For(entry.p, entry.t, testKey);
+        else if(metric==='genel'){ var s = overallScore(entry.p, entry.t); val = s!==null ? Math.round(s*5) : null; }
+        else val = categoryScore100(entry.p, entry.t, metric);
         var idx = state.teams.indexOf(entry.t);
         return { name: entry.p.adSoyad || 'İsimsiz oyuncu', accent: TEAM_ACCENTS[idx % TEAM_ACCENTS.length], val: val };
       }).filter(function(r){ return r.val!==null; });

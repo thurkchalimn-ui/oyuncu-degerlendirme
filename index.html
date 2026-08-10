@@ -623,7 +623,7 @@ var RAW_FIELD_TO_TEST = {
   agility505:'agility505', ballSprint:'ballSprint', reaction:'reaction', firstTouch:'firstTouch',
   cmj:'cmj', sprint10:'sprint10', flexibility:'flexibility', yBalance:'yBalance', decision:'decision',
   longPassIsabetli:'longPassYuzde',
-  headingToplam:'headingYuzde', headingIsabetli:'headingYuzde',
+  headingIsabetli:'headingYuzde',
   zayifAyakIsabetli:'zayifAyakYuzde'
 };
 
@@ -687,8 +687,7 @@ var RAW_FIELDS = [
   { key:'flexibility', label:'Otur-Uzan Esneklik', unit:'cm', step:'1', cat:'fiz' },
   { key:'yBalance', label:'Y Denge Testi', unit:'cm', step:'1', cat:'fiz' },
   { key:'longPassIsabetli', label:'Uzun Pas İsabet (10 üzerinden)', unit:'adet', step:'1', cat:'tek' },
-  { key:'headingToplam', label:'Kafa Vuruşu - Toplam Deneme', unit:'adet', step:'1', cat:'tek' },
-  { key:'headingIsabetli', label:'Kafa Vuruşu - İsabetli', unit:'adet', step:'1', cat:'tek' },
+  { key:'headingIsabetli', label:'Kafa Vuruşu İsabet (10 üzerinden)', unit:'adet', step:'1', cat:'tek' },
   { key:'zayifAyakIsabetli', label:'Zayıf Ayak Pas İsabet (10 üzerinden)', unit:'adet', step:'1', cat:'tek' },
   { key:'decision', label:'Karar Verme Testi', unit:'doğru/10', step:'1', cat:'psi' }
 ];
@@ -1009,8 +1008,8 @@ function computeDerived(p){
   out.sutYuzde = (sutI!==null) ? round1(sutI/10*100) : null;
   var lpI = num(p.longPassIsabetli);
   out.longPassYuzde = (lpI!==null) ? round1(lpI/10*100) : null;
-  var hdT = num(p.headingToplam), hdI = num(p.headingIsabetli);
-  out.headingYuzde = (hdT && hdI!==null) ? round1(hdI/hdT*100) : null;
+  var hdI = num(p.headingIsabetli);
+  out.headingYuzde = (hdI!==null) ? round1(hdI/10*100) : null;
   var zaI = num(p.zayifAyakIsabetli);
   out.zayifAyakYuzde = (zaI!==null) ? round1(zaI/10*100) : null;
   var rsaTimes = [p.rsa1,p.rsa2,p.rsa3,p.rsa4,p.rsa5,p.rsa6].map(num);

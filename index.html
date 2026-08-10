@@ -544,6 +544,7 @@ var TESTS_BY_AGE = {
     { key:'longPassYuzde', label:'Uzun Pas İsabet Yüzdesi', unit:'%', cat:'tek', dir:'high', weak:19, good:78, source:'longPassYuzde' },
     { key:'headingYuzde', label:'Kafa Vuruşu İsabet Yüzdesi', unit:'%', cat:'tek', dir:'high', weak:16, good:73, source:'headingYuzde' },
     { key:'zayifAyakYuzde', label:'Zayıf Ayak Pas İsabet Yüzdesi', unit:'%', cat:'tek', dir:'high', weak:13, good:69, source:'zayifAyakYuzde' },
+    { key:'shotSpeed', label:'Şut Hızı', unit:'km/sa', cat:'tek', dir:'high', weak:35, good:55, source:'input' },
     { key:'decision', label:'Karar Verme Testi', unit:'doğru/10', cat:'psi', dir:'high', weak:1, good:7, source:'input' }
   ],
   '11-12': [
@@ -572,6 +573,7 @@ var TESTS_BY_AGE = {
     { key:'longPassYuzde', label:'Uzun Pas İsabet Yüzdesi', unit:'%', cat:'tek', dir:'high', weak:26, good:84, source:'longPassYuzde' },
     { key:'headingYuzde', label:'Kafa Vuruşu İsabet Yüzdesi', unit:'%', cat:'tek', dir:'high', weak:22, good:79, source:'headingYuzde' },
     { key:'zayifAyakYuzde', label:'Zayıf Ayak Pas İsabet Yüzdesi', unit:'%', cat:'tek', dir:'high', weak:18, good:74, source:'zayifAyakYuzde' },
+    { key:'shotSpeed', label:'Şut Hızı', unit:'km/sa', cat:'tek', dir:'high', weak:45, good:65, source:'input' },
     { key:'decision', label:'Karar Verme Testi', unit:'doğru/10', cat:'psi', dir:'high', weak:2, good:9, source:'input' }
   ],
   '13-14': [
@@ -600,6 +602,7 @@ var TESTS_BY_AGE = {
     { key:'longPassYuzde', label:'Uzun Pas İsabet Yüzdesi', unit:'%', cat:'tek', dir:'high', weak:30, good:85, source:'longPassYuzde' },
     { key:'headingYuzde', label:'Kafa Vuruşu İsabet Yüzdesi', unit:'%', cat:'tek', dir:'high', weak:25, good:80, source:'headingYuzde' },
     { key:'zayifAyakYuzde', label:'Zayıf Ayak Pas İsabet Yüzdesi', unit:'%', cat:'tek', dir:'high', weak:20, good:75, source:'zayifAyakYuzde' },
+    { key:'shotSpeed', label:'Şut Hızı', unit:'km/sa', cat:'tek', dir:'high', weak:55, good:80, source:'input' },
     { key:'decision', label:'Karar Verme Testi', unit:'doğru/10', cat:'psi', dir:'high', weak:3, good:10, source:'input' }
   ]
 };
@@ -624,7 +627,7 @@ var RAW_FIELD_TO_TEST = {
   cmj:'cmj', sprint10:'sprint10', flexibility:'flexibility', yBalance:'yBalance', decision:'decision',
   longPassIsabetli:'longPassYuzde',
   headingIsabetli:'headingYuzde',
-  zayifAyakIsabetli:'zayifAyakYuzde'
+  zayifAyakIsabetli:'zayifAyakYuzde', shotSpeed:'shotSpeed'
 };
 
 var CAT_LABELS = { fiz:'Fiziksel', psi:'Psikolojik', tek:'Teknik' };
@@ -689,6 +692,7 @@ var RAW_FIELDS = [
   { key:'longPassIsabetli', label:'Uzun Pas İsabet (10 üzerinden)', unit:'adet', step:'1', cat:'tek' },
   { key:'headingIsabetli', label:'Kafa Vuruşu İsabet (10 üzerinden)', unit:'adet', step:'1', cat:'tek' },
   { key:'zayifAyakIsabetli', label:'Zayıf Ayak Pas İsabet (10 üzerinden)', unit:'adet', step:'1', cat:'tek' },
+  { key:'shotSpeed', label:'Şut Hızı', unit:'km/sa', step:'0.1', cat:'tek' },
   { key:'decision', label:'Karar Verme Testi', unit:'doğru/10', step:'1', cat:'psi' }
 ];
 
@@ -3762,6 +3766,16 @@ function renderDetailTabVeri(container, p){
         });
         card.appendChild(dqBtn);
       }
+      if(f.key==='shotSpeed'){
+        var ssBtn = el('<button type="button" style="width:100%; display:flex; align-items:center; justify-content:center; gap:6px; background:#fff8e1; border:1px solid #ffcc00; color:#7a3b00; font-size:12px; font-weight:700; padding:9px; border-radius:9px; cursor:pointer; margin-bottom:10px;">'+SVG_ICONS.clock+'Şut Hızını Video ile Ölç</button>');
+        ssBtn.addEventListener('click', function(){
+          openShotSpeedAnalyzer(function(kmh){
+            updateField('shotSpeed', kmh);
+            render();
+          });
+        });
+        card.appendChild(ssBtn);
+      }
       card.appendChild(fieldRow(f.label, f.key, p[f.key], {unit:f.unit, step:f.step, stopwatch:isTimed, cameraTimer:isSprint, jumpCamera:isJump, longJumpCamera:isLongJump, externalLink:stroopLink||gridLink, stopwatchUnit:f.unit==='ms'?'ms':'sn'}));
     });
     sec.appendChild(card);
@@ -4300,6 +4314,9 @@ var PROTOCOLS = [
     ekipmanByAge:{'9-10':"1x1m'lik hedef kare (bant ile işaretli), 5m mesafe, top, sayaç",'11-12':"1x1m'lik hedef kare (bant ile işaretli), 6-7m mesafe, top, sayaç",'13-14':"1x1m'lik hedef kare (bant ile işaretli), 8m mesafe, top, sayaç"},
     talimatByAge:{'9-10':'Oyuncu sadece zayıf (baskın olmayan) ayağını kullanarak 5m mesafeden hedef kareye pas atmaya çalışır. Toplam 10 deneme yapılır, hedefe isabet eden pas sayısı kayıt edilir.','11-12':'Oyuncu sadece zayıf (baskın olmayan) ayağını kullanarak 6-7m mesafeden hedef kareye pas atmaya çalışır. Toplam 10 deneme yapılır, hedefe isabet eden pas sayısı kayıt edilir.','13-14':'Oyuncu sadece zayıf (baskın olmayan) ayağını kullanarak 8m mesafeden hedef kareye pas atmaya çalışır. Toplam 10 deneme yapılır, hedefe isabet eden pas sayısı kayıt edilir.'},
     birim:'isabet sayısı / 10 pas', formul:'İsabet Yüzdesi (%) = (İsabetli Pas Sayısı / Toplam Pas Sayısı) x 100' },
+  { key:'shotSpeed', cat:'tek', name:'Şut Hızı Testi (Video Analiz)', ozellik:'Şut vuruş gücü / top hızı', ekipman:'Telefon kamerası (tercihen yavaş çekim modu), sabit bir mesafe işareti (örn. kale çizgisi), top',
+    talimat:'Oyuncu, önceden belirlenmiş sabit bir mesafeden (kale çizgisine kadar) maksimum güçle şut çeker; bu vuruş telefonla videoya kaydedilir. Uygulamadaki "Şut/Top Hızı Ölç (Video Analiz)" aracıyla video kare kare incelenir: topun ayaktan ayrıldığı an ve topun bilinen mesafeye ulaştığı an işaretlenir, uygulama bu iki an arasındaki farkı mesafeye bölerek hızı otomatik hesaplar. 3 deneme yapılır, en iyisi kayıt edilir.',
+    birim:'km/sa', formul:'Hız (km/sa) = (Mesafe(m) / Süre(sn)) x 3.6' },
   { key:'decision', cat:'psi', name:'Karar Verme Testi (Taktiksel Senaryo)', ozellik:'Oyun içi karar verme / durum değerlendirme', ekipman:'10 adet video/foto tabanlı oyun senaryosu kartı veya video, cevap kağıdı', talimat:'Oyuncuya sırayla 10 farklı oyun içi durum (video/foto) gösterilir; her birinde en doğru seçimi (pas, şut, dripling vb.) belirlemesi istenir. Doğru/en uygun seçim sayısı kayıt edilir. Sessiz bir ortamda, tek başına uygulanmalıdır.', birim:'doğru karar sayısı / 10', formul:'Doğrudan sayılan doğru karar adedi kayıt edilir.' }
 ];
 var PROTOCOL_CATS = [
@@ -4469,6 +4486,7 @@ var NORMS_BY_AGE = {
       ['Uzun Pas İsabet (%)','<34','34-48','48-63','63-78','>=78'],
       ['Kafa Vuruşu İsabet (%)','<30','30-44','44-59','59-73','>=73'],
       ['Zayıf Ayak Pas İsabet (%)','<27','27-41','41-55','55-69','>=69'],
+      ['Şut Hızı (km/sa)','<40','40-45','45-50','50-55','>=55'],
       ['Karar Verme Testi (doğru/10)','<2','2-4','4-6','6-7','>=7']
     ]
   },
@@ -4501,6 +4519,7 @@ var NORMS_BY_AGE = {
       ['Uzun Pas İsabet (%)','<40','40-55','55-70','70-84','>=84'],
       ['Kafa Vuruşu İsabet (%)','<36','36-50','50-65','65-79','>=79'],
       ['Zayıf Ayak Pas İsabet (%)','<32','32-46','46-60','60-74','>=74'],
+      ['Şut Hızı (km/sa)','<50','50-55','55-60','60-65','>=65'],
       ['Karar Verme Testi (doğru/10)','<4','4-6','6-7','7-9','>=9']
     ]
   },
@@ -4533,6 +4552,7 @@ var NORMS_BY_AGE = {
       ['Uzun Pas İsabet (%)','<44','44-58','58-71','71-85','>=85'],
       ['Kafa Vuruşu İsabet (%)','<39','39-52','52-66','66-80','>=80'],
       ['Zayıf Ayak Pas İsabet (%)','<34','34-48','48-61','61-75','>=75'],
+      ['Şut Hızı (km/sa)','<61','61-68','68-74','74-80','>=80'],
       ['Karar Verme Testi (doğru/10)','<5','5-6','6-8','8-10','>=10']
     ]
   }
@@ -4580,7 +4600,7 @@ var ROW_CAT = {
   'Reaksiyon Zamanı Testi (ms)':'psi', 'Karar Verme Testi (doğru/10)':'psi',
   'Pas İsabet (%)':'tek', 'Slalom Dripling (sn)':'tek', 'Top Sektirme':'tek', 'Şut İsabet (%)':'tek',
   'Duvar Pası':'tek', 'Topla Sürat Testi (sn)':'tek', 'İlk Dokunuş Kontrol (başarılı/10)':'tek',
-  'Uzun Pas İsabet (%)':'tek', 'Kafa Vuruşu İsabet (%)':'tek', 'Zayıf Ayak Pas İsabet (%)':'tek'
+  'Uzun Pas İsabet (%)':'tek', 'Kafa Vuruşu İsabet (%)':'tek', 'Zayıf Ayak Pas İsabet (%)':'tek', 'Şut Hızı (km/sa)':'tek'
 };
 
 function renderGuideNormlar(container){
